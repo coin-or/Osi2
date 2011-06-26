@@ -1,0 +1,18 @@
+/* src/Osi2/config_osi2.h.in. */
+
+#ifndef __CONFIG_OSI2_H__
+#define __CONFIG_OSI2_H__
+
+/* Version number of project */
+#undef OSI2_VERSION
+
+/* Major Version number of project */
+#undef OSI2_VERSION_MAJOR
+
+/* Minor Version number of project */
+#undef OSI2_VERSION_MINOR
+
+/* Release Version number of project */
+#undef OSI2_VERSION_RELEASE
+
+#endif

@@ -1,19 +1,21 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 505 2006-06-01 18:46:31Z andreasw $
+## $Id: Makefile.am 1717 2011-05-15 18:52:52Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
 
 ########################################################################
-#                          Subdirectories                              #
+#            Subdirectories and installation of .pc files              #
 ########################################################################
 
-SUBDIRS = src
-  SUBDIRS += test
+pkgconfiglibdir = $(libdir)/pkgconfig
+pkgconfiglib_DATA = osi2.pc osi2-unittests.pc
+
+SUBDIRS =
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is
@@ -31,44 +33,65 @@ endif
 
 EXTRA_DIST =
 
-
 ########################################################################
 #                           Extra Targets                              #
 ########################################################################
 
 test: all
-	cd test; make test
-
+	cd test; $(MAKE) test
 
 unitTest: test
 
-clean-local:
-	if test -r test/Makefile; then cd test; make clean; fi
+# Doxygen documentation
+
+doxydoc:
+	doxygen doxydoc/doxygen.conf
+
+clean-doxydoc:
+	( cd doxydoc ; rm -rf html *.log *.tag )
+
+
+clean-local: clean-doxydoc
+	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
 
 distclean-local:
-	if test -r test/Makefile; then cd test; make distclean; fi
+	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
 
-.PHONY: test unitTest
+install-exec-local: install-doc
 
+uninstall-local: uninstall-doc
 
+.PHONY: test unitTest doxydoc
 
 ########################################################################
 #                  Installation of the addlibs file                    #
 ########################################################################
 
-addlibsfile = osi2_addlibs.txt
+addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Osi2
+	
+install-data-hook:
+	@$(mkdir_p) "$(addlibsdir)"
+if COIN_HAS_PKGCONFIG
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	$(PKG_CONFIG) --libs osi2 > $(addlibsdir)/osi2_addlibs.txt
+else
+if COIN_CXX_IS_CL
+	echo "/libpath:`$(CYGPATH_W) @abs_lib_dir@` libOsi2.lib @OSI2LIB_LIBS_INSTALLED@" > $(addlibsdir)/osi2_addlibs_cpp.txt
+else
+	echo -L@abs_lib_dir@ -lOsi2 @OSI2LIB_LIBS_INSTALLED@ > $(addlibsdir)/osi2_addlibs.txt
+endif
+endif
 
-install-exec-local:
-	$(install_sh_DATA) $(addlibsfile) $(DESTDIR)$(libdir)/$(addlibsfile)
-
-uninstall-local:
-	rm -f $(DESTDIR)$(libdir)/$(addlibsfile)
+uninstall-hook:
+	rm -f $(addlibsdir)/osi2_addlibs.txt
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
 
+CLEANFILES =
+
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES =
 
-include ../BuildTools/Makemain.inc
+include BuildTools/Makemain.inc
