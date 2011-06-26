@@ -1,14 +1,14 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 344 2006-06-01 19:17:05Z andreasw $
+## $Id: Makefile.am 1644 2010-12-30 21:21:56Z mjs $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
 
-EXTRA_DIST = doxydoc/doxygen.conf
+EXTRA_DIST =
 
 ########################################################################
 #                          Subdirectories                              #
@@ -23,7 +23,7 @@ SUBDIRS = $(subdirs)
 ########################################################################
 
 test: all
-	cd Osi; make test
+	cd Osi2; make test
 
 unitTest: test
 
@@ -36,8 +36,38 @@ tests: all
 
 unitTests: tests
 
+# Generate doxygen doc'n in subdirectories (except @PACKAGE_NAME@) if a doxydoc
+# directory is present, then do the base, if present.
+
 doxydoc:
-	cd $(srcdir); doxygen doxydoc/doxygen.conf
+	for dir in $(subdirs) ; do \
+	  if test $$dir != @PACKAGE_NAME@ && test -r $$dir/doxydoc ; then \
+	    (cd $$dir ; $(MAKE) doxydoc) \
+	  fi ; \
+	done ; \
+	if test -r doxydoc/doxygen.conf ; then \
+	  doxygen doxydoc/doxygen.conf ; \
+	fi
+
+clean-doxydoc:
+	( cd doxydoc ; rm -rf html *.log *.tag )
+
+# DocInstallDir is defined in Makemain.inc and is specific to the package.
+# For the short term, adopt the notion that we install only the package
+# doxydoc.
+
+install-doxydoc: doxydoc
+	if test -r doxydoc/doxygen.conf ; then \
+	  $(mkdir_p) $(DocInstallDir) ; \
+	  cp -R doxydoc $(DocInstallDir) ; \
+	fi
+
+uninstall-doxydoc:
+	rm -rf $(DocInstallDir)/doxydoc
+
+clean-local: clean-doxydoc
+# install-data-local: install-doxydoc
+uninstall-local: uninstall-doxydoc
 
 .PHONY: test unitTest tests unitTests doxydoc
 
@@ -46,6 +76,6 @@ doxydoc:
 ########################################################################
 
 # Files that are generated and should be cleaned with make distclean
-DISTCLEANFILES =
+DISTCLEANFILES = coin_subdirs.txt
 
 include BuildTools/Makemain.inc

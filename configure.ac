@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 371 2006-06-14 18:46:19Z andreasw $
+## $Id: configure.ac 1717 2011-05-15 18:52:52Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,13 +12,13 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi2],[0.1],[coin-osi2@lists.coin-or.org])
+AC_INIT([Osi2],[trunk],[osi2@lists.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
 All Rights Reserved.
 This file is part of the open source package Coin which is distributed
-under the Common Public License.])
+under the Eclipse Public License.])
 
 AC_REVISION(0.9)
 
@@ -33,35 +33,25 @@ AC_CONFIG_SRCDIR(configure.ac)
 AC_PREFIX_DEFAULT([`pwd`])
 
 #############################################################################
-#     We only need automake to generate Makefiles for the distribution      #
+#  Do the tests necessary to configure compilers and initialise autotools   #
 #############################################################################
 
-# Initialize automake
-AC_COIN_INIT_AUTOMAKE
-
-#############################################################################
-#             Check which ThirdParty sources are available                  #
-#############################################################################
-#kipp -- should this be here? Does ASL become a macro?
-AC_COIN_THIRDPARTY_SUBDIRS([ASL],[ThirdParty/ASL],[solvers/asl.h])
+AC_COIN_CREATE_LIBTOOL
 
 #############################################################################
 #                  Check which subprojects are there                        #
 #############################################################################
 
-AC_COIN_MAIN_SUBDIRS(CoinUtils)
-AC_COIN_MAIN_SUBDIRS(Data/Netlib)
-AC_COIN_MAIN_SUBDIRS(Data/Sample)
-AC_COIN_MAIN_SUBDIRS(Data/miplib3)
-AC_COIN_MAIN_SUBDIRS(Clp)
-AC_COIN_MAIN_SUBDIRS(Osi)
-AC_COIN_MAIN_SUBDIRS(Cgl)
-AC_COIN_MAIN_SUBDIRS(Cbc)
-AC_COIN_MAIN_SUBDIRS(Cgl)
-AC_COIN_MAIN_SUBDIRS(CppAD)
-AC_COIN_MAIN_SUBDIRS(OS)
-AC_COIN_MAIN_SUBDIRS(Osi2)
+AC_COIN_MAIN_PACKAGEDIR(Sample,Data)
+AC_COIN_MAIN_PACKAGEDIR(Netlib,Data)
+AC_COIN_MAIN_PACKAGEDIR(CoinUtils)
+AC_COIN_MAIN_PACKAGEDIR(Osi2)
 
+#############################################################################
+#                  Check for doxygen                                        #
+#############################################################################
+
+AC_COIN_DOXYGEN(CoinUtils Cgl Clp DyLP Vol SYMPHONY)
 
 ##############################################################################
 #                   Finishing up by writing all the output                   #
@@ -70,6 +60,7 @@ AC_COIN_MAIN_SUBDIRS(Osi2)
 # Here list all the files that configure should create (except for the
 # configuration header file)
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([doxydoc/doxygen.conf])
 
 # Finally, we let configure write all the output...
 AC_COIN_FINALIZE
