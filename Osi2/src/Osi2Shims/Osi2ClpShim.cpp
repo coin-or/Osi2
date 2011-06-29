@@ -19,8 +19,8 @@
 */
 Osi2ClpShim::Osi2ClpShim ()
   : services_(0),
-    verbosity_(1),
-    libClp_(0)
+    libClp_(0),
+    verbosity_(1)
 { }
 
 typedef Clp_Simplex *(*ClpFactory)() ;
