@@ -57,8 +57,8 @@ CONFIG_HEADER = $(top_builddir)/src/Osi2/config.h \
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libOsi2Plugin_la_LIBADD =
-am_libOsi2Plugin_la_OBJECTS = Osi2Directory.lo Osi2DynamicLibrary.lo \
-	Osi2Path.lo Osi2PluginBase.lo
+am_libOsi2Plugin_la_OBJECTS = Osi2DynamicLibrary.lo Osi2PluginBase.lo \
+	Osi2PluginManager.lo
 libOsi2Plugin_la_OBJECTS = $(am_libOsi2Plugin_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -112,6 +112,13 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
+CLP_CFLAGS = @CLP_CFLAGS@
+CLP_CFLAGS_INSTALLED = @CLP_CFLAGS_INSTALLED@
+CLP_DATA = @CLP_DATA@
+CLP_DATA_INSTALLED = @CLP_DATA_INSTALLED@
+CLP_DEPENDENCIES = @CLP_DEPENDENCIES@
+CLP_LIBS = @CLP_LIBS@
+CLP_LIBS_INSTALLED = @CLP_LIBS_INSTALLED@
 COINUTILS_CFLAGS = @COINUTILS_CFLAGS@
 COINUTILS_CFLAGS_INSTALLED = @COINUTILS_CFLAGS_INSTALLED@
 COINUTILS_DATA = @COINUTILS_DATA@
@@ -123,6 +130,8 @@ COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
 COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
 COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
 COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COIN_HAS_CLP_FALSE = @COIN_HAS_CLP_FALSE@
+COIN_HAS_CLP_TRUE = @COIN_HAS_CLP_TRUE@
 COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
 COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
 COIN_HAS_CPX_FALSE = @COIN_HAS_CPX_FALSE@
@@ -306,12 +315,15 @@ AUTOMAKE_OPTIONS = foreign
 noinst_LTLIBRARIES = libOsi2Plugin.la
 
 # List all source files for this library, including headers
+# As a first cut, to avoid having to translate directory traversal and file
+# stat from APR to native, try cutting out this code:
+# Osi2Directory.cpp Osi2Directory.hpp
+# Osi2Path.cpp Osi2Path.hpp
 libOsi2Plugin_la_SOURCES = \
-	Osi2Directory.cpp Osi2Directory.hpp \
 	Osi2DynamicLibrary.hpp Osi2DynamicLibrary.cpp \
-	Osi2Path.cpp Osi2Path.hpp \
 	Osi2Plugin.hpp \
-	Osi2PluginBase.cpp Osi2PluginBase.hpp
+	Osi2PluginBase.cpp Osi2PluginBase.hpp \
+	Osi2PluginManager.cpp Osi2PluginManager.hpp
 
 
 # This is for libtool
@@ -386,10 +398,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Directory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2DynamicLibrary.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Path.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2PluginBase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2PluginManager.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -609,7 +620,6 @@ uninstall-am: uninstall-includecoinHEADERS uninstall-info-am
 	tags uninstall uninstall-am uninstall-includecoinHEADERS \
 	uninstall-info-am
 
-	Osi2PluginManager.cpp Osi2PluginManager.hpp
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

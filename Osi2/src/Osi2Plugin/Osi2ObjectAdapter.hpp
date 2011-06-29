@@ -8,7 +8,7 @@
 struct IObjectAdapter
 {
   virtual ~IObjectAdapter() {}
-  virtual void * adapt(void * object, PF_DestroyFunc df) = 0;
+  virtual void * adapt(void * object, Osi2_DestroyFunc df) = 0;
 };
 
 // This template should be used if the object model implements the
@@ -17,10 +17,15 @@ struct IObjectAdapter
 template<typename T, typename U>
 struct ObjectAdapter : public IObjectAdapter
 {
-  virtual void * adapt(void * object, PF_DestroyFunc df)
+  virtual void * adapt(void * object, Osi2_DestroyFunc df)
   {
     return new T((U *)object, df);
   }
 };
+
+struct DummyAdapter : public IObjectAdapter
+{ virtual void *adapt(void *object, Osi2_DestroyFunc df)
+  { return (static_cast<void*>(0)) ; }
+} ;
 
 #endif // OSI2OBJECT_ADAPTER_H

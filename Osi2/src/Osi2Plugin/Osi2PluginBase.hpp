@@ -1,7 +1,7 @@
-#ifndef PF_BASE
-#define PF_BASE
+#ifndef OSI2_PLUGIN_BASE
+#define OSI2_PLUGIN_BASE
 
-#include "StreamingException.h"
+#include "Osi2StreamingException.hpp"
 
 #define THROW throw StreamingException(__FILE__, __LINE__) \
 
@@ -23,6 +23,6 @@ namespace base
   std::string getErrorMessage();
 }
 
-#endif // BASE_H
+#endif // OSI2_PLUGIN_BASE
 
 

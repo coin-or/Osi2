@@ -73,7 +73,7 @@ public:
   static std::string getParent(const std::string & path);
   static std::string getBasename(const std::string & path);
   static std::string getExtension(const std::string & path);
-  static apr_size_t  getFileSize(const std::string & path);
+  static size_t  getFileSize(const std::string & path);
   static std::string normalize(const std::string & path);
   static std::string makeAbsolute(const std::string & path);
   static void split(const std::string & path, StringVec & parts);        
@@ -95,7 +95,7 @@ public:
   Path getParent() const;
   Path getBasename() const;
   Path getExtension() const;
-  apr_size_t getFileSize() const;
+  size_t getFileSize() const;
   
   Path & normalize();
   Path & makeAbsolute();

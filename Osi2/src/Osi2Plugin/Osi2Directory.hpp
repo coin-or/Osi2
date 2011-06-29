@@ -4,9 +4,9 @@
 //----------------------------------------------------------------------
 
 #include <string>
-#ifdef __GNUC__
-#include <dirent.h>
-#include <sys/stat.h>
+#if defined(__GNUC__) || defined(__sun)
+# include <dirent.h>
+# include <sys/stat.h>
 #endif
 
 //----------------------------------------------------------------------

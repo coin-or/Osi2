@@ -45,6 +45,7 @@ AC_COIN_CREATE_LIBTOOL
 AC_COIN_MAIN_PACKAGEDIR(Sample,Data)
 AC_COIN_MAIN_PACKAGEDIR(Netlib,Data)
 AC_COIN_MAIN_PACKAGEDIR(CoinUtils)
+AC_COIN_MAIN_PACKAGEDIR(Clp)
 AC_COIN_MAIN_PACKAGEDIR(Osi2)
 
 #############################################################################

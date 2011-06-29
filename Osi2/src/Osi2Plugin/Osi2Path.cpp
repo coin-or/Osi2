@@ -18,11 +18,11 @@ Path::Path(const std::string & path) : path_(path)
 {
 }
 
-static apr_status_t getInfo(const std::string & path, apr_int32_t wanted, apr_finfo_t & info)
+static int getInfo(const std::string & path, int32_t wanted, apr_finfo_t & info)
 {
   CHECK(!path.empty()) << "Can't get the info of an empty path";
 
-  apr_status_t res;
+  int res;
   apr_pool_t * pool = NULL;
   
 #ifdef WIN32 
@@ -44,14 +44,14 @@ bool Path::exists(const std::string & path)
     return false;
   
   apr_finfo_t st;      
-  apr_status_t res  = getInfo(path, APR_FINFO_TYPE, st);
+  int res  = getInfo(path, APR_FINFO_TYPE, st);
   return res == APR_SUCCESS;
 }
 
 static apr_filetype_e getType(const std::string & path)
 {
   apr_finfo_t st;
-  apr_status_t res = getInfo(path, APR_FINFO_TYPE, st);
+  int res = getInfo(path, APR_FINFO_TYPE, st);
   CHECK(res == APR_SUCCESS) 
     << "Can't get info for '" << path << "', " << base::getErrorMessage();
   
@@ -91,7 +91,7 @@ bool Path::areEquivalent(const std::string & path1, const std::string & path2)
 {
   apr_finfo_t st1;
   apr_finfo_t st2;
-  apr_int32_t wanted = APR_FINFO_IDENT;
+  int32_t wanted = APR_FINFO_IDENT;
   getInfo(path1.c_str(), wanted, st1);
   getInfo(path2.c_str(), wanted, st2);
   bool res = true;
@@ -141,7 +141,7 @@ std::string Path::getExtension(const std::string & path)
 apr_size_t Path::getFileSize(const std::string & path)
 {
   apr_finfo_t st;
-  apr_int32_t wanted = APR_FINFO_TYPE | APR_FINFO_SIZE;
+  int32_t wanted = APR_FINFO_TYPE | APR_FINFO_SIZE;
   getInfo(path.c_str(), wanted, st);
   CHECK(st.filetype == APR_REG) << "Can't get the size of a non-file object";
   

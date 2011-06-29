@@ -15,7 +15,7 @@ AUTOMAKE_OPTIONS = foreign
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = osi2.pc osi2-unittests.pc
 
-SUBDIRS =
+SUBDIRS = src/Osi2Plugin src/Osi2Shims
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is

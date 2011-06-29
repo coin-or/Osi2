@@ -17,12 +17,15 @@ AUTOMAKE_OPTIONS = foreign
 noinst_LTLIBRARIES = libOsi2Plugin.la
 
 # List all source files for this library, including headers
+# As a first cut, to avoid having to translate directory traversal and file
+# stat from APR to native, try cutting out this code:
+# Osi2Directory.cpp Osi2Directory.hpp
+# Osi2Path.cpp Osi2Path.hpp
+
 libOsi2Plugin_la_SOURCES = \
-	Osi2Directory.cpp Osi2Directory.hpp \
 	Osi2DynamicLibrary.hpp Osi2DynamicLibrary.cpp \
-	Osi2Path.cpp Osi2Path.hpp \
 	Osi2Plugin.hpp \
-	Osi2PluginBase.cpp Osi2PluginBase.hpp
+	Osi2PluginBase.cpp Osi2PluginBase.hpp \
 	Osi2PluginManager.cpp Osi2PluginManager.hpp
 
 # This is for libtool

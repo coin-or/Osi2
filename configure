@@ -476,6 +476,7 @@ ac_includes_default="\
 ac_subdirs_all="$ac_subdirs_all Data/Sample"
 ac_subdirs_all="$ac_subdirs_all Data/Netlib"
 ac_subdirs_all="$ac_subdirs_all CoinUtils"
+ac_subdirs_all="$ac_subdirs_all Clp"
 ac_subdirs_all="$ac_subdirs_all Osi2"
 ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os CDEFS ADD_CFLAGS DBG_CFLAGS OPT_CFLAGS sol_cc_compiler CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT COIN_CC_IS_CL_TRUE COIN_CC_IS_CL_FALSE MPICC CXXDEFS ADD_CXXFLAGS DBG_CXXFLAGS OPT_CXXFLAGS CXX CXXFLAGS ac_ct_CXX COIN_CXX_IS_CL_TRUE COIN_CXX_IS_CL_FALSE MPICXX ADD_FFLAGS DBG_FFLAGS OPT_FFLAGS F77 ac_ct_F77 FFLAGS MPIF77 EGREP LN_S INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOLM4 have_autoconf have_automake have_svn BUILDTOOLSDIR AUX_DIR abs_source_dir abs_lib_dir abs_include_dir abs_bin_dir HAVE_EXTERNALS_TRUE HAVE_EXTERNALS_FALSE host host_cpu host_vendor host_os ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXXCPP LIBTOOL ac_c_preproc_warn_flag ac_cxx_preproc_warn_flag RPATH_FLAGS LT_LDFLAGS COIN_SKIP_PROJECTS subdirs coin_have_doxygen coin_doxy_usedot coin_doxy_tagname coin_doxy_logname coin_doxy_tagfiles coin_doxy_excludes LIBEXT VPATH_DISTCLEANFILES ABSBUILDDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
@@ -1139,6 +1140,9 @@ Optional Packages:
   --with-coinutils-datadir
                           directory with data files for using project
                           CoinUtils
+  --with-clp-lib linker flags for using project Clp
+  --with-clp-incdir directory with header files for using project Clp
+  --with-clp-datadir directory with data files for using project Clp
   --with-osi2-lib linker flags for using project Osi2
   --with-osi2-incdir directory with header files for using project Osi2
   --with-osi2-datadir directory with data files for using project Osi2
@@ -4272,7 +4276,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4275:" \
+echo "$as_me:4279:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6538,7 +6542,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6541 "configure"' > conftest.$ac_ext
+  echo '#line 6545 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -8502,11 +8506,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8505: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8509: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8509: \$? = $ac_status" >&5
+   echo "$as_me:8513: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8770,11 +8774,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8773: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8777: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8777: \$? = $ac_status" >&5
+   echo "$as_me:8781: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8874,11 +8878,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8877: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8881: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8881: \$? = $ac_status" >&5
+   echo "$as_me:8885: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11219,7 +11223,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 11222 "configure"
+#line 11226 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11319,7 +11323,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 11322 "configure"
+#line 11326 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13663,11 +13667,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13666: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13670: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13670: \$? = $ac_status" >&5
+   echo "$as_me:13674: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -13767,11 +13771,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13770: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13774: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13774: \$? = $ac_status" >&5
+   echo "$as_me:13778: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15337,11 +15341,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15340: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15344: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15344: \$? = $ac_status" >&5
+   echo "$as_me:15348: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15441,11 +15445,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15444: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15448: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15448: \$? = $ac_status" >&5
+   echo "$as_me:15452: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17648,11 +17652,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17651: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17655: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17655: \$? = $ac_status" >&5
+   echo "$as_me:17659: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17916,11 +17920,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17919: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17923: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17923: \$? = $ac_status" >&5
+   echo "$as_me:17927: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -18020,11 +18024,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:18023: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:18027: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:18027: \$? = $ac_status" >&5
+   echo "$as_me:18031: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -21268,6 +21272,118 @@ if test "$coin_has_coinutils" = yes ; then
 
 
 subdirs="$subdirs CoinUtils"
+
+  fi
+fi
+
+
+echo "$as_me:$LINENO: checking whether source of project Clp is available and should be compiled" >&5
+echo $ECHO_N "checking whether source of project Clp is available and should be compiled... $ECHO_C" >&6
+
+coin_has_clp=notGiven
+coin_reason=
+
+# check if user wants to skip project in any case
+
+if test x"$COIN_SKIP_PROJECTS" != x; then
+  for dir in $COIN_SKIP_PROJECTS; do
+    if test $dir = "Clp"; then
+      coin_has_clp="no"
+      coin_reason="Clp has been specified in COIN_SKIP_PROJECTS"
+    fi
+
+  done
+fi
+
+if test "$coin_has_clp" != no; then
+
+# Check whether --with-m4_tolower(Clp) or --without-m4_tolower(Clp) was given.
+if test "${with_clp+set}" = set; then
+  withval="$with_clp"
+  if test "$withval" = no ; then
+       coin_has_clp="no"
+       coin_reason="--without-clp has been specified"
+     fi
+
+fi;
+fi
+
+if test "$coin_has_clp" != no; then
+
+# Check whether --with-m4_tolower(Clp)-lib or --without-m4_tolower(Clp)-lib was given.
+if test "${with_clp_lib+set}" = set; then
+  withval="$with_clp_lib"
+  if test "$withval" = no ; then
+       coin_has_clp="no"
+       coin_reason="--without-clp-lib has been specified"
+     else
+       coin_has_clp="no"
+       coin_reason="--with-clp-lib has been specified"
+     fi
+fi;
+fi
+
+if test "$coin_has_clp" != no; then
+
+# Check whether --with-m4_tolower(Clp)-incdir or --without-m4_tolower(Clp)-incdir was given.
+if test "${with_clp_incdir+set}" = set; then
+  withval="$with_clp_incdir"
+  if test "$withval" = no ; then
+       coin_has_clp="no"
+       coin_reason="--without-clp-incdir has been specified"
+     else
+       coin_has_clp="no"
+       coin_reason="--with-clp-incdir has been specified"
+     fi
+fi;
+fi
+
+if test "$coin_has_clp" != no; then
+
+# Check whether --with-m4_tolower(Clp)-datadir or --without-m4_tolower(Clp)-datadir was given.
+if test "${with_clp_datadir+set}" = set; then
+  withval="$with_clp_datadir"
+  if test "$withval" = no ; then
+       coin_has_clp="no"
+       coin_reason="--without-clp-datadir has been specified"
+     else
+       coin_has_clp="no"
+       coin_reason="--with-clp-datadir has been specified"
+     fi
+fi;
+fi
+
+
+
+
+
+# check if project is available in present directory
+if test "$coin_has_clp" = notGiven; then
+  coin_has_clp=no
+  if test -d $srcdir/Clp; then
+    coin_reason="source in Clp"
+    # If a third argument is given, then we have to check if one one the files given in that third argument is present.
+    # If none of the files in the third argument is available, then we consider the project directory as non-existing.
+    # However, if no third argument is given, then this means that there should be no check, and existence of the directory is sufficient.
+     coin_has_clp="yes"
+
+  fi
+fi
+
+if test -z "$coin_reason" ; then
+  echo "$as_me:$LINENO: result: $coin_has_clp" >&5
+echo "${ECHO_T}$coin_has_clp" >&6
+else
+  echo "$as_me:$LINENO: result: $coin_has_clp, $coin_reason" >&5
+echo "${ECHO_T}$coin_has_clp, $coin_reason" >&6
+fi
+
+if test "$coin_has_clp" = yes ; then
+  if test -r $srcdir/Clp/configure; then
+    coin_subdirs="$coin_subdirs Clp"
+
+
+subdirs="$subdirs Clp"
 
   fi
 fi

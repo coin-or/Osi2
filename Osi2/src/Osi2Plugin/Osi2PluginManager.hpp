@@ -4,51 +4,115 @@
 
 #include <vector>
 #include <map>
-#include Osi2Plugin.hpp"
+#include "Osi2Plugin.hpp"
 
-class DynamicLibrary;
-struct IObjectAdapter;
+class Osi2DynamicLibrary ;
 
-class PluginManager
+struct IObjectAdapter ;
+
+class Osi2PluginManager
 {
-  typedef std::map<std::string, boost::shared_ptr<DynamicLibrary> > DynamicLibraryMap; 
-  typedef std::vector<PF_ExitFunc> ExitFuncVec;  
-  typedef std::vector<PF_RegisterParams> RegistrationVec; 
 
-public:   
-  typedef std::map<std::string, PF_RegisterParams> RegistrationMap;
+  typedef std::map<std::string,Osi2DynamicLibrary*> DynamicLibraryMap ;
+  typedef std::vector<Osi2_ExitFunc> ExitFuncVec ;
+  typedef std::vector<Osi2_RegisterParams> RegistrationVec ;
 
-  static PluginManager & getInstance();
-  static apr_int32_t initializePlugin(PF_InitFunc initFunc);
-  apr_int32_t loadAll(const std::string & pluginDirectory, PF_InvokeServiceFunc func = NULL);
-  apr_int32_t loadByPath(const std::string & path);
+  public:
 
-  void * createObject(const std::string & objectType, IObjectAdapter & adapter);
+  typedef std::map<std::string,Osi2_RegisterParams> RegistrationMap ;
 
-  apr_int32_t shutdown();  
-  static apr_int32_t registerObject(const apr_byte_t * nodeType, 
-                                    const PF_RegisterParams * params);
-  const RegistrationMap & getRegistrationMap();
-  PF_PlatformServices & getPlatformServices();
+  /*! \brief Get a pointer to the plugin manager
+
+    Returns a pointer to the single instance of the plugin manager.
+  */
+  static Osi2PluginManager &getInstance() ;
+
+  /*! \brief Shut down the plugin manager
+
+    Will invoke the exit method for all plugins, then shut down the plugin
+    manager.
+  */
+  int32_t shutdown() ;
+
+  /*! \brief Scan a directory and load all plugins
+
+    Currently unimplemented until we can create platform-independent file
+    system support.
+  */
+  int32_t loadAll(const std::string &pluginDirectory,
+		  Osi2_InvokeServiceFunc func = NULL) ;
+
+  /*! \brief Load the specified plugin
+
+    Should deal with things like symbolic links but that function is
+    currently disabled pending file system support.
+  */
+  int32_t loadByPath(const std::string & path) ;
+
+  /*! \brief Initialise a plugin
+
+    Invokes the plugin's initialisation method
+  */
+  static int32_t initializePlugin(Osi2_InitFunc initFunc) ;
+
+  /*! \brief Register an object type with the plugin manager
+
+    Invoked by plugins to register the objects they can create.
+  */
+  static int32_t registerObject(const uint8_t *nodeType,
+                                const Osi2_RegisterParams *params) ;
+
+  /// Get the plugin registration map
+  const RegistrationMap &getRegistrationMap() ;
+
+  /// Get the services provided by the plugin manager
+  Osi2_PlatformServices &getPlatformServices() ;
+
+
+  /*! \brief Invoked by application to create an object
+
+    Plugins register the objects they can create. This method is invoked by the
+    application to request an object. The pointer returned must be cast to
+    the appropriate type.
+
+    An explanation of adapter is needed somewhere.
+  */
+  void *createObject(const std::string &objectType, IObjectAdapter &adapter) ;
 
 private:
-  ~PluginManager();    
-  PluginManager();
-  PluginManager(const PluginManager &);
-  
-  DynamicLibrary * loadLibrary(const std::string & path, std::string & errorString);
-private:
-  bool                inInitializePlugin_;
-  PF_PlatformServices platformServices_;
-  DynamicLibraryMap   dynamicLibraryMap_;
-  ExitFuncVec         exitFuncVec_;
 
-  RegistrationMap     tempExactMatchMap_;   // register exact-match object types 
+  /*! \name Constructors and Destructors
+
+    Private because the plugin manager should be a single static instance.
+  */
+  //@{
+  /// Default constructor
+  Osi2PluginManager() ;
+  /// Copy constructor
+  Osi2PluginManager(const Osi2PluginManager &pm) ;
+  /// Destructor
+  ~Osi2PluginManager() ;
+  //@}
+
+  /*! \brief Load a dynamic library
+
+    The underlying worker method; this is where the actual business of loading
+    is performed. Assumes that any necessary preprocessing of the path has been
+    performed.
+  */
+  Osi2DynamicLibrary *loadLibrary(const std::string &path,
+				  std::string & errorString) ;
+private:
+  bool                inInitializePlugin_ ;
+  Osi2_PlatformServices platformServices_ ;
+  DynamicLibraryMap   dynamicLibraryMap_ ;
+  ExitFuncVec         exitFuncVec_ ;
+
+  RegistrationMap     tempExactMatchMap_;   // register exact-match object types
   RegistrationVec     tempWildCardVec_;     // wild card ('*') object types
 
-  RegistrationMap     exactMatchMap_;   // register exact-match object types 
+  RegistrationMap     exactMatchMap_;   // register exact-match object types
   RegistrationVec     wildCardVec_;     // wild card ('*') object types
-};
-
+} ;
 
 #endif

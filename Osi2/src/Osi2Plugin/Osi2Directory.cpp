@@ -1,5 +1,11 @@
 #include <string>
 #include <algorithm>
+#include <cerrno>
+#include <unistd.h>
+#if defined(__sun)
+# include <sys/fs/ufs_trans.h>
+#endif
+#include "Osi2PluginBase.hpp"
 #include "Osi2Plugin.hpp"
 #include "Osi2Directory.hpp"
 #include "Osi2Path.hpp"
@@ -20,14 +26,14 @@ namespace Directory
   
   std::string getCWD()
   {
-    char cwd[APR_PATH_MAX];
+    char cwd[PATH_MAX];
   #ifdef WIN32
-    DWORD res = ::GetCurrentDirectoryA(APR_PATH_MAX, cwd);
+    DWORD res = ::GetCurrentDirectoryA(PATH_MAX, cwd);
     CHECK(res > 0) << "Couldn't get current working directory. Error code: " 
       << base::getErrorMessage();
   #else
     cwd[0] = '\0';
-    char * res = ::getcwd(cwd, APR_PATH_MAX);
+    char * res = ::getcwd(cwd, PATH_MAX);
     CHECK(res != NULL) << "Couldn't get current working directory. Error code: " << errno;
     
   #endif
@@ -93,8 +99,8 @@ namespace Directory
         removeTree(std::string(fullPath));
       else
       {
-        apr_status_t st = ::apr_file_remove(fullPath, NULL);
-        CHECK(st == APR_SUCCESS) << base::getErrorMessage();
+        int st = ::unlink(fullPath);
+        CHECK(st == 0) << base::getErrorMessage();
       }
     }
     
@@ -110,7 +116,7 @@ namespace Directory
       int res = ::mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
       success = res == 0;
   #endif
-    CHECK(success) << "Faile to create directory. " << base::getErrorMessage();
+    CHECK(success) << "Failed to create directory. " << base::getErrorMessage();
   }
   
   // Create directory recursively (creates parent if doesn't exist)
@@ -148,13 +154,13 @@ namespace Directory
   void Iterator::init(const std::string & path)
   {
     std::string absolutePath = Path::makeAbsolute(path);
-  #ifdef PF_PLATFORM_LINUX
+  #if defined(__GNUC__) || defined(__sun)
     handle_ = ::opendir(absolutePath.c_str());
     CHECK(handle_) << "Can't open directory " << path
                    << ". Error code: "    << errno;
 
   #else
-    apr_status_t res = apr_pool_create(&pool_, NULL);
+    int res = apr_pool_create(&pool_, NULL);
     CHECK(res == 0) << "Can't create pool";
     res = ::apr_dir_open(&handle_, absolutePath.c_str(), pool_);
     CHECK(res == 0) << "Can't open directory " << path
@@ -165,7 +171,7 @@ namespace Directory
   
   Iterator::~Iterator()
   {
-  #ifdef PF_PLATFORM_LINUX
+  #if defined(__GNUC__) || defined(__sun)
     int res = ::closedir(handle_);
     CHECK(res == 0) << "Couldn't close directory." 
                     << " Error code: " << errno;
@@ -181,7 +187,7 @@ namespace Directory
   
   void Iterator::reset()
   {
-  #ifdef PF_PLATFORM_LINUX
+  #if defined(__GNUC__) || defined(__sun)
     ::rewinddir(handle_);
   #else
     apr_status_t res = ::apr_dir_rewind(handle_);
@@ -191,7 +197,7 @@ namespace Directory
   #endif
   }
 
-#ifdef PF_PLATFORM_LINUX  
+#if defined(__GNUC__) || defined(__sun)
   Entry * Iterator::next(Entry & e)
   {
     errno = 0;

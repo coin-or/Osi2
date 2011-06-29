@@ -57,6 +57,10 @@ AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2Lib])
 if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
+AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2Lib])
+if test $coin_has_clp != yes ; then
+  AC_MSG_ERROR([Required package Clp not available.])
+fi
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
 
@@ -133,6 +137,8 @@ AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 # configuration header file)
 AC_CONFIG_FILES([Makefile
                  test/Makefile
+		 src/Osi2Plugin/Makefile
+		 src/Osi2Shims/Makefile
                  osi2.pc osi2-uninstalled.pc
                  osi2-unittests.pc osi2-unittests-uninstalled.pc])
 
