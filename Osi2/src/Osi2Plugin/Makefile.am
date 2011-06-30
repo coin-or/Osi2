@@ -31,6 +31,9 @@ libOsi2Plugin_la_SOURCES = \
 # This is for libtool
 libOsi2Plugin_la_LDFLAGS = $(LT_LDFLAGS)
 
+# And we need the dynamic link library.
+libOsi2Plugin_la_LIBADD = -ldl
+
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS)
 

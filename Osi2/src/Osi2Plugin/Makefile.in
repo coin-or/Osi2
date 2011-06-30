@@ -56,7 +56,7 @@ CONFIG_HEADER = $(top_builddir)/src/Osi2/config.h \
 	$(top_builddir)/src/Osi2/config_osi2.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libOsi2Plugin_la_LIBADD =
+libOsi2Plugin_la_DEPENDENCIES =
 am_libOsi2Plugin_la_OBJECTS = Osi2DynamicLibrary.lo Osi2PluginBase.lo \
 	Osi2PluginManager.lo
 libOsi2Plugin_la_OBJECTS = $(am_libOsi2Plugin_la_OBJECTS)
@@ -328,6 +328,9 @@ libOsi2Plugin_la_SOURCES = \
 
 # This is for libtool
 libOsi2Plugin_la_LDFLAGS = $(LT_LDFLAGS)
+
+# And we need the dynamic link library.
+libOsi2Plugin_la_LIBADD = -ldl
 
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS)
