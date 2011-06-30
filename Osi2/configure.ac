@@ -46,6 +46,13 @@ AC_COIN_DEBUG_COMPILE(Osi2)
 # Get the name of the C++ compiler and appropriate compiler options
 AC_COIN_PROG_CXX
 
+# Osi2Plugin uses types defined in cstdint, and these require a compiler flag
+# for acceptance.
+
+if test x"$GXX" = xyes ; then
+  CXXFLAGS="$CXXFLAGS -std=c++0x"
+fi
+
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
 
