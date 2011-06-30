@@ -1,6 +1,8 @@
 
 #include <cstring>
 #include <cassert>
+#include <string>
+#include <iostream>
 
 /*
   #include "Osi2Directory.hpp"

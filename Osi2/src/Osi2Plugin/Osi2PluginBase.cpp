@@ -1,5 +1,7 @@
 
 #include <errno.h>
+#include <string>
+#include <cstring>
 #include "Osi2PluginBase.hpp"
 
 namespace base
