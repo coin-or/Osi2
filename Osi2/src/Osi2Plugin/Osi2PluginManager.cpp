@@ -12,6 +12,12 @@
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
 
+#ifndef OSI2PLUGINDIR
+# define OSI2DFLTPLUGINDIR "/usr/local/lib"
+#else
+# define OSI2DFLTPLUGINDIR OSI2PLUGINDIR
+#endif
+
 #if defined(Osi2_PLATFORM_MAC)
   static std::string dynamicLibraryExtension("dylib") ;
 #elif defined(Osi2_PLATFORM_LINUX)
@@ -145,6 +151,7 @@ int32_t Osi2PluginManager::initializePlugin (Osi2_InitFunc initFunc)
 Osi2PluginManager::Osi2PluginManager()
   : inInitializePlugin_(false)
 {
+  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
   platformServices_.version.major = 1 ;
   platformServices_.version.minor = 0 ;
   platformServices_.invokeService = NULL ; // can be populated during loadAll()

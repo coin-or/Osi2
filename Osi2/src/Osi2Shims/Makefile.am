@@ -24,6 +24,9 @@ libOsi2ClpShim_la_SOURCES = \
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 
+# Make sure the dynamic library includes the necessary dependencies
+libOsi2ClpShim_la_LIBADD = $(libdir)/libOsi2Plugin.la
+
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) -I$(srcdir)/../Osi2Plugin
 

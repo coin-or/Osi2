@@ -29,10 +29,15 @@ public:
   */
   void *getSymbol(const std::string &name) ;
 
+  /// Get the default plugin directory
+  inline std::string getDfltPluginDir() { return (dfltPluginDir_) ; }
+  /// Set the default plugin directory
+  inline void setDfltPluginDir(std::string dfltDir)
+  { dfltPluginDir_ = dfltDir ; }
 
   /// Destructor
   ~Osi2DynamicLibrary() ;
-  
+
 private:
 
   /*! \name Constructors
@@ -56,6 +61,8 @@ private:
   /// Platform-specific dynamic library handle.
   void *handle_;  
 
+  /// Default plugin directory
+  std::string dfltPluginDir_ ;
 } ;
 
 #endif

@@ -64,7 +64,7 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libOsi2ClpShim_la_LIBADD =
+libOsi2ClpShim_la_DEPENDENCIES = $(libdir)/libOsi2Plugin.la
 am_libOsi2ClpShim_la_OBJECTS = Osi2ClpShim.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -321,6 +321,9 @@ libOsi2ClpShim_la_SOURCES = \
 
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
+
+# Make sure the dynamic library includes the necessary dependencies
+libOsi2ClpShim_la_LIBADD = $(libdir)/libOsi2Plugin.la
 
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) -I$(srcdir)/../Osi2Plugin

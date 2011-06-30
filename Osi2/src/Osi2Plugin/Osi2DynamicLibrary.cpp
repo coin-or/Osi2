@@ -8,9 +8,17 @@
 #include <sstream>
 #include <iostream>
 
+#ifndef OSI2PLUGINDIR
+# define OSI2DFLTPLUGINDIR "/usr/local/lib"
+#else
+# define OSI2DFLTPLUGINDIR OSI2PLUGINDIR
+#endif
+
 Osi2DynamicLibrary::Osi2DynamicLibrary (void *handle)
   : handle_(handle)
-{ }
+{ 
+  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
+}
 
 Osi2DynamicLibrary::~Osi2DynamicLibrary ()
 {

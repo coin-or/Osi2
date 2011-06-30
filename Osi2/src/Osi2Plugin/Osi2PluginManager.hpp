@@ -34,6 +34,12 @@ class Osi2PluginManager
   */
   int32_t shutdown() ;
 
+  /// Get the default plugin directory
+  inline std::string getDfltPluginDir() { return (dfltPluginDir_) ; }
+  /// Set the default plugin directory
+  inline void setDfltPluginDir(std::string dfltDir)
+  { dfltPluginDir_ = dfltDir ; }
+
   /*! \brief Scan a directory and load all plugins
 
     Currently unimplemented until we can create platform-independent file
@@ -113,6 +119,10 @@ private:
 
   RegistrationMap     exactMatchMap_;   // register exact-match object types
   RegistrationVec     wildCardVec_;     // wild card ('*') object types
+
+  /// Default plugin directory
+  std::string dfltPluginDir_ ;
+
 } ;
 
 #endif

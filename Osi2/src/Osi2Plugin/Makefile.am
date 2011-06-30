@@ -14,7 +14,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Name of the library compiled in this directory.  We don't want it
 # installed since it will be collected into libOsi2.
-noinst_LTLIBRARIES = libOsi2Plugin.la
+lib_LTLIBRARIES = libOsi2Plugin.la
 
 # List all source files for this library, including headers
 # As a first cut, to avoid having to translate directory traversal and file
@@ -35,7 +35,7 @@ libOsi2Plugin_la_LDFLAGS = $(LT_LDFLAGS)
 libOsi2Plugin_la_LIBADD = -ldl
 
 # Here list all include flags.
-AM_CPPFLAGS = $(COINUTILS_CFLAGS)
+AM_CPPFLAGS = $(COINUTILS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
