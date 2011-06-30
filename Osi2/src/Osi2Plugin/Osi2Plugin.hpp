@@ -60,6 +60,7 @@ typedef int32_t (*Osi2_InvokeServiceFunc)(const uint8_t *serviceName,
 typedef struct Osi2_PlatformServices
 {
   Osi2_PluginAPI_Version version ;
+  const uint8_t *dfltPluginDir ;
   Osi2_RegisterFunc registerObject; 
   Osi2_InvokeServiceFunc invokeService; 
 } Osi2_PlatformServices ;

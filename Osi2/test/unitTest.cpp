@@ -17,10 +17,10 @@ int main(int argC, char* argV[])
   Osi2PluginManager &plugMgr = Osi2PluginManager::getInstance() ;
 
   /*
-    Now let's try to load the shim. Hardwire the path for testing.
+    Now let's try to load the shim.
   */
-  std::string clpShimPath =
-      "/cs/mitacs4/Osi2/Coin-Osi2-SunX86/lib/libOsi2ClpShim.so.0" ;
+  std::string dfltDir = plugMgr.getDfltPluginDir() ;
+  std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
   std::string errMsg ;
   Osi2DynamicLibrary *clpShim = Osi2DynamicLibrary::load(clpShimPath,errMsg) ;
   if (clpShim == 0) {

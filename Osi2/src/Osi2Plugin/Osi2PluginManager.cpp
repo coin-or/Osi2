@@ -154,6 +154,8 @@ Osi2PluginManager::Osi2PluginManager()
   dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
   platformServices_.version.major = 1 ;
   platformServices_.version.minor = 0 ;
+  platformServices_.dfltPluginDir =
+    reinterpret_cast<const uint8_t*>(dfltPluginDir_.c_str()) ;
   platformServices_.invokeService = NULL ; // can be populated during loadAll()
   platformServices_.registerObject = registerObject ;
 }

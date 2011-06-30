@@ -94,9 +94,10 @@ Osi2_ExitFunc initPlugin (const Osi2_PlatformServices *services)
   Attempt to load clp.
 */
   std::string libClpName = "libClp.so.0" ;
-  std::string libPath = "/cs/mitacs4/Osi2/Coin-Osi2-SunX86/lib/" ;
+  const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir) ;
+  std::string libPath(tmp) ;
   std::string errMsg ;
-  std::string fullPath = libPath+libClpName ;
+  std::string fullPath = libPath+"/"+libClpName ;
   Osi2DynamicLibrary *libClp = Osi2DynamicLibrary::load(fullPath,errMsg) ;
   if (libClp == 0) {
     std::cout
