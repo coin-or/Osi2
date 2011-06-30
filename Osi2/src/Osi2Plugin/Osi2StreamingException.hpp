@@ -5,6 +5,7 @@
 #include <sstream>
 #include <memory>
 #include <stdexcept>
+#include <cstdint>
 
 class StreamingException : public std::runtime_error
 {
