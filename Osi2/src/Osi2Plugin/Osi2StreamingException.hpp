@@ -1,12 +1,17 @@
 #ifndef OSI2_STREAMING_EXCEPTION
 #define OSI2_STREAMING_EXCEPTION
 
-#include <cstdint>
+#include "../Osi2/config.h"
+#if defined(HAVE_CSTDINT)
+# include <cstdint>
+#elif defined(HAVE_STDINT_H)
+# include <stdint.h>
+#endif
+
 #include <iostream>
 #include <sstream>
 #include <memory>
 #include <stdexcept>
-#include <cstdint>
 
 class StreamingException : public std::runtime_error
 {
