@@ -8,12 +8,15 @@
   API.
 */
 
+#include <iostream>
+
 #include "Osi2API.hpp"
 #include "Osi2ControlAPI.hpp"
 #include "Osi2ControlAPI_Imp.hpp"
 
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
+
 
 namespace Osi2 {
 
@@ -26,14 +29,14 @@ namespace Osi2 {
 
   Nothing to do so far.
 */
-ControlAPI_Imp::ControlAPI_Imp () { } ;
+ControlAPI_Imp::ControlAPI_Imp () { }
 
 /*
   Copy constructor
 
   Nothing to do so far.
 */
-ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &original) { } ;
+ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &original) { }
 
 /*
   Assignment
@@ -53,7 +56,7 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 
   Nothing to do so far.
 */
-ControlAPI_Imp::~ControlAPI_Imp () { } ;
+ControlAPI_Imp::~ControlAPI_Imp () { }
 
 /*
   Virtual constructor
