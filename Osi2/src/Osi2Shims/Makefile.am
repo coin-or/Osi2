@@ -25,10 +25,10 @@ libOsi2ClpShim_la_SOURCES = \
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 
 # Make sure the dynamic library includes the necessary dependencies
-libOsi2ClpShim_la_LIBADD = $(libdir)/libOsi2Plugin.la
+libOsi2ClpShim_la_LIBADD = $(OSI2CLPSHIM_LIBS)
 
 # Here list all include flags.
-AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) -I$(srcdir)/../Osi2Plugin
+AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) $(OSI2CLPSHIM_CFLAGS)
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.

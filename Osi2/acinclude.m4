@@ -9888,7 +9888,7 @@ if test $m4_tolower(coin_has_$1) != skipping &&
      ])
   fi
 
-  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
     if test -n "$m4_toupper($1)_CFLAGS" ; then
       AC_MSG_NOTICE([$1 CFLAGS are $m4_toupper($1)_CFLAGS])
     fi

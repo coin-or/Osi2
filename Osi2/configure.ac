@@ -69,6 +69,10 @@ AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2Lib])
 if test $coin_has_clp != yes ; then
   AC_MSG_ERROR([Required package Clp not available.])
 fi
+AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin], [Osi2ClpShim])
+if test $coin_has_osi2plugin != yes ; then
+  AC_MSG_ERROR([Required package Osi2Plugin not available.])
+fi
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
 
