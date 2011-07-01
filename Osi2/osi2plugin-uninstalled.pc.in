@@ -1,0 +1,10 @@
+prefix=@prefix@
+libdir=@ABSBUILDDIR@/src/Osi2Plugin
+
+Name: Osi2Plugin
+Description: COIN-OR Osi2 Plugin management
+URL: https://projects.coin-or.org/Osi2
+Version: @PACKAGE_VERSION@
+Libs: ${libdir}/libOsi2Plugin.la @OSI2PLUGINLIB_PCLIBS@
+Cflags: -I@abs_source_dir@/src/Osi2Plugin -I@ABSBUILDDIR@/src/Osi2Plugin
+Requires: @OSI2PLUGINLIB_PCREQUIRES@

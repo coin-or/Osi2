@@ -149,6 +149,7 @@ AC_CONFIG_FILES([Makefile
 		 src/Osi2/Makefile
 		 src/Osi2Shims/Makefile
                  osi2.pc osi2-uninstalled.pc
+                 osi2plugin.pc osi2plugin-uninstalled.pc
                  osi2-unittests.pc osi2-unittests-uninstalled.pc])
 
 AC_CONFIG_FILES([doxydoc/doxygen.conf])
