@@ -113,9 +113,15 @@ API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
   Check that the solver implements the required API.
 */
   /*
-    Sure. How? Looks to me like we need to return a list of capabilities
-    as part of the registration info for the solver. And we'll need some method
-    to inquire. Or we could define a new capabilities inquiry method.
+    Sure. How? We could return a list of capabilities as part of the
+    registration info for the solver.  Or we could define a new capabilities
+    inquiry method.
+
+    And the decision will be to define an inquiry method that the solver shim
+    should provide. We can pass a list of capabilities in a string, separated
+    by some appropriate delimiter. The solver shim can look at the set of
+    capabilities, decide if it's capable of providing them simultaneously,
+    and return a boolean result.
   */
     
   return (apiPtr) ;
