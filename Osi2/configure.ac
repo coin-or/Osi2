@@ -47,8 +47,9 @@ AC_COIN_DEBUG_COMPILE(Osi2)
 AC_COIN_PROG_CXX
 
 # Osi2Plugin uses types defined in cstdint, and these require a compiler flag
-# for acceptance.
+# for acceptance. We also need to check for cstdint vs. stdint.h
 
+AC_COIN_CHECK_CXX_CHEADER(stdint)
 if test x"$GXX" = xyes ; then
   CXXFLAGS="$CXXFLAGS -std=c++0x"
 fi
@@ -145,6 +146,7 @@ AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 AC_CONFIG_FILES([Makefile
                  test/Makefile
 		 src/Osi2Plugin/Makefile
+		 src/Osi2/Makefile
 		 src/Osi2Shims/Makefile
                  osi2.pc osi2-uninstalled.pc
                  osi2-unittests.pc osi2-unittests-uninstalled.pc])

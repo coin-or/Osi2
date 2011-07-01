@@ -65,8 +65,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/osi2-unittests-uninstalled.pc.in \
 	$(srcdir)/osi2-unittests.pc.in $(srcdir)/osi2.pc.in \
 	$(top_srcdir)/configure $(top_srcdir)/doxydoc/doxygen.conf.in \
-	$(top_srcdir)/src/Osi2/config.h.in \
-	$(top_srcdir)/src/Osi2/config_osi2.h.in AUTHORS INSTALL
+	AUTHORS INSTALL
 @HAVE_EXTERNALS_TRUE@am__append_2 = Dependencies
 @HAVE_EXTERNALS_TRUE@am__append_3 = .Dependencies-stamp
 subdir = .
@@ -101,7 +100,7 @@ pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(pkgconfiglib_DATA)
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = src/Osi2Plugin src/Osi2Shims test
+DIST_SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims test
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -332,7 +331,7 @@ AUTOMAKE_OPTIONS = foreign
 ########################################################################
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = osi2.pc osi2-unittests.pc
-SUBDIRS = src/Osi2Plugin src/Osi2Shims $(am__append_1)
+SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims $(am__append_1)
 
 ########################################################################
 #             Additional files to be included in tarball               #
@@ -391,33 +390,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-
-src/Osi2/config.h: src/Osi2/stamp-h1
-	@if test ! -f $@; then \
-	  rm -f src/Osi2/stamp-h1; \
-	  $(MAKE) src/Osi2/stamp-h1; \
-	else :; fi
-
-src/Osi2/stamp-h1: $(top_srcdir)/src/Osi2/config.h.in $(top_builddir)/config.status
-	@rm -f src/Osi2/stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status src/Osi2/config.h
-$(top_srcdir)/src/Osi2/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
-	cd $(top_srcdir) && $(AUTOHEADER)
-	rm -f src/Osi2/stamp-h1
-	touch $@
-
-src/Osi2/config_osi2.h: src/Osi2/stamp-h2
-	@if test ! -f $@; then \
-	  rm -f src/Osi2/stamp-h2; \
-	  $(MAKE) src/Osi2/stamp-h2; \
-	else :; fi
-
-src/Osi2/stamp-h2: $(top_srcdir)/src/Osi2/config_osi2.h.in $(top_builddir)/config.status
-	@rm -f src/Osi2/stamp-h2
-	cd $(top_builddir) && $(SHELL) ./config.status src/Osi2/config_osi2.h
-
-distclean-hdr:
-	-rm -f src/Osi2/config.h src/Osi2/stamp-h1 src/Osi2/config_osi2.h src/Osi2/stamp-h2
 osi2.pc: $(top_builddir)/config.status $(srcdir)/osi2.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 osi2-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/osi2-uninstalled.pc.in
@@ -591,7 +563,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/BuildTools $(distdir)/doxydoc $(distdir)/src/Osi2
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/BuildTools $(distdir)/doxydoc
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -771,8 +743,8 @@ clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-hdr \
-	distclean-libtool distclean-local distclean-tags
+distclean-am: clean-am distclean-generic distclean-libtool \
+	distclean-local distclean-tags
 
 dvi: dvi-recursive
 
@@ -825,11 +797,11 @@ uninstall-info: uninstall-info-recursive
 	check-am clean clean-generic clean-libtool clean-local \
 	clean-recursive ctags ctags-recursive dist dist-all dist-bzip2 \
 	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-local distclean-recursive distclean-tags \
-	distcleancheck distdir distuninstallcheck dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-data-hook install-exec install-exec-am \
+	distclean-generic distclean-libtool distclean-local \
+	distclean-recursive distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am \
+	install-data-hook install-exec install-exec-am \
 	install-exec-local install-info install-info-am install-man \
 	install-pkgconfiglibDATA install-strip installcheck \
 	installcheck-am installdirs installdirs-am maintainer-clean \
