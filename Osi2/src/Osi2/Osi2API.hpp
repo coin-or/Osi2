@@ -1,13 +1,13 @@
 
 /*
-  Copyright 2011 Matt Saltzman, Lou Hafer
+  Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
 */
 
-#ifndef OsiAPI_HPP
-# define OsiAPI_HPP
+#ifndef Osi2API_HPP
+# define Osi2API_HPP
 
 /// Hedge against C++0x
 const int nullptr = 0 ;

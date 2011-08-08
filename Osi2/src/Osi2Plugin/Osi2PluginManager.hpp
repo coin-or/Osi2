@@ -6,26 +6,28 @@
 #include <map>
 #include "Osi2Plugin.hpp"
 
-class Osi2DynamicLibrary ;
 
+namespace Osi2 {
+
+class DynamicLibrary ;
 struct IObjectAdapter ;
 
-class Osi2PluginManager
+class PluginManager
 {
 
-  typedef std::map<std::string,Osi2DynamicLibrary*> DynamicLibraryMap ;
-  typedef std::vector<Osi2_ExitFunc> ExitFuncVec ;
-  typedef std::vector<Osi2_RegisterParams> RegistrationVec ;
+  typedef std::map<std::string,DynamicLibrary*> DynamicLibraryMap ;
+  typedef std::vector<ExitFunc> ExitFuncVec ;
+  typedef std::vector<RegisterParams> RegistrationVec ;
 
   public:
 
-  typedef std::map<std::string,Osi2_RegisterParams> RegistrationMap ;
+  typedef std::map<std::string,RegisterParams> RegistrationMap ;
 
   /*! \brief Get a pointer to the plugin manager
 
     Returns a pointer to the single instance of the plugin manager.
   */
-  static Osi2PluginManager &getInstance() ;
+  static PluginManager &getInstance() ;
 
   /*! \brief Shut down the plugin manager
 
@@ -46,7 +48,7 @@ class Osi2PluginManager
     system support.
   */
   int32_t loadAll(const std::string &pluginDirectory,
-		  Osi2_InvokeServiceFunc func = NULL) ;
+		  InvokeServiceFunc func = NULL) ;
 
   /*! \brief Load the specified plugin
 
@@ -59,20 +61,20 @@ class Osi2PluginManager
 
     Invokes the plugin's initialisation method
   */
-  static int32_t initializePlugin(Osi2_InitFunc initFunc) ;
+  static int32_t initializePlugin(InitFunc initFunc) ;
 
   /*! \brief Register an object type with the plugin manager
 
     Invoked by plugins to register the objects they can create.
   */
   static int32_t registerObject(const uint8_t *nodeType,
-                                const Osi2_RegisterParams *params) ;
+                                const RegisterParams *params) ;
 
   /// Get the plugin registration map
   const RegistrationMap &getRegistrationMap() ;
 
   /// Get the services provided by the plugin manager
-  Osi2_PlatformServices &getPlatformServices() ;
+  PlatformServices &getPlatformServices() ;
 
 
   /*! \brief Invoked by application to create an object
@@ -93,11 +95,11 @@ private:
   */
   //@{
   /// Default constructor
-  Osi2PluginManager() ;
+  PluginManager() ;
   /// Copy constructor
-  Osi2PluginManager(const Osi2PluginManager &pm) ;
+  PluginManager(const PluginManager &pm) ;
   /// Destructor
-  ~Osi2PluginManager() ;
+  ~PluginManager() ;
   //@}
 
   /*! \brief Load a dynamic library
@@ -106,11 +108,11 @@ private:
     is performed. Assumes that any necessary preprocessing of the path has been
     performed.
   */
-  Osi2DynamicLibrary *loadLibrary(const std::string &path,
+  DynamicLibrary *loadLibrary(const std::string &path,
 				  std::string & errorString) ;
 private:
   bool                inInitializePlugin_ ;
-  Osi2_PlatformServices platformServices_ ;
+  PlatformServices platformServices_ ;
   DynamicLibraryMap   dynamicLibraryMap_ ;
   ExitFuncVec         exitFuncVec_ ;
 
@@ -125,4 +127,5 @@ private:
 
 } ;
 
+}  // end namespace Osi2
 #endif

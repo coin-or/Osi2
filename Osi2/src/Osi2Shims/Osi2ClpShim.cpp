@@ -1,6 +1,6 @@
 
 /*
-  Method definitions for Osi2ClpShim.
+  Method definitions for ClpShim.
 
   $Id$
 */
@@ -13,11 +13,12 @@
 
 #include "Osi2DynamicLibrary.hpp"
 
+using namespace Osi2 ;
 
 /*
   Default constructor.
 */
-Osi2ClpShim::Osi2ClpShim ()
+ClpShim::ClpShim ()
   : services_(0),
     libClp_(0),
     verbosity_(1)
@@ -31,7 +32,7 @@ typedef void *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
   Create clp-specific objects to satisfy the Osi2 API specified as the
   \p objectType member of of \p params.
 */
-void *Osi2ClpShim::create (Osi2_ObjectParams *params)
+void *ClpShim::create (ObjectParams *params)
 {
   std::string what = reinterpret_cast<const char *>(params->objectType) ;
   void *retval = 0 ;
@@ -41,8 +42,8 @@ void *Osi2ClpShim::create (Osi2_ObjectParams *params)
   if (what == "ClpSimplex") {
     std::cout
       << "Request to create ClpSimplex recognised." << std::endl ;
-    Osi2ClpShim *shim = static_cast<Osi2ClpShim*>(params->client) ;
-    Osi2DynamicLibrary *libClp = shim->libClp_ ;
+    ClpShim *shim = static_cast<ClpShim*>(params->client) ;
+    DynamicLibrary *libClp = shim->libClp_ ;
     ClpFactory factory =
       reinterpret_cast<ClpFactory>(libClp->getSymbol("Clp_newModel")) ;
     if (factory == 0) {
@@ -71,7 +72,7 @@ void *Osi2ClpShim::create (Osi2_ObjectParams *params)
 
   Hmmm ... how to keep track when we have no apparent object?
 */
-int32_t Osi2ClpShim::cleanup (void *params)
+int32_t ClpShim::cleanup (void *params)
 {
   return (0) ;
 }
@@ -84,11 +85,11 @@ int32_t Osi2ClpShim::cleanup (void *params)
   be called before the plugin is unloaded.
 */
 extern "C"
-Osi2_ExitFunc initPlugin (const Osi2_PlatformServices *services)
+ExitFunc initPlugin (const PlatformServices *services)
 {
   std::string version = CLP_VERSION ;
   std::cout
-    << "Executing Osi2ClpShim::initPlugin, clp version "
+    << "Executing ClpShim::initPlugin, clp version "
     << version << "." << std::endl ;
 /*
   Attempt to load clp.
@@ -98,7 +99,7 @@ Osi2_ExitFunc initPlugin (const Osi2_PlatformServices *services)
   std::string libPath(tmp) ;
   std::string errMsg ;
   std::string fullPath = libPath+"/"+libClpName ;
-  Osi2DynamicLibrary *libClp = Osi2DynamicLibrary::load(fullPath,errMsg) ;
+  DynamicLibrary *libClp = DynamicLibrary::load(fullPath,errMsg) ;
   if (libClp == 0) {
     std::cout
       << "Apparent failure opening " << fullPath << "." << std::endl ;
@@ -108,13 +109,13 @@ Osi2_ExitFunc initPlugin (const Osi2_PlatformServices *services)
   }
 /*
   Arrange to remember the handle to libClp, and in general remember what we're
-  doing with an Osi2ClpShim object. Stash the handle for libClp in the
-  Osi2ClpShim, then stash a pointer to the shim in Osi2_RegisterParams. This
+  doing with an ClpShim object. Stash the handle for libClp in the
+  ClpShim, then stash a pointer to the shim in RegisterParams. This
   allows the plugin manager to hand back the shim object with each call, which
   in turn allows us to remember what we're doing.
 */
-  Osi2_RegisterParams reginfo ;
-  Osi2ClpShim *shim = new Osi2ClpShim() ;
+  RegisterParams reginfo ;
+  ClpShim *shim = new ClpShim() ;
   shim->setLibClp(libClp) ;
   reginfo.client = static_cast<void*>(shim) ;
 /*
@@ -123,9 +124,9 @@ Osi2_ExitFunc initPlugin (const Osi2_PlatformServices *services)
 */
   reginfo.version.major = 1 ;
   reginfo.version.minor = CLP_VERSION_MINOR ;
-  reginfo.lang = Osi2_Plugin_CPP ;
-  reginfo.createFunc = Osi2ClpShim::create ;
-  reginfo.destroyFunc = Osi2ClpShim::cleanup ;
+  reginfo.lang = Plugin_CPP ;
+  reginfo.createFunc = ClpShim::create ;
+  reginfo.destroyFunc = ClpShim::cleanup ;
   int retval =
       services->registerObject(reinterpret_cast<const unsigned char*>("ClpSimplex"),
 			       &reginfo) ;

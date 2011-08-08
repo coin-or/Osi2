@@ -14,13 +14,15 @@
 # define OSI2DFLTPLUGINDIR OSI2PLUGINDIR
 #endif
 
-Osi2DynamicLibrary::Osi2DynamicLibrary (void *handle)
+namespace Osi2 {
+
+DynamicLibrary::DynamicLibrary (void *handle)
   : handle_(handle)
 { 
   dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
 }
 
-Osi2DynamicLibrary::~Osi2DynamicLibrary ()
+DynamicLibrary::~DynamicLibrary ()
 {
   if (handle_)
   {
@@ -32,7 +34,7 @@ Osi2DynamicLibrary::~Osi2DynamicLibrary ()
   }
 }
 
-Osi2DynamicLibrary *Osi2DynamicLibrary::load (const std::string &name, 
+DynamicLibrary *DynamicLibrary::load (const std::string &name, 
 					      std::string &errorString)
 {
   if (name.empty()) {
@@ -64,10 +66,10 @@ Osi2DynamicLibrary *Osi2DynamicLibrary::load (const std::string &name,
   }
 # endif
 
-  return new Osi2DynamicLibrary(handle) ;
+  return new DynamicLibrary(handle) ;
 }
 
-void *Osi2DynamicLibrary::getSymbol(const std::string &symbol)
+void *DynamicLibrary::getSymbol(const std::string &symbol)
 {
   if (!handle_) return (0) ;
   
@@ -77,4 +79,6 @@ void *Osi2DynamicLibrary::getSymbol(const std::string &symbol)
     return ::dlsym(handle_,symbol.c_str()) ;
   #endif
 }
+
+}  // end namespace Osi2
 

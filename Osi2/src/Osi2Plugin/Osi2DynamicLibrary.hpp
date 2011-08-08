@@ -3,11 +3,13 @@
 
 #include <string>
 
+namespace Osi2 {
+
 /*! \brief
 
   A class to manage dynamic library load and unload.
 */
-class Osi2DynamicLibrary
+class DynamicLibrary
 {
 
 public:
@@ -15,11 +17,11 @@ public:
   /*! \brief Load a plugin
 
     This method will load the plugin specified in \p path. If successful, it
-    will return a pointer to an Osi2DynamicLibrary object for the plugin. If
+    will return a pointer to an DynamicLibrary object for the plugin. If
     unsuccessful, it will return null and \p errorString will be loaded with an
     error message.
   */
-  static Osi2DynamicLibrary *load(const std::string &path, 
+  static DynamicLibrary *load(const std::string &path, 
 				  std::string &errorString) ;
 
   /* \brief Load a symbol
@@ -36,7 +38,7 @@ public:
   { dfltPluginDir_ = dfltDir ; }
 
   /// Destructor
-  ~Osi2DynamicLibrary() ;
+  ~DynamicLibrary() ;
 
 private:
 
@@ -48,14 +50,14 @@ private:
   */
   //@{
   /// Default constructor
-  Osi2DynamicLibrary() ;
+  DynamicLibrary() ;
   /*! \brief Constructor from dynamic library handle
 
     The parameter is be the platform-specific dynamic library handle.
   */
-  Osi2DynamicLibrary(void *handle) ;
+  DynamicLibrary(void *handle) ;
   /// Copy constructor
-  Osi2DynamicLibrary(const Osi2DynamicLibrary &dynlib) ;
+  DynamicLibrary(const DynamicLibrary &dynlib) ;
   //@}
   
   /// Platform-specific dynamic library handle.
@@ -65,4 +67,5 @@ private:
   std::string dfltPluginDir_ ;
 } ;
 
+}  // end namespace Osi2
 #endif

@@ -6,6 +6,8 @@
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
+
+using namespace Osi2 ;
   
 int main(int argC, char* argV[])
 {
@@ -14,7 +16,7 @@ int main(int argC, char* argV[])
 
   std::cout << "Instantiating PluginManager." << std::endl ;
 
-  Osi2PluginManager &plugMgr = Osi2PluginManager::getInstance() ;
+  PluginManager &plugMgr = PluginManager::getInstance() ;
 
   /*
     Now let's try to load the shim.
@@ -22,7 +24,7 @@ int main(int argC, char* argV[])
   std::string dfltDir = plugMgr.getDfltPluginDir() ;
   std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
   std::string errMsg ;
-  Osi2DynamicLibrary *clpShim = Osi2DynamicLibrary::load(clpShimPath,errMsg) ;
+  DynamicLibrary *clpShim = DynamicLibrary::load(clpShimPath,errMsg) ;
   if (clpShim == 0) {
     std::cout
       << "Apparent failure opening " << clpShimPath << "." << std::endl ;
@@ -33,8 +35,8 @@ int main(int argC, char* argV[])
   /*
     Now let's see if we can invoke the init method
   */
-  Osi2_InitFunc initFunc =
-    reinterpret_cast<Osi2_InitFunc>(clpShim->getSymbol("initPlugin")) ;
+  InitFunc initFunc =
+    reinterpret_cast<InitFunc>(clpShim->getSymbol("initPlugin")) ;
   if (initFunc == 0) {
     std::cout
       << "Apparent failure to obtain the init method." << std::endl ;

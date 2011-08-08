@@ -1,6 +1,18 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
 
-#ifndef OSI2PLUGIN_H
-#define OSI2PLUGIN_H
+  Based on original design and code by Gigi Sayfan published in five parts
+  in Dr. Dobbs, starting November 2007.
+*/
+/*! \file Osi2Plugin.hpp
+    \brief Type definitions for the Osi2 plugin manager.
+
+  This file contains the type definitions (types, structures, enums) used by
+  the plugin framework.
+*/
+#ifndef Osi2Plugin_HPP
+#define Osi2Plugin_HPP
 
 #include <stdint.h>
 
@@ -8,28 +20,16 @@
 extern "C" {
 #endif
 
-typedef enum Osi2_PluginLang
-{ Osi2_Plugin_C, Osi2_Plugin_CPP } Osi2_PluginLang ;
- 
-struct Osi2_PlatformServices ;
+namespace Osi2 {
 
-typedef struct Osi2_ObjectParams
-{
-  const uint8_t *objectType ;
-  const struct Osi2_PlatformServices *platformServices ;
-  void *client ;
-} Osi2_ObjectParams ;
+// Forward declarations
+struct PlatformServices ;
 
-typedef struct Osi2_PluginAPI_Version
-{
-  int32_t major ;
-  int32_t minor ;
-} Osi2_PluginAPI_Version ;
+/// Languages (C, C++) supported by the plugin framework.
+typedef enum PluginLang
+{ Plugin_C, Plugin_CPP } PluginLang ;
 
-typedef void *(*Osi2_CreateFunc)(Osi2_ObjectParams *parms) ;
-typedef int32_t (*Osi2_DestroyFunc)(void *parms) ;
-
-/*! \brief The plugin client object
+/*! \brief A plugin client object
 
   The plugin client object is responsible for keeping track of whatever state
   is necessary to manage the underlying solver and factories that return
@@ -40,38 +40,104 @@ typedef int32_t (*Osi2_DestroyFunc)(void *parms) ;
   functions an explicit pointer to an instance of their class which they can
   use to keep state.
 */
-typedef void* Osi2_PluginClient ;
+typedef void* PluginClient ;
 
-typedef struct Osi2_RegisterParams
+/*! \brief Parameters passed to a plugin for object creation and destruction.
+
+  The functions to create and destroy an object are static methods, but for
+  plugins capable of providing multiple APIs it may be useful to pass a
+  pointer to the plugin object.
+*/
+typedef struct ObjectParams
 {
-  Osi2_PluginAPI_Version version ;
-  Osi2_CreateFunc createFunc ;
-  Osi2_DestroyFunc destroyFunc ;
-  Osi2_PluginLang lang ;
-  Osi2_PluginClient client ;
-} Osi2_RegisterParams ;
+  /// Character string specifying the API(s) to be supplied
+  const uint8_t *objectType ;
+  /*! \brief Services provided by the plugin manager
 
+    See Osi2::PlatformServices.
+  */
+  const struct PlatformServices *platformServices ;
+  /// Pointer to the plugin object
+  PluginClient client ;
+} ObjectParams ;
 
-typedef int32_t (*Osi2_RegisterFunc)(const uint8_t *nodeType,
-				     const Osi2_RegisterParams *params) ;
-typedef int32_t (*Osi2_InvokeServiceFunc)(const uint8_t *serviceName,
+/// Plugin manager API version number
+typedef struct PluginAPIVersion
+{
+  int32_t major ;
+  int32_t minor ;
+} PluginAPIVersion ;
+
+/*! \brief Constructor for a plugin object
+
+  This method is provided by the plugin and invoked to create instances of
+  objects (APIs) supported by the plugin.
+*/
+typedef void *(*CreateFunc)(ObjectParams *parms) ;
+/*! \brief Destructor for a plugin object
+
+  This method is provided by the plugin and invoked to destroy instances of
+  objects (APIs) supplied by the plugin.
+*/
+typedef int32_t (*DestroyFunc)(void *parms) ;
+
+/*! \brief Parameters required to register an API with the plugin manager
+
+  The plugin supplies this structure when it registers with the plugin
+  manager.
+*/
+typedef struct RegisterParams
+{
+  /// Plugin manager API expected by the plugin
+  PluginAPIVersion version ;
+  /// Constructor for API being registered
+  CreateFunc createFunc ;
+  /// Destructor for API being registered
+  DestroyFunc destroyFunc ;
+  PluginLang lang ;
+  PluginClient client ;
+} RegisterParams ;
+
+/*! \brief Function invoked by the plugin to register an API type.
+
+  The plugin should invoke this function for each API that it can provide.
+*/
+typedef int32_t (*RegisterFunc)(const uint8_t *nodeType,
+				     const RegisterParams *params) ;
+/*! \brief Function to allow the plugin to invoke services provided by the
+	   plugin manager.
+*/
+typedef int32_t (*InvokeServiceFunc)(const uint8_t *serviceName,
 					  void * serviceParams) ;
 
-typedef struct Osi2_PlatformServices
+/*! \brief Attributes and methods provided by the plugin framework for use
+	   by plugins.
+*/
+typedef struct PlatformServices
 {
-  Osi2_PluginAPI_Version version ;
+  /// Plugin manager version
+  PluginAPIVersion version ;
+  /// Default directory to search for plugins
   const uint8_t *dfltPluginDir ;
-  Osi2_RegisterFunc registerObject; 
-  Osi2_InvokeServiceFunc invokeService; 
-} Osi2_PlatformServices ;
+  /// Method to register an object supported by the plugin
+  RegisterFunc registerObject; 
+  /*! \brief Method to allow the plugin to invoke a service provided by the
+  	     plugin manager.
+  */
+  InvokeServiceFunc invokeService; 
+} PlatformServices ;
 
+/*! \brief Type definition of the plugin exit function
 
-typedef int32_t (*Osi2_ExitFunc)() ;
+  Called by the plugin manager to tell the plugin to clean up in preparation
+  for unloading by the plugin manager.
+*/
+typedef int32_t (*ExitFunc)() ;
 
-/*! \brief Type definition of the #Osi2_initPlugin function below (used by
+/*! \brief Type definition of the #initPlugin function below (used by
 	   PluginManager to initialize plugins).
   
-  Note the return type is the #Osi2_ExitFunc (used by PluginManager to tell
+  Note the return type is the #ExitFunc (used by PluginManager to tell
   plugins to cleanup). If the initialization failed for any reason the plugin
   may report the error via the error reporting function of the provided
   platform services. Nevertheless, it must return NULL exit func in this case
@@ -79,43 +145,25 @@ typedef int32_t (*Osi2_ExitFunc)() ;
   plugin may use the runtime services - allocate memory, log messages and of
   course register node types.
  
-  \param  [const Osi2_PlatformServices *] params - the platform services struct 
-  \retval [Osi2_ExitFunc] the exit func of the plugin or NULL if
-			  initialization failed.
+  \param services The platform services structure 
+  \returns The exit function of the plugin, or NULL if initialization fails.
  */
-typedef Osi2_ExitFunc (*Osi2_InitFunc)(const Osi2_PlatformServices *services) ;
+typedef ExitFunc (*InitFunc)(const PlatformServices *services) ;
 
-/** 
- * Named exported entry point into the plugin
- * This definition is required eventhough the function 
- * is loaded from a dynamic library by name
- * and casted to Osi2_InitFunc. If this declaration is 
- * commented out DynamicLibrary::getSymbol() fails
- *
- * The plugin's initialization function MUST be called "Osi2_initPlugin"
- * (and conform to the signature of course).
- *
- * @param  [const Osi2_PlatformServices *] params - the platform services struct 
- * @retval [Osi2_ExitFunc] the exit func of the plugin or NULL if initialization failed.
+/*! \brief Function to initialise the plugin 
+ 
+  Should do whatever initialisation is required once the plugin is loaded.
+
+  \param  params - the platform services struct 
+  \returns The exit function of the plugin or NULL if initialization fails.
  */
+ExitFunc initPlugin(const PlatformServices *params) ;
 
-#ifndef PLUGIN_API
-  #ifdef WIN32
-    #define PLUGIN_API __declspec(dllimport)
-  #else
-    #define PLUGIN_API
-  #endif
-#endif
-
-extern
-#ifdef  __cplusplus
-"C" 
-#endif
-PLUGIN_API Osi2_ExitFunc Osi2_initPlugin(const Osi2_PlatformServices * params) ;
+}  // end namespace Osi2
 
 #ifdef  __cplusplus
 }
 #endif
 
-#endif /* OSI2PLUGIN_H */
+#endif
 

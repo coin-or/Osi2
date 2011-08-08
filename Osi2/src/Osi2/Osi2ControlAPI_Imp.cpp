@@ -1,5 +1,5 @@
 /*
-  Copyright 2011 Matt Saltzman, Lou Hafer
+  Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
@@ -102,7 +102,7 @@ API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
   if (solver.compare("clp") == 0) {
     std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
     std::string errMsg ;
-    Osi2DynamicLibrary *clpShim = Osi2DynamicLibrary::load(clpShimPath,errMsg) ;
+    DynamicLibrary *clpShim = DynamicLibrary::load(clpShimPath,errMsg) ;
     if (clpShim == 0) {
       std::cout
 	<< "Apparent failure opening " << clpShimPath << "." << std::endl ;
@@ -139,10 +139,10 @@ int ControlAPI_Imp::unload (API *api)
 /*
   Utility methods
 */
-Osi2PluginManager *ControlAPI_Imp::findPluginMgr()
+PluginManager *ControlAPI_Imp::findPluginMgr()
 {
   if (pluginMgr_ == nullptr)
-    pluginMgr_ = &Osi2PluginManager::getInstance() ;
+    pluginMgr_ = &PluginManager::getInstance() ;
 
   return (pluginMgr_) ;
 }

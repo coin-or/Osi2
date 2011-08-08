@@ -1,5 +1,5 @@
 /*
-  Copyright 2011 Matt Saltzman, Lou Hafer
+  Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
@@ -26,7 +26,7 @@ public:
   ControlAPI *create() ;
   /// Virtual copy constructor
   ControlAPI *clone() ;
-  /// Virtual destructor
+  /// Destructor
   ~ControlAPI_Imp() ;
   /// Default constructor; \sa #create
   ControlAPI_Imp() ;
@@ -75,9 +75,9 @@ public:
 private:
 
   /// Utility method to find the plugin manager and cache a reference.
-  Osi2PluginManager *findPluginMgr() ;
+  PluginManager *findPluginMgr() ;
   /// Cached reference to plugin manager.
-  Osi2PluginManager *pluginMgr_ ;
+  PluginManager *pluginMgr_ ;
 
 } ;
 
