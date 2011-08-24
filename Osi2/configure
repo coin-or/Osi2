@@ -21812,7 +21812,7 @@ fi;
 
   fi
 
-  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
     if test -n "$COINUTILS_CFLAGS" ; then
       { echo "$as_me:$LINENO: CoinUtils CFLAGS are $COINUTILS_CFLAGS" >&5
 echo "$as_me: CoinUtils CFLAGS are $COINUTILS_CFLAGS" >&6;}
@@ -22328,7 +22328,7 @@ fi;
 
   fi
 
-  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
     if test -n "$CLP_CFLAGS" ; then
       { echo "$as_me:$LINENO: Clp CFLAGS are $CLP_CFLAGS" >&5
 echo "$as_me: Clp CFLAGS are $CLP_CFLAGS" >&6;}
@@ -22383,6 +22383,15 @@ if test $coin_has_clp != yes ; then
 echo "$as_me: error: Required package Clp not available." >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+# The problem: On the first pass through configuration, none of the .pc files
+# exist. But the shim needs this information. Fake it by manually building up
+# the necessary variables. This won't be a problem when (if) the clp shim
+# moves over to the Clp project directory. It's just that all the .pc files are
+# created at the end of this script and we need to get through the first call.
+
+if test -f osi2plugin.pc ; then
+  echo "Found osi2plugin.pc; invoking pkg-config."
 
 echo "$as_me:$LINENO: checking for COIN-OR package Osi2Plugin" >&5
 echo $ECHO_N "checking for COIN-OR package Osi2Plugin... $ECHO_C" >&6
@@ -22844,7 +22853,7 @@ fi;
 
   fi
 
-  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
     if test -n "$OSI2PLUGIN_CFLAGS" ; then
       { echo "$as_me:$LINENO: Osi2Plugin CFLAGS are $OSI2PLUGIN_CFLAGS" >&5
 echo "$as_me: Osi2Plugin CFLAGS are $OSI2PLUGIN_CFLAGS" >&6;}
@@ -22894,11 +22903,34 @@ fi
 
 
 
-if test $coin_has_osi2plugin != yes ; then
-  { { echo "$as_me:$LINENO: error: Required package Osi2Plugin not available." >&5
+  if test $coin_has_osi2plugin != yes ; then
+    { { echo "$as_me:$LINENO: error: Required package Osi2Plugin not available." >&5
 echo "$as_me: error: Required package Osi2Plugin not available." >&2;}
    { (exit 1); exit 1; }; }
+  fi
+else
+  echo "No osi2plugin.pc; faking it."
+
+
+if true; then
+  COIN_HAS_OSI2PLUGIN_TRUE=
+  COIN_HAS_OSI2PLUGIN_FALSE='#'
+else
+  COIN_HAS_OSI2PLUGIN_TRUE='#'
+  COIN_HAS_OSI2PLUGIN_FALSE=
 fi
+
+
+
+  OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
+  OSI2CLPSHIM_CFLAGS=-I$srcdir/src/Osi2Plugin
+  OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$srcdir/src/Osi2Plugin"
+fi
+
+# Hmmmm ... can't use this. We won't write the .pc files until the end of
+# this script!
+
+
 
 echo "$as_me:$LINENO: checking for COIN-OR package Sample" >&5
 echo $ECHO_N "checking for COIN-OR package Sample... $ECHO_C" >&6
@@ -23337,7 +23369,7 @@ fi;
 
   fi
 
-  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
     if test -n "$SAMPLE_CFLAGS" ; then
       { echo "$as_me:$LINENO: Sample CFLAGS are $SAMPLE_CFLAGS" >&5
 echo "$as_me: Sample CFLAGS are $SAMPLE_CFLAGS" >&6;}
@@ -23818,7 +23850,7 @@ fi;
 
   fi
 
-  if test 1 = 1 ; then  #change this test to enable a bit of debugging output
+  if test 1 = 0 ; then  #change this test to enable a bit of debugging output
     if test -n "$NETLIB_CFLAGS" ; then
       { echo "$as_me:$LINENO: Netlib CFLAGS are $NETLIB_CFLAGS" >&5
 echo "$as_me: Netlib CFLAGS are $NETLIB_CFLAGS" >&6;}
@@ -24610,7 +24642,7 @@ fi
 
 # choose a solver interface that can be used in the examples
 
-if test $coin_has_glpk = yes ; then
+if test x$coin_has_glpk = xyes ; then
   OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
   OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
   OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
@@ -26065,6 +26097,13 @@ if test -z "${COIN_HAS_CLP_TRUE}" && test -z "${COIN_HAS_CLP_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"COIN_HAS_CLP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"COIN_HAS_CLP\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${COIN_HAS_OSI2PLUGIN_TRUE}" && test -z "${COIN_HAS_OSI2PLUGIN_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"COIN_HAS_OSI2PLUGIN\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"COIN_HAS_OSI2PLUGIN\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi

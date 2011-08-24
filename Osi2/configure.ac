@@ -69,10 +69,33 @@ AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2Lib])
 if test $coin_has_clp != yes ; then
   AC_MSG_ERROR([Required package Clp not available.])
 fi
-AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin], [Osi2ClpShim])
-if test $coin_has_osi2plugin != yes ; then
-  AC_MSG_ERROR([Required package Osi2Plugin not available.])
+
+# The problem: On the first pass through configuration, none of the .pc files
+# exist. But the shim needs this information. Fake it by manually building up
+# the necessary variables. This won't be a problem when (if) the clp shim
+# moves over to the Clp project directory. It's just that all the .pc files are
+# created at the end of this script and we need to get through the first call.
+
+if test -f osi2plugin.pc ; then
+  echo "Found osi2plugin.pc; invoking pkg-config."
+  AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin], [Osi2ClpShim])
+  if test $coin_has_osi2plugin != yes ; then
+    AC_MSG_ERROR([Required package Osi2Plugin not available.])
+  fi
+else
+  echo "No osi2plugin.pc; faking it."
+  AM_CONDITIONAL(COIN_HAS_OSI2PLUGIN,true)
+  AC_SUBST(OSI2CLPSHIM_LIBS)
+  AC_SUBST(OSI2CLPSHIM_CFLAGS)
+  OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
+  OSI2CLPSHIM_CFLAGS=-I$srcdir/src/Osi2Plugin
+  OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$srcdir/src/Osi2Plugin"
 fi
+
+# Hmmmm ... can't use this. We won't write the .pc files until the end of
+# this script!
+
+
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
 
@@ -96,7 +119,7 @@ AC_COIN_CHECK_USER_LIBRARY([Gurobi],[GRB],[gurobi_c.h],[GRBloadenv])
 
 # choose a solver interface that can be used in the examples
 
-if test $coin_has_glpk = yes ; then
+if test x$coin_has_glpk = xyes ; then
   OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
   OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
   OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
