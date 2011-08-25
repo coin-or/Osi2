@@ -28,60 +28,68 @@
 
 using namespace Osi2 ;
 
-// The registration params may be received from an external plugin so it is 
-// crucial to validate it, because it was never subjected to our tests.
+/*
+  There's no particular reason to trust a plugin, so we need to do some
+  validation of the parameters it gives to the plugin manager.
 
-static bool isValid(const uint8_t *objectType,
-		    const RegisterParams *params)
+  Open question: This is Sayfan's notion of validation. It should be improved
+  as we add parameters.  -- lh, 110825 --
+
+  Why is this static?  -- lh, 110825 --
+*/
+
+static bool isValid (const uint8_t *objectType,
+		     const RegisterParams *params)
 {
   if (!objectType || !(*objectType))
-     return false ;
-  if (!params ||!params->createFunc || !params->destroyFunc)
-    return false ;
+     return (false) ;
+  if (!params || !params->createFunc || !params->destroyFunc)
+    return (false) ;
   
-  return true ;
+  return (true) ;
 }
 
-// ---------------------------------------------------------------
 
 int32_t PluginManager::registerObject (const uint8_t *objectType,
-					   const RegisterParams * params)
+				       const RegisterParams *params)
 {
   // Check parameters
   if (!isValid(objectType, params))
-    return -1 ;
+    return (-1) ;
  
   PluginManager &pm = getInstance() ;
   
   // Verify that versions match
   PluginAPIVersion v = pm.platformServices_.version ;
   if (v.major != params->version.major)
-    return -1 ;
+    return (-1) ;
     
   std::string key((const char *)objectType) ;
   std::cout << "Registering " << key << "." << std::endl ;
+
   // If it's a wild card registration just add it
   if (key == std::string("*"))
   {
     pm.wildCardVec_.push_back(*params) ;
-    return 0 ;
+    return (0) ;
   }
   
-  // If item already exists in eactMatc fail (only one can handle)
+  // If item already exists in exactMatch, fail. (Only one can handle.)
   if (pm.exactMatchMap_.find(key) != pm.exactMatchMap_.end())    
-    return -1 ;
+    return (-1) ;
   
   pm.exactMatchMap_[key] = *params ;
-  return 0; 
+  return (0) ; 
 }
 
-// ---------------------------------------------------------------
-
+/*
+  Instantiate a single instance of the manager.
+*/
 PluginManager &PluginManager::getInstance()
 {
   static PluginManager instance ;
   
-  return instance ;
+  return (instance) ;
 }
 
 

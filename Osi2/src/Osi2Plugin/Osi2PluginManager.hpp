@@ -23,9 +23,9 @@ class PluginManager
 
   typedef std::map<std::string,RegisterParams> RegistrationMap ;
 
-  /*! \brief Get a pointer to the plugin manager
+  /*! \brief Get a reference to the plugin manager
 
-    Returns a pointer to the single instance of the plugin manager.
+    Returns a reference to the single instance of the plugin manager.
   */
   static PluginManager &getInstance() ;
 
@@ -38,6 +38,7 @@ class PluginManager
 
   /// Get the default plugin directory
   inline std::string getDfltPluginDir() { return (dfltPluginDir_) ; }
+
   /// Set the default plugin directory
   inline void setDfltPluginDir(std::string dfltDir)
   { dfltPluginDir_ = dfltDir ; }
@@ -111,7 +112,13 @@ private:
   DynamicLibrary *loadLibrary(const std::string &path,
 				  std::string & errorString) ;
 private:
-  bool                inInitializePlugin_ ;
+  /*! \brief Executing plugin initialisation method?
+
+    Whatever this is, it exists, but doesn't seem to be used, in Sayfan's
+    original code.  -- lh, 110825 --
+  */
+  bool inInitializePlugin_ ;
+
   PlatformServices platformServices_ ;
   DynamicLibraryMap   dynamicLibraryMap_ ;
   ExitFuncVec         exitFuncVec_ ;

@@ -1,3 +1,19 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  Based on original design and code by Gigi Sayfan published in five parts
+  in Dr. Dobbs, starting November 2007.
+*/
+/*! \file Osi2DynamicLibrary.cpp
+
+  This file contains the methods that handle loading and unloading of
+  libraries.
+
+  Currently works only for Linux & Solaris. There are hooks for Windows but
+  they are untested and/or disabled.  -- lh, 110825 --
+*/
+
 #ifdef WIN32
   #include <Windows.h>
 #else
@@ -8,6 +24,10 @@
 #include <sstream>
 #include <iostream>
 
+/*
+  Default for OSI2PLUGINDIR is $(libdir) (library installation directory).
+  Specified with -D in the Makefile.
+*/
 #ifndef OSI2PLUGINDIR
 # define OSI2DFLTPLUGINDIR "/usr/local/lib"
 #else

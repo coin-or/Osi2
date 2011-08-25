@@ -139,6 +139,11 @@ int ControlAPI_Imp::unload (API *api)
 /*
   Utility methods
 */
+
+
+/*
+  If we don't already have a pointer to the plugin manager, get it now.
+*/
 PluginManager *ControlAPI_Imp::findPluginMgr()
 {
   if (pluginMgr_ == nullptr)
