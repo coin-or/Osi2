@@ -175,10 +175,24 @@ PluginManager::~PluginManager ()
   shutdown() ;
 }
 
+/*
+  Run through the exit functions of the loaded plugins and execute each one.
+  Then clear out the maps in the manager.
+
+  \todo: Why aren't we unloading the libraries? Lack of information? Somewhere
+	 there must be a handle.
+  \todo: The exit functions can throw? Why isn't there a catch block for all
+	 the others (init function, etc.)
+  \todo: Should we have a clear() method for the plugin manager object? Given
+	 that it'll likely become more complex as we go.
+*/
 int32_t PluginManager::shutdown()
 {
   int32_t result = 0 ;
-  for (ExitFuncVec::iterator func = exitFuncVec_.begin(); func != exitFuncVec_.end(); ++func)
+
+  for (ExitFuncVec::iterator func = exitFuncVec_.begin() ;
+       func != exitFuncVec_.end() ;
+       ++func)
   {
     try
     {
@@ -186,17 +200,17 @@ int32_t PluginManager::shutdown()
     }
     catch (...)
     {
+      std::cout << "Whoa! Exit function threw!" << std::endl ;
       result = -1 ;
     }
   }
-  
-  
+  // Clear out the maps
   dynamicLibraryMap_.clear() ;
   exactMatchMap_.clear() ;
   wildCardVec_.clear() ;
   exitFuncVec_.clear() ;
   
-  return result ;
+  return (result) ;
 }
 
 int32_t PluginManager::loadByPath (const std::string &pluginPath)
@@ -242,10 +256,16 @@ int32_t PluginManager::loadByPath (const std::string &pluginPath)
     if (!d) // not a dynamic library? 
       return -1 ;
                     
-    // Get the initPlugin() function
-    InitFunc initFunc = (InitFunc)(d->getSymbol("initPlugin")) ;
-    if (!initFunc) // dynamic library missing entry point?
-      return -1 ;
+/*
+  Find and execute the initPlugin() function. If this entry point is missing
+  from the library, we're in trouble.
+*/
+    std::string errStr ;
+    InitFunc initFunc = (InitFunc)(d->getSymbol("initPlugin",errStr)) ;
+    if (!initFunc) {
+      std::cerr << errStr << std::endl ;
+      return (-1) ;
+    }
     
     int32_t res = initializePlugin(initFunc) ;
     if (res < 0) // failed to initalize?

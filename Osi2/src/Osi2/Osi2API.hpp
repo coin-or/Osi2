@@ -12,6 +12,11 @@
 /// Hedge against C++0x
 const int nullptr = 0 ;
 
+/*! \brief Identification namespace for OSI2.
+
+  All APIs and their implementations should be defined within the Osi2
+  namespace. Also used to distinguish the implementation of Osi2.
+*/
 namespace Osi2 {
 
 /*! \brief Osi2 API virtual base class

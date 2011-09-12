@@ -36,10 +36,11 @@ int main(int argC, char* argV[])
     Now let's see if we can invoke the init method
   */
   InitFunc initFunc =
-    reinterpret_cast<InitFunc>(clpShim->getSymbol("initPlugin")) ;
+    reinterpret_cast<InitFunc>(clpShim->getSymbol("initPlugin",errMsg)) ;
   if (initFunc == 0) {
     std::cout
       << "Apparent failure to obtain the init method." << std::endl ;
+    std::cerr << errMsg << std::endl ;
     return (-1) ;
   }
   /*
@@ -57,8 +58,19 @@ int main(int argC, char* argV[])
   std::cout
     << "The zero tolerance is " << clp->zeroTolerance() << "." << std::endl ;
 
-  std::cout << "END UNIT TEST" << std::endl ;
+  /*
+    Shut down the plugin manager.
+  */
+  std::cout
+    << "Shutting down plugins (executing exit functions)." << std::endl ;
+  plugMgr.shutdown() ;
+  /*
+    Close the shim library.
+  */
+  std::cout << "Unloading libOsi2ClpShim." << std::endl ;
+  delete clpShim ;
 
+  std::cout << "END UNIT TEST" << std::endl ;
   return (0) ;
 
 }

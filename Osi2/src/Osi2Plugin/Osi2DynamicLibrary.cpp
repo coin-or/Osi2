@@ -11,7 +11,8 @@
   libraries.
 
   Currently works only for Linux & Solaris. There are hooks for Windows but
-  they are untested and/or disabled.  -- lh, 110825 --
+  they are untested and/or disabled. The eventual plan is to make this work
+  with libtldl.  -- lh, 110825 --
 */
 
 #ifdef WIN32
@@ -23,6 +24,12 @@
 #include "Osi2DynamicLibrary.hpp"
 #include <sstream>
 #include <iostream>
+
+/*
+  Hedge against C++0x. Will cause problems in VC2010, gcc 4.6 and up. Autoconf
+  test necessary.
+*/
+const int nullptr = 0 ;
 
 /*
   Default for OSI2PLUGINDIR is $(libdir) (library installation directory).
@@ -46,27 +53,34 @@ DynamicLibrary::~DynamicLibrary ()
 {
   if (handle_)
   {
-  #ifndef WIN32
-    ::dlclose(handle_) ;
-  #else
+#   ifdef WIN32
     ::FreeLibrary((HMODULE)handle_) ;
-  #endif
+#   else
+    if (::dlclose(handle_)) {
+      std::string errorString ;
+      errorString += "Failed to unload library \"" + fullPath_ + '"' ;
+      const char *zErrorString = ::dlerror() ;
+      if (zErrorString)
+	errorString = errorString + ": " + zErrorString ;
+      std::cerr << errorString << std::endl ;
+    }
+#   endif
   }
 }
 
 DynamicLibrary *DynamicLibrary::load (const std::string &name, 
-					      std::string &errorString)
+				      std::string &errorString)
 {
   if (name.empty()) {
     errorString = "Empty path." ;
     return (0) ;
   }
   
-  void *handle = NULL ;
+  void *handle = nullptr ;
 
 # ifdef WIN32
   handle = ::LoadLibraryA(name.c_str()) ;
-  if (handle == NULL) {
+  if (handle == nullptr) {
     DWORD errorCode = ::GetLastError() ;
     std::stringstream ss ;
     ss << "LoadLibrary(" << name << ") Failed. errorCode: " << errorCode ; 
@@ -75,28 +89,35 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
 # else
   handle = ::dlopen(name.c_str(),RTLD_NOW) ;
   if (!handle) {
-    std::string dlErrorString ;
+    errorString += "Failed to load library \"" + name + '"' ;
     const char *zErrorString = ::dlerror() ;
     if (zErrorString)
-      dlErrorString = zErrorString ;
-    errorString += "Failed to load \"" + name + '"' ;
-    if (dlErrorString.size())
-      errorString += ": " + dlErrorString ;
-    return NULL ;
+      errorString = errorString + ": " + zErrorString ;
+    return (nullptr) ;
   }
 # endif
 
-  return new DynamicLibrary(handle) ;
+  DynamicLibrary *dynLib = new DynamicLibrary(handle) ;
+  dynLib->fullPath_ = name ;
+  return (dynLib) ;
 }
 
-void *DynamicLibrary::getSymbol(const std::string &symbol)
+void *DynamicLibrary::getSymbol (const std::string &symbol,
+				 std::string &errorString)
 {
   if (!handle_) return (0) ;
   
   #ifdef WIN32
-    return ::GetProcAddress((HMODULE)handle_,symbol.c_str()) ;
+  return (::GetProcAddress((HMODULE)handle_,symbol.c_str())) ;
   #else
-    return ::dlsym(handle_,symbol.c_str()) ;
+  void *sym = ::dlsym(handle_,symbol.c_str()) ;
+  if (sym == nullptr) {
+    errorString += "Failed to load symbol \"" + symbol + '"' ;
+    const char *zErrorString = ::dlerror() ;
+    if (zErrorString)
+      errorString = errorString + ": " + zErrorString ;
+  }
+  return (sym) ;
   #endif
 }
 

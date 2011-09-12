@@ -44,19 +44,20 @@ void *ClpShim::create (ObjectParams *params)
       << "Request to create ClpSimplex recognised." << std::endl ;
     ClpShim *shim = static_cast<ClpShim*>(params->client) ;
     DynamicLibrary *libClp = shim->libClp_ ;
+    std::string errStr ;
     ClpFactory factory =
-      reinterpret_cast<ClpFactory>(libClp->getSymbol("Clp_newModel")) ;
+      reinterpret_cast<ClpFactory>(libClp->getSymbol("Clp_newModel",errStr)) ;
     if (factory == 0) {
-      std::cout
-	<< "Apparent failure to find Clp_newModel." << std::endl ;
+      std::cout << "Apparent failure to find Clp_newModel." << std::endl ;
+      std::cout << errStr << std::endl ;
       return (0) ;
     }
     Clp_Simplex *wrapper = factory() ;
     ClpSimplexFactory underlyingModel =
-      reinterpret_cast<ClpSimplexFactory>(libClp->getSymbol("Clp_model")) ;
+      reinterpret_cast<ClpSimplexFactory>(libClp->getSymbol("Clp_model",errStr)) ;
     if (underlyingModel == 0) {
-      std::cout
-	<< "Apparent failure to find Clp_model." << std::endl ;
+      std::cout << "Apparent failure to find Clp_model." << std::endl ;
+      std::cout << errStr << std::endl ;
       return (0) ;
     }
     retval = underlyingModel(wrapper) ;
