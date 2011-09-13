@@ -26,6 +26,9 @@
   static std::string dynamicLibraryExtension("dll") ;
 #endif
 
+// Protection agains C++0x
+const int nullptr = 0 ;
+
 using namespace Osi2 ;
 
 /*
@@ -165,7 +168,8 @@ PluginManager::PluginManager()
   platformServices_.version.minor = 0 ;
   platformServices_.dfltPluginDir =
     reinterpret_cast<const uint8_t*>(dfltPluginDir_.c_str()) ;
-  platformServices_.invokeService = NULL ; // can be populated during loadAll()
+  // can be populated during loadAll()
+  platformServices_.invokeService = (nullptr) ;
   platformServices_.registerObject = registerObject ;
 }
 
@@ -282,7 +286,7 @@ int32_t PluginManager::loadByPath (const std::string &pluginPath)
 //{
 //  // "*" is not a valid object type
 //  if (objectType == std::string("*"))
-//    return NULL ;
+//    return (nullptr) ;
 //  
 //  // Prepare object params
 //  ObjectParams np ;
@@ -311,75 +315,88 @@ int32_t PluginManager::loadByPath (const std::string &pluginPath)
 //      {
 //        THROW << "PluginManager::createObject(" << np.objectType << "), registration failed" ;
 //        delete object ;
-//        return NULL ;
+//        return (nullptr) ;
 //      }
 //      return object ;
 //    }      
 //  }
 //
 //  // Too bad no one can create this objectType
-//  return NULL ;
+//  return (nullptr) ;
 //}
 
 
 // ---------------------------------------------------------------
 
 
-void *PluginManager::createObject(const std::string &objectType,
-				      IObjectAdapter &adapter)
+void *PluginManager::createObject (const std::string &objectType,
+				   IObjectAdapter &adapter)
 {
-  // "*" is not a valid object type
-  if (objectType == std::string("*"))
-    return NULL ;
+/*
+  "*" is not a valid object type --- some qualification is needed.
+*/
+  if (objectType == std::string("*")) return (nullptr) ;
   
-  // Prepare object params
+/*
+  Set up a parameter block to pass to the plugin (assuming we find one
+  that's suitable.
+*/
   ObjectParams np ;
-  np.objectType = (const uint8_t *)objectType.c_str() ;
+  np.objectType = reinterpret_cast<const uint8_t *>(objectType.c_str()) ;
   np.platformServices = &platformServices_ ;
 
-  // Exact match found
-  if (exactMatchMap_.find(objectType) != exactMatchMap_.end())
-  {        
-    RegisterParams & rp = exactMatchMap_[objectType] ;
+/*
+  Check for an exact (string) match. If so, add the plugin's management object
+  to the parameter block and ask for an object. If we're successful, we need
+  one last step for a C plugin --- wrap it for C++ use.
+*/
+  if (exactMatchMap_.find(objectType) != exactMatchMap_.end()) {        
+    RegisterParams &rp = exactMatchMap_[objectType] ;
     np.client = rp.client ;
     void *object = rp.createFunc(&np) ;
-    if (object) // great, there is an exact match
-    {
-      // Adapt if necessary (wrap C objects using an adapter)
+    if (object) {
       if (rp.lang == Plugin_C)
         object = adapter.adapt(object, rp.destroyFunc) ;
-        
-      return object; 
+      return (object) ; 
     }
   }
-  
-  // Try to find a wild card match
-  for (size_t i = 0; i < wildCardVec_.size(); ++i)
-  {
-    RegisterParams & rp = wildCardVec_[i] ;
+/*
+  No exact match. Try for a wildcard match. If some plugin volunteers an
+  object, register 
+
+  Surely we could do better here than just blindly calling create functions?
+  Maybe not. It's not really all that different from having a separate `Can
+  you do this?' method, given the feedback where the manager adds the requested
+  string to the exactMatchMap via the registerObject method. Note that the
+  entry in the wildCardVec is not removed.
+  -- lh, 110913 --
+*/
+  for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
+    RegisterParams &rp = wildCardVec_[i] ;
     np.client = rp.client ;
     void *object = rp.createFunc(&np) ;
-    if (object) // great, it worked
-    {
-      // Adapt if necessary (wrap C objects using an adapter)
+    if (object) {
       if (rp.lang == Plugin_C)
-        object = adapter.adapt(object, rp.destroyFunc) ;
-
-      // promote registration to exactMatc_ 
-      // (but keep also the wild card registration for other object types)
-      int32_t res = registerObject(np.objectType, &rp) ;
-      if (res < 0)
-      {  
-        // Serious framework should report or log it              
+        object = adapter.adapt(object,rp.destroyFunc) ;
+      int32_t res = registerObject(np.objectType,&rp) ;
+      if (res < 0) {
+	std::cout
+	  << "Eh? Can't register exact match entry for object "
+	  << np.objectType << " successfully created as wildcard."
+	  << std::endl ;
         rp.destroyFunc(object) ;
-        return NULL ;
+        return (nullptr) ;
       }
-      return object ;
-    }      
+      return (object) ;
+    }
   }
-
-  // Too bad no one can create this objectType
-  return NULL ;
+/*
+  No plugin volunteered. We can't create this object.
+*/
+  std::cout
+    << "No plugin was able to create an object with API "
+    << np.objectType << "." << std::endl ;
+  return (nullptr) ;
 }
 
 DynamicLibrary *PluginManager::loadLibrary (const std::string &path,
@@ -387,7 +404,7 @@ DynamicLibrary *PluginManager::loadLibrary (const std::string &path,
 {
     DynamicLibrary *d = DynamicLibrary::load(path, errorString) ;
     if (!d) // not a dynamic library? 
-      return NULL ;
+      return (nullptr) ;
     /*
       STARTUP HACK
       Assume for now we don't need to worry about absolute paths.

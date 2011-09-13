@@ -41,6 +41,9 @@ class ClpShim {
   /// Get verbosity
   inline int getVerbosity () const { return (verbosity_) ; }
 
+  /// Just to test out an arbitrary method!
+  void printSomeStuff () ;
+
   private:
 
   /*! \brief Plugin manager services structure

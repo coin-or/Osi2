@@ -13,6 +13,9 @@
 
 #include "Osi2DynamicLibrary.hpp"
 
+#include "ClpSimplex.hpp"
+#include "Osi2ProbMgmtAPI_Clp.hpp"
+
 using namespace Osi2 ;
 
 /*
@@ -25,7 +28,7 @@ ClpShim::ClpShim ()
 { }
 
 typedef Clp_Simplex *(*ClpFactory)() ;
-typedef void *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
+typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
 
 /*! \brief Object factory
 
@@ -39,9 +42,9 @@ void *ClpShim::create (ObjectParams *params)
 
   std::cout << "Clp create: type " << what << "." << std::endl ;
 
-  if (what == "ClpSimplex") {
+  if (what == "ClpSimplex" || what == "ProbMgmt") {
     std::cout
-      << "Request to create ClpSimplex recognised." << std::endl ;
+      << "Request to create " << what << " recognised." << std::endl ;
     ClpShim *shim = static_cast<ClpShim*>(params->client) ;
     DynamicLibrary *libClp = shim->libClp_ ;
     std::string errStr ;
@@ -54,13 +57,20 @@ void *ClpShim::create (ObjectParams *params)
     }
     Clp_Simplex *wrapper = factory() ;
     ClpSimplexFactory underlyingModel =
-      reinterpret_cast<ClpSimplexFactory>(libClp->getSymbol("Clp_model",errStr)) ;
+	reinterpret_cast<ClpSimplexFactory>
+	    (libClp->getSymbol("Clp_model",errStr)) ;
     if (underlyingModel == 0) {
       std::cout << "Apparent failure to find Clp_model." << std::endl ;
       std::cout << errStr << std::endl ;
       return (0) ;
     }
-    retval = underlyingModel(wrapper) ;
+    ClpSimplex *retval = underlyingModel(wrapper) ;
+    if (what == "ProbMgmt") {
+      ProbMgmtAPI *probMgmt = new ProbMgmtAPI_Clp(libClp,wrapper) ;
+      return (probMgmt) ;
+    } else {
+      return (retval) ;
+    }
   } else {
       std::cout
 	<< "Clp create: unrecognised type " << what << "." << std::endl ;
@@ -129,11 +139,19 @@ ExitFunc initPlugin (const PlatformServices *services)
   reginfo.createFunc = ClpShim::create ;
   reginfo.destroyFunc = ClpShim::cleanup ;
   int retval =
-      services->registerObject(reinterpret_cast<const unsigned char*>("ClpSimplex"),
-			       &reginfo) ;
+      services->registerObject(
+	  reinterpret_cast<const unsigned char*>("ClpSimplex"),&reginfo) ;
   if (retval < 0) {
     std::cout
       << "Apparent failure to register ClpSimplex plugin." << std::endl ;
+    return (0) ;
+  }
+  retval =
+      services->registerObject(
+	  reinterpret_cast<const unsigned char*>("ProbMgmt"),&reginfo) ;
+  if (retval < 0) {
+    std::cout
+      << "Apparent failure to register ProgMgmt plugin." << std::endl ;
     return (0) ;
   }
 

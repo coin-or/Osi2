@@ -19,7 +19,8 @@ lib_LTLIBRARIES = libOsi2ClpShim.la
 # List all source files for this library, including headers
 
 libOsi2ClpShim_la_SOURCES = \
-	Osi2ClpShim.cpp Osi2ClpShim.hpp
+	Osi2ClpShim.cpp Osi2ClpShim.hpp \
+	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp
 
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -43,5 +44,5 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
-	Osi2ClpShim.hpp
+	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp
 

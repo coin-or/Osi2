@@ -1,5 +1,5 @@
-#ifndef DYNAMIC_LIBRARY_H
-#define DYNAMIC_LIBRARY_H
+#ifndef OSI2_DYNAMIC_LIBRARY_HPP
+#define OSI2_DYNAMIC_LIBRARY_HPP
 
 /*
   Copyright 2011 Lou Hafer, Matt Saltzman

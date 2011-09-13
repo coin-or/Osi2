@@ -91,6 +91,7 @@ else
   OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
   OSI2CLPSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
 fi
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
 
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])

@@ -29,6 +29,7 @@ unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la
 # "cygpath" stuff is necessary to compile with native compilers on Windows
 AM_CPPFLAGS =\
 	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2Plugin` \
+	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
 	$(CLP_CFLAGS) \
 	$(COINUTILS_CFLAGS)
 

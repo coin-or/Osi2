@@ -22926,6 +22926,7 @@ fi
   OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
   OSI2CLPSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
 fi
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
 
 
 echo "$as_me:$LINENO: checking for COIN-OR package Sample" >&5

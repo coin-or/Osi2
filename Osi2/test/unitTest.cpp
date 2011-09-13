@@ -1,13 +1,18 @@
 
-#include "CoinMessageHandler.hpp" 
-#include "CoinPackedMatrix.hpp"
-#include "ClpSimplex.hpp"
+// #include "CoinMessageHandler.hpp" 
+// #include "CoinPackedMatrix.hpp"
+
 
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
 
+#include "Osi2ProbMgmtAPI.hpp"
+
 using namespace Osi2 ;
+
+// Hedge agaaist C++0x
+const int nullptr = 0 ;
   
 int main(int argC, char* argV[])
 {
@@ -47,17 +52,21 @@ int main(int argC, char* argV[])
     And invoke it.
   */
   int32_t res = plugMgr.initializePlugin(initFunc) ;
-
   /*
-    And can we invoke createObject?
+    And can we invoke createObject? Did it work?
   */
   DummyAdapter dummy ;
-  ClpSimplex *clp =
-    static_cast<ClpSimplex*>(plugMgr.createObject("ClpSimplex",dummy)) ;
-  
-  std::cout
-    << "The zero tolerance is " << clp->zeroTolerance() << "." << std::endl ;
-
+  ProbMgmtAPI *clp =
+    static_cast<ProbMgmtAPI*>(plugMgr.createObject("ProbMgmt",dummy)) ;
+  if (clp == nullptr) {
+    std::cout
+      << "Apparent failure to create a ProbMgmt object." << std::endl ;
+  } else {
+  /*
+    See if we can invoke a nontrivial method.
+  */
+    clp->readMps("exmip1.mps",true) ;
+  }
   /*
     Shut down the plugin manager.
   */
