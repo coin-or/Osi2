@@ -51,9 +51,16 @@ int ProbMgmtAPI_Clp::readMps (const char *filename, bool keepNames,
 
   int retval = readMps(clpSimplex_,filename,keepNames,ignoreErrors) ;
 
-  std::cout << "Hi, Mom!" << std::endl ;
+  if (retval) {
+    std::cout
+      << "Failure to read " << filename << ", error " << retval
+      << "." << std::endl ;
+  } else {
+    std::cout
+      << "Read " << filename << " without error." << std::endl ;
+  }
 
-  return (0) ;
+  return (retval) ;
 }
 
 }
