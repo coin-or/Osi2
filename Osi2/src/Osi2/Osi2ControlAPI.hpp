@@ -6,8 +6,8 @@
   $Id$
 */
 
-#ifndef OsiControlAPI_HPP
-# define OsiControlAPI_HPP
+#ifndef Osi2ControlAPI_HPP
+# define Osi2ControlAPI_HPP
 
 #include <string>
 

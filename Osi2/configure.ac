@@ -61,11 +61,11 @@ AC_COIN_INIT_AUTO_TOOLS
 #                              COIN-OR components                           #
 #############################################################################
 
-AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2Lib])
+AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2Lib Osi2Plugin])
 if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
-AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2Lib])
+AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2ClpShim])
 if test $coin_has_clp != yes ; then
   AC_MSG_ERROR([Required package Clp not available.])
 fi

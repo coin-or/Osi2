@@ -66,7 +66,7 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libOsi2Plugin_la_DEPENDENCIES =
 am_libOsi2Plugin_la_OBJECTS = Osi2DynamicLibrary.lo \
-	Osi2PluginManager.lo
+	Osi2PluginManager.lo Osi2PlugMgrMessages.lo
 libOsi2Plugin_la_OBJECTS = $(am_libOsi2Plugin_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -231,6 +231,8 @@ OSI2PLUGIN_DATA_INSTALLED = @OSI2PLUGIN_DATA_INSTALLED@
 OSI2PLUGIN_DEPENDENCIES = @OSI2PLUGIN_DEPENDENCIES@
 OSI2PLUGIN_LIBS = @OSI2PLUGIN_LIBS@
 OSI2PLUGIN_LIBS_INSTALLED = @OSI2PLUGIN_LIBS_INSTALLED@
+OSI2PLUGIN_PCLIBS = @OSI2PLUGIN_PCLIBS@
+OSI2PLUGIN_PCREQUIRES = @OSI2PLUGIN_PCREQUIRES@
 OSI2_EXAMPLES_SOLVER_CFLAGS = @OSI2_EXAMPLES_SOLVER_CFLAGS@
 OSI2_EXAMPLES_SOLVER_LIBS = @OSI2_EXAMPLES_SOLVER_LIBS@
 OSI2_EXAMPLES_SOLVER_NAME = @OSI2_EXAMPLES_SOLVER_NAME@
@@ -339,7 +341,8 @@ lib_LTLIBRARIES = libOsi2Plugin.la
 libOsi2Plugin_la_SOURCES = \
 	Osi2DynamicLibrary.hpp Osi2DynamicLibrary.cpp \
 	Osi2Plugin.hpp \
-	Osi2PluginManager.cpp Osi2PluginManager.hpp
+	Osi2PluginManager.cpp Osi2PluginManager.hpp \
+	Osi2PlugMgrMessages.cpp Osi2PlugMgrMessages.hpp
 
 
 # This is for libtool
@@ -436,6 +439,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2DynamicLibrary.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2PlugMgrMessages.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2PluginManager.Plo@am__quote@
 
 .cpp.o:

@@ -25,7 +25,8 @@ lib_LTLIBRARIES = libOsi2Plugin.la
 libOsi2Plugin_la_SOURCES = \
 	Osi2DynamicLibrary.hpp Osi2DynamicLibrary.cpp \
 	Osi2Plugin.hpp \
-	Osi2PluginManager.cpp Osi2PluginManager.hpp
+	Osi2PluginManager.cpp Osi2PluginManager.hpp \
+	Osi2PlugMgrMessages.cpp Osi2PlugMgrMessages.hpp
 
 # This is for libtool
 libOsi2Plugin_la_LDFLAGS = $(LT_LDFLAGS)

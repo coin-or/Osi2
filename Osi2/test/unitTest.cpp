@@ -66,6 +66,7 @@ int main(int argC, char* argV[])
     See if we can invoke a nontrivial method.
   */
     clp->readMps("exmip1.mps",true) ;
+    delete clp ;
   }
   /*
     Shut down the plugin manager.

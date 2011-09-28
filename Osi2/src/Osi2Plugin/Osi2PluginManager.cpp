@@ -26,10 +26,36 @@
   static std::string dynamicLibraryExtension("dll") ;
 #endif
 
-// Protection agains C++0x
+// Protection against C++0x
 const int nullptr = 0 ;
 
 using namespace Osi2 ;
+
+/*
+  Plugin manager constructor.
+*/
+PluginManager::PluginManager()
+  : inInitializePlugin_(false)
+{
+  msgHandler_ = new CoinMessageHandler() ;
+  msgs_ = PlugMgrMessages() ;
+  msgHandler_->message(PLUGMGR_INIT,msgs_) ;
+  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
+  platformServices_.version.major = 1 ;
+  platformServices_.version.minor = 0 ;
+  platformServices_.dfltPluginDir =
+    reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
+  // can be populated during loadAll()
+  platformServices_.invokeService = (nullptr) ;
+  platformServices_.registerObject = registerObject ;
+}
+
+PluginManager::~PluginManager ()
+{
+  // Just in case it wasn't called earlier
+  shutdown() ;
+}
+
 
 /*
   There's no particular reason to trust a plugin, so we need to do some
@@ -41,7 +67,7 @@ using namespace Osi2 ;
   Why is this static?  -- lh, 110825 --
 */
 
-static bool isValid (const uint8_t *objectType,
+static bool isValid (const CharString *objectType,
 		     const RegisterParams *params)
 {
   if (!objectType || !(*objectType))
@@ -53,7 +79,7 @@ static bool isValid (const uint8_t *objectType,
 }
 
 
-int32_t PluginManager::registerObject (const uint8_t *objectType,
+int32_t PluginManager::registerObject (const CharString *objectType,
 				       const RegisterParams *params)
 {
   // Check parameters
@@ -159,25 +185,6 @@ int32_t PluginManager::initializePlugin (InitFunc initFunc)
   pm.exitFuncVec_.push_back(exitFunc) ;
   return 0 ;
 }
- 
-PluginManager::PluginManager()
-  : inInitializePlugin_(false)
-{
-  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
-  platformServices_.version.major = 1 ;
-  platformServices_.version.minor = 0 ;
-  platformServices_.dfltPluginDir =
-    reinterpret_cast<const uint8_t*>(dfltPluginDir_.c_str()) ;
-  // can be populated during loadAll()
-  platformServices_.invokeService = (nullptr) ;
-  platformServices_.registerObject = registerObject ;
-}
-
-PluginManager::~PluginManager ()
-{
-  // Just in case it wasn't called earlier
-  shutdown() ;
-}
 
 /*
   Run through the exit functions of the loaded plugins and execute each one.
@@ -217,6 +224,9 @@ int32_t PluginManager::shutdown()
   return (result) ;
 }
 
+/*
+  Load a plugin given a full path to the plugin.
+*/
 int32_t PluginManager::loadByPath (const std::string &pluginPath)
 {
     /*
@@ -342,7 +352,7 @@ void *PluginManager::createObject (const std::string &objectType,
   that's suitable.
 */
   ObjectParams np ;
-  np.objectType = reinterpret_cast<const uint8_t *>(objectType.c_str()) ;
+  np.objectType = reinterpret_cast<const CharString *>(objectType.c_str()) ;
   np.platformServices = &platformServices_ ;
 
 /*

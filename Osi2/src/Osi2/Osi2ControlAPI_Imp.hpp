@@ -5,8 +5,8 @@
   $Id$
 */
 
-#ifndef OsiControlAPI_Imp_HPP
-# define OsiControlAPI_Imp_HPP
+#ifndef Osi2ControlAPI_Imp_HPP
+# define Osi2ControlAPI_Imp_HPP
 
 #include "Osi2PluginManager.hpp"
 

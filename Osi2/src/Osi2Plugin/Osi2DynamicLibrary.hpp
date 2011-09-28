@@ -45,7 +45,7 @@ public:
   /*! \brief Load a plugin
 
     This method will load the plugin specified in \p path. If successful, it
-    will return a pointer to an DynamicLibrary object for the plugin. If
+    will return a pointer to a DynamicLibrary object for the plugin. If
     unsuccessful, it will return null and \p errStr will be loaded with an
     error message.
   */

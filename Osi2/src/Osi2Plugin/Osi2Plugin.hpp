@@ -9,7 +9,8 @@
     \brief Type definitions for the Osi2 plugin manager.
 
   This file contains the type definitions (types, structures, enums) used by
-  the plugin framework.
+  the plugin framework. Generally useful for the plugin manager and for
+  plugins.
 */
 #ifndef OSI2_PLUGIN_HPP
 #define OSI2_PLUGIN_HPP
@@ -26,6 +27,9 @@ namespace Osi2 {
 struct PlatformServices ;
 struct RegisterParams ;
 struct ObjectParams ;
+
+/// A typedef for null-terminated strings, so they're easy to recognise
+typedef uint8_t CharString ;
 
 /// Languages (C, C++) supported by the plugin framework.
 enum PluginLang
@@ -105,7 +109,7 @@ typedef int32_t (*DestroyFunc)(void *victim) ;
 		 for consumption by the plugin manager.
   \returns 0 for a successful registration, nonzero otherwise.
 */
-typedef int32_t (*RegisterFunc)(const uint8_t *apiName,
+typedef int32_t (*RegisterFunc)(const CharString *apiName,
 				const RegisterParams *params) ;
 
 /*! \brief Function to allow the plugin to invoke services provided by the
@@ -123,7 +127,7 @@ typedef int32_t (*RegisterFunc)(const uint8_t *apiName,
 
   \todo Implement this! Currently unimplemented.
 */
-typedef int32_t (*InvokeServiceFunc)(const uint8_t *serviceName,
+typedef int32_t (*InvokeServiceFunc)(const CharString *serviceName,
 					  void * serviceParams) ;
 
 /*! \brief Type definition of the plugin exit function
@@ -183,7 +187,7 @@ struct RegisterParams
 struct ObjectParams
 {
   /// Character string specifying the API(s) to be supplied
-  const uint8_t *objectType ;
+  const CharString *objectType ;
   /*! \brief Services provided by the plugin manager
 
     See Osi2::PlatformServices.
@@ -201,7 +205,7 @@ struct PlatformServices
   /// Plugin manager version
   PluginAPIVersion version ;
   /// Default directory to search for plugins
-  const uint8_t *dfltPluginDir ;
+  const CharString *dfltPluginDir ;
   /// Method to register an object supported by the plugin
   RegisterFunc registerObject; 
   /*! \brief Method to allow the plugin to invoke a service provided by the

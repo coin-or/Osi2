@@ -57,7 +57,9 @@ CONFIG_CLEAN_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am_unitTest_OBJECTS = unitTest.$(OBJEXT)
 unitTest_OBJECTS = $(am_unitTest_OBJECTS)
-unitTest_DEPENDENCIES = ../src/Osi2Plugin/libOsi2Plugin.la
+am__DEPENDENCIES_1 =
+unitTest_DEPENDENCIES = ../src/Osi2Plugin/libOsi2Plugin.la \
+	$(am__DEPENDENCIES_1)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -211,6 +213,8 @@ OSI2PLUGIN_DATA_INSTALLED = @OSI2PLUGIN_DATA_INSTALLED@
 OSI2PLUGIN_DEPENDENCIES = @OSI2PLUGIN_DEPENDENCIES@
 OSI2PLUGIN_LIBS = @OSI2PLUGIN_LIBS@
 OSI2PLUGIN_LIBS_INSTALLED = @OSI2PLUGIN_LIBS_INSTALLED@
+OSI2PLUGIN_PCLIBS = @OSI2PLUGIN_PCLIBS@
+OSI2PLUGIN_PCREQUIRES = @OSI2PLUGIN_PCREQUIRES@
 OSI2_EXAMPLES_SOLVER_CFLAGS = @OSI2_EXAMPLES_SOLVER_CFLAGS@
 OSI2_EXAMPLES_SOLVER_LIBS = @OSI2_EXAMPLES_SOLVER_LIBS@
 OSI2_EXAMPLES_SOLVER_NAME = @OSI2_EXAMPLES_SOLVER_NAME@
@@ -307,7 +311,7 @@ AUTOMAKE_OPTIONS = foreign
 unitTest_SOURCES = unitTest.cpp 
 
 # Add the necessary libraries
-unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la
+unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la $(OSI2PLUGIN_LIBS)
 
 # Now add the include paths for compilation
 # Here list all include flags, relative to this "srcdir" directory.  This
