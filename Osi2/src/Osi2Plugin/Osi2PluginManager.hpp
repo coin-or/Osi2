@@ -20,13 +20,17 @@ struct IObjectAdapter ;
   with the manager. Clients can then ask for objects which support a registered
   API. APIs are identified by strings.
 
-  The act of loading a plugin library is an atomic transaction: The library
-  must be found, loaded, and successfully complete its initialisation function
-  before registration information is copied into the manager's client-facing
-  data structures.
+  The act of loading a plugin library is an atomic transaction managed by
+  #loadOneLib: The library must be found, loaded, and successfully execute
+  its initialisation function before registration information is copied into
+  the manager's client-accessible data structures.
 
   There is a single instance of the plugin manager (declared as a static
   object private to #getInstance).
+
+  \todo What about unloading an individual library? Currently, all we can do
+	is shut down the plugin manager, unloading all plugin libraries. For
+	that matter, what about deregistering an API?
 */
   
 class PluginManager
@@ -48,8 +52,12 @@ public:
 
   /*! \brief Shut down the plugin manager
 
-    Will invoke the exit method for all plugins, then shut down the plugin
-    manager.
+    Will invoke the exit method for all plugins, unload all libraries, and
+    shut down the plugin manager.
+
+    \todo It's minorly awkward that there's no way to associate a library with
+	  an exit function. If the exit function fails, there's no way to say
+	  which library it belongs to.
   */
   int shutdown() ;
 
@@ -75,7 +83,8 @@ public:
     #dfltPluginDir_ is used.
 
     \return
-    - -2: library failed to initialise
+    - -3: initialisation function failed
+    - -2: failed to find the initialisation function
     - -1: library failed to load
     -  0: library loaded and initialised without error
     -  1: library is already loaded

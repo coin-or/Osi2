@@ -341,12 +341,8 @@ int32_t PluginManager::loadAll(const std::string &libDir,
   Run through the exit functions of the loaded plugins and execute each one.
   Then clear out the maps in the manager.
 
-  \todo: Why aren't we unloading the libraries? Lack of information? Somewhere
-	 there must be a handle.
   \todo: The exit functions can throw? Why isn't there a catch block for all
 	 the others (init function, etc.)
-  \todo: Should we have a clear() method for the plugin manager object? Given
-	 that it'll likely become more complex as we go.
 */
 int PluginManager::shutdown()
 {
@@ -375,7 +371,7 @@ int PluginManager::shutdown()
   }
   /*
     Clear out the maps. Before we clear dynamicLibraryMap_, go through and
-    delete the DynamicLibrary objects; the destructor will close the library.
+    delete the DynamicLibrary objects; the destructor will unload the library.
     The other vectors hold actual objects rather than pointers.
   */
   for (DynamicLibraryMap::iterator fwd = dynamicLibraryMap_.begin() ;
