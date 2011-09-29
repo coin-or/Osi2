@@ -7,7 +7,7 @@
 
 
 \newcommand{\OsiTwo}{OSI2\xspace}
-\newcommand{\revisionDate}{September 8, 2011}
+\newcommand{\revisionDate}{September 29, 2011}
 
 \begin{document}
 \markright{\OsiTwo \hfil Design and Architecture \hfil \revisionDate}
@@ -63,32 +63,29 @@ expanded
 to allow a reference to a plugin object to be returned to the plugin manager
 and passed back whenever plugin services are invoked.
 
-The working sequence to load a plugin and return an object to the client goes
-like this
+The working sequence to load a plugin and return an object to the client is
+described below.
+The first two steps (loading the shared library, initialising the plugin and
+registering APIs) are encapsulated in \pgmid{PluginManager::loadOneLib}, so
+that load and initialisation of a plugin library is an atomic action from the
+point of view of a client of the plugin manager.
 \begin{enumerate}
   \item
   Load the shared library that implements the plugin.
 
-  Currently, this is accomplished by a bare call to the static \pgmid{load}
+  Currently, this is accomplished by a call to the static \pgmid{load}
   method in the \pgmid{DynamicLibrary} class.
-  The plugin manager can be interrogated to return a default plugin directory.
-  This should be better hidden once we've settled on how to communicate a list
-  of directories to be searched for plugins.
+  The plugin manager supports specification of a default plugin directory.
+  \aside{We need to add infrastructure to check the environment. We might also
+  want to allow for a search list of directories.}
 
   \item
-  Initialise and register the plugin.
+  Initialise the plugin library and register APIs implemented the library.
 
-  Given a \pgmid{DynamicLibrary} object, we can use \pgmid{getSymbol} to
-  retrieve the \pgmid{initPlugin} method.
-  This method is then passed as a parameter to the plugin manager's
-  \pgmid{initializePlugin} method.
-  \pgmid{initializePlugin} in turn invokes the \pgmid{initPlugin} method,
+  Given a \pgmid{DynamicLibrary} object, \pgmid{getSymbol} is used to
+  retrieve the plugin library's \pgmid{initPlugin} method.
+  This method is then invoked,
   passing a \pgmid{PlatformServices} structure as a parameter.
-
-  \aside{So why not bury all of this within the plugin manager?
-  Let the plugin manager keep track of loaded plugin libraries.
-  Do we want to allow separate load and initialisation?
-  Or should they be an atomic operation from the client's point of view?}
 
   The \pgmid{initPlugin} method is responsible for getting the plugin ready to
   work and registering its capabilities (APIs).
@@ -97,21 +94,26 @@ like this
   For each API supported by the plugin library, a
   \pgmid{RegisterParams} object
   is created specifying an identifying string, create and destroy methods,
-  descriptive information (version and language), and an associated plugin
-  object to hold state.
+  descriptive information (version and language), and an associated
+  object to hold any state information the plugin wishes to maintain for
+  objects supporting this API.
   The \pgmid{RegisterParams} object is handed back to the plugin manager
   as a parameter to the registration (\pgmid{registerObject}) method
   supplied in the \pgmid{PlatformServices} object.
 
   The plugin manager's \pgmid{registerObject} method adds the
-  \pgmid{RegisterParams} object to an appropriate map (specific or wildcard)
-  according to the identifying string.
-  It then returns to the \pgmid{initPlugin}.
+  \pgmid{RegisterParams} object to an appropriate temporary structure
+  (exact match or wildcard) according to the identifying string.
+  It then returns to the \pgmid{initPlugin} method.
 
   The \pgmid{initPlugin} method returns an appropriate cleanup method (an
-  \pgmid{ExitFunc}) to the \pgmid{initializePlugin} method, which stores it
-  for use when the plugin library is unloaded.
+  \pgmid{ExitFunc}) when it returns to the plugin manager.
+  The plugin manager stores it for use when the plugin library is unloaded.
   Initialisation is complete.
+  \aside{Currently there are multiple structures in the plugin manager holding
+  information about a plugin, and they are not correlated~---~for example,
+  it's not possible to identify the library associated with an exit function.
+  This should be fixed.}
 
   \item
   Ask the plugin manager for an object that implements an API.
