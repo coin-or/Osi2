@@ -3,6 +3,7 @@
   This code is licensed under the terms of the Eclipse Public License (EPL)
 */
 
+#include <cstring>
 #include "Osi2PlugMgrMessages.hpp"
 
 namespace Osi2 {
@@ -77,12 +78,15 @@ static OnePlugMgrMessage us_english[] = {
   and installing it in the messages array.
 
   class_ is a gross hack. Arguably, we're class 2. See CoinMessageHandler.hpp.
+
+  The string stored in source_ is limited to four chars (plus terminating
+  null).
 */
 PlugMgrMessages::PlugMgrMessages (Language language)
   : CoinMessages(sizeof(us_english)/sizeof(OnePlugMgrMessage))
 {
   language_ = language ;
-  strcpy(source_, "PlugMgr") ;
+  std::strcpy(source_, "OSI2") ;
   class_ = 2 ;
 
   OnePlugMgrMessage *msg = &us_english[0] ;
