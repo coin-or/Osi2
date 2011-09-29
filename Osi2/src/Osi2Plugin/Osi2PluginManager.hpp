@@ -51,29 +51,39 @@ public:
     Will invoke the exit method for all plugins, then shut down the plugin
     manager.
   */
-  int32_t shutdown() ;
+  int shutdown() ;
 
   /// Get the default plugin directory
-  inline std::string getDfltPluginDir() { return (dfltPluginDir_) ; }
+  inline std::string getDfltPluginDir() const { return (dfltPluginDir_) ; }
 
   /// Set the default plugin directory
   inline void setDfltPluginDir(std::string dfltDir)
   { dfltPluginDir_ = dfltDir ; }
 
-  /*! \brief Scan a directory and load all plugins
+  /*! \brief Load and initialise all plugin libraries in the directory.
 
     Currently unimplemented until we can create platform-independent file
-    system support.
+    system support. For that matter, it's questionable whether we want this
+    functionality.
   */
-  int32_t loadAll(const std::string &pluginDirectory,
-		  InvokeServiceFunc func = NULL) ;
+  int loadAllLibs(const std::string &pluginDirectory,
+		  const InvokeServiceFunc func = NULL) ;
 
-  /*! \brief Load the specified plugin
+  /*! \brief Load and initialise the specified plugin library.
 
-    Should deal with things like symbolic links but that function is
-    currently disabled pending file system support.
+    Load the specified library \c dir/lib. If \p dir is not specified,
+    #dfltPluginDir_ is used.
+
+    \return
+    - -2: library failed to initialise
+    - -1: library failed to load
+    -  0: library loaded and initialised without error
+    -  1: library is already loaded
+
+    \todo Should deal with things like symbolic links but that functionality
+	  is currently disabled pending file system support.
   */
-  int32_t loadByPath(const std::string & path) ;
+  int loadOneLib(const std::string &lib, const std::string *dir = 0) ;
 
   /// Get the services provided by the plugin manager
   PlatformServices &getPlatformServices() ;
@@ -98,12 +108,18 @@ public:
 
   //@}
 
+  /*! \name Plugin manager control methods
 
-  /*! \brief Initialise a plugin
-
-    Invokes the plugin's initialisation method
+    Miscellaneous methods that control the behaviour of the plugin manager.
   */
-  static int32_t initializePlugin(InitFunc initFunc) ;
+  //@{
+
+  /// Set the log (verbosity) level
+  inline void setLogLvl(int logLvl) { logLvl_ = logLvl ; }
+  /// Get the log (verbosity) level
+  inline int getLogLvl() const { return (logLvl_) ; }
+
+  //@}
 
 private:
   /*! \brief Register an object type with the plugin manager
@@ -127,21 +143,20 @@ private:
   ~PluginManager() ;
   //@}
 
-  /*! \brief Load a dynamic library
+  /*! \brief Validate registration parameters
 
-    The underlying worker method; this is where the actual business of loading
-    is performed. Assumes that any necessary preprocessing of the path has been
-    performed.
+    Check the validity of a registration parameter block supplied by
+    a plugin to register an API.
   */
-  DynamicLibrary *loadLibrary(const std::string &path,
-				  std::string & errorString) ;
+  bool validateRegParams(const CharString *apiStr,
+			 const RegisterParams *params) const ;
 
-  /*! \brief Executing plugin initialisation method?
+  /*! \brief Initialising a plugin?
 
-    Whatever this is, it exists, but doesn't seem to be used, in Sayfan's
-    original code.  -- lh, 110825 --
+    True during initialisation of a plugin library. Used to determine if plugin
+    activity (API registration, etc) should go to temporary structures.
   */
-  bool inInitializePlugin_ ;
+  bool initialisingPlugin_ ;
 
   /// Map DynamicLibrary objects to names
   typedef std::map<std::string,DynamicLibrary*> DynamicLibraryMap ;
@@ -161,8 +176,8 @@ private:
 
   ExitFuncVec         exitFuncVec_ ;
 
-  RegistrationMap     tempExactMatchMap_;   // register exact-match object types
-  RegistrationVec     tempWildCardVec_;     // wild card ('*') object types
+  RegistrationMap     tmpExactMatchMap_;   // register exact-match object types
+  RegistrationVec     tmpWildCardVec_;     // wild card ('*') object types
 
   RegistrationMap     exactMatchMap_;   // register exact-match object types
   RegistrationVec     wildCardVec_;     // wild card ('*') object types
@@ -174,6 +189,8 @@ private:
   CoinMessageHandler *msgHandler_ ;
   /// Messages
   CoinMessages msgs_ ;
+  /// Log (verbosity) level
+  int logLvl_ ;
 
 } ;
 

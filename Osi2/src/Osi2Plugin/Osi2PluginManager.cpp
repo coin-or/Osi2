@@ -29,17 +29,20 @@
 // Protection against C++0x
 const int nullptr = 0 ;
 
+
 using namespace Osi2 ;
 
 /*
   Plugin manager constructor.
 */
 PluginManager::PluginManager()
-  : inInitializePlugin_(false)
+  : initialisingPlugin_(false),
+    logLvl_(7)
 {
   msgHandler_ = new CoinMessageHandler() ;
   msgs_ = PlugMgrMessages() ;
-  msgHandler_->message(PLUGMGR_INIT,msgs_) ;
+  msgHandler_->setLogLevel(logLvl_) ;
+  msgHandler_->message(PLUGMGR_INIT,msgs_) << CoinMessageEol ;
   dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
   platformServices_.version.major = 1 ;
   platformServices_.version.minor = 0 ;
@@ -50,65 +53,127 @@ PluginManager::PluginManager()
   platformServices_.registerObject = registerObject ;
 }
 
+/*
+  Plugin manager destructor
+
+  Call shutdown to close out the plugins, then destroy the pieces of ourself.
+*/
 PluginManager::~PluginManager ()
 {
   // Just in case it wasn't called earlier
   shutdown() ;
-}
 
+  delete msgHandler_ ;
+}
 
 /*
   There's no particular reason to trust a plugin, so we need to do some
-  validation of the parameters it gives to the plugin manager.
+  validation of the parameters it gives to the plugin manager when registering
+  an API.
 
-  Open question: This is Sayfan's notion of validation. It should be improved
-  as we add parameters.  -- lh, 110825 --
-
-  Why is this static?  -- lh, 110825 --
+  \todo
+  This should be improved as we add parameters.
 */
 
-static bool isValid (const CharString *objectType,
-		     const RegisterParams *params)
+bool PluginManager::validateRegParams (const CharString *apiStr,
+				       const RegisterParams *params) const
 {
-  if (!objectType || !(*objectType))
-     return (false) ;
-  if (!params || !params->createFunc || !params->destroyFunc)
-    return (false) ;
+  PluginManager &pm = getInstance() ;
+  bool retval = true ;
+  std::string errStr = "" ;
+
+  // The API to be registered must have a name
+  if (!apiStr || !(*apiStr)) {
+    errStr += "; bad API ID string" ;
+    retval = false ;
+  }
+
+  // If we're missing the parameter block, nothing more to say.
+  if (!params) {
+    errStr += "; no registration parameter block" ;
+    retval = false ;
+  } else {
+    // There must be a constructor
+    if (!params->createFunc) {
+      errStr += "; missing constructor" ;
+      retval = false ;
+    }
+    // There must be a destructor
+    if (!params->destroyFunc) {
+      errStr += "; missing destructor" ;
+      retval = false ;
+    }
+    // The major version must match
+    PluginAPIVersion ver = pm.platformServices_.version ;
+    if (ver.major != params->version.major) {
+      pm.msgHandler_->message(PLUGMGR_BADVER,msgs_)
+	<< params->version.major << ver.major << CoinMessageEol ;
+      errStr += "; version mismatch" ;
+      retval = false ;
+    }
+  }
+
+  if (!retval) {
+    errStr = errStr.substr(2) ;
+    msgHandler_->message(PLUGMGR_BADAPIPARM,msgs_) << errStr << CoinMessageEol ;
+  }
   
-  return (true) ;
+  return (retval) ;
 }
+/*
+  This method is used by the plugin to register the APIs it supports. A pointer
+  to the method is passed to the plugin in a PlatformServices object.
 
-
+  Returns 0 for success, -1 for failure.
+*/
 int32_t PluginManager::registerObject (const CharString *objectType,
 				       const RegisterParams *params)
 {
-  // Check parameters
-  if (!isValid(objectType, params))
-    return (-1) ;
- 
   PluginManager &pm = getInstance() ;
-  
-  // Verify that versions match
-  PluginAPIVersion v = pm.platformServices_.version ;
-  if (v.major != params->version.major)
-    return (-1) ;
-    
-  std::string key((const char *)objectType) ;
-  std::cout << "Registering " << key << "." << std::endl ;
 
-  // If it's a wild card registration just add it
-  if (key == std::string("*"))
-  {
-    pm.wildCardVec_.push_back(*params) ;
-    return (0) ;
+  // Validate the parameter block
+  if (!pm.validateRegParams(objectType,params)) return (-1) ;
+
+/*
+  If the registration is a wild card, add it to the wild card vector. If the
+  registration is for a specific API, check before adding to the exact match
+  vector --- duplicates are not allowed.
+
+  If this call comes while we're initialising a plugin, add the APIs to
+  temporary vectors for merge if initialisation is successful.
+*/
+  std::string key((const char *) objectType) ;
+  int retval = 0 ;
+
+  if (key == std::string("*")) {
+    if (pm.initialisingPlugin_) {
+      pm.tmpWildCardVec_.push_back(*params) ;
+    } else {
+      pm.wildCardVec_.push_back(*params) ;
+    }
+  } else {
+    if (pm.exactMatchMap_.find(key) != pm.exactMatchMap_.end()) {
+      retval = -1 ;
+    } else
+    if (pm.initialisingPlugin_ &&
+	pm.tmpExactMatchMap_.find(key) != pm.tmpExactMatchMap_.end()) {
+      retval = -1 ;
+    }
+    if (retval) {
+      pm.msgHandler_->message(PLUGMGR_REGDUPAPI,pm.msgs_)
+	  << key << CoinMessageEol ;
+    } else {
+      if (pm.initialisingPlugin_) {
+	pm.tmpExactMatchMap_[key] = *params ;
+      } else {
+	pm.exactMatchMap_[key] = *params ;
+      }
+    }
   }
-  
-  // If item already exists in exactMatch, fail. (Only one can handle.)
-  if (pm.exactMatchMap_.find(key) != pm.exactMatchMap_.end())    
-    return (-1) ;
-  
-  pm.exactMatchMap_[key] = *params ;
-  return (0) ; 
+  if (!retval)
+    pm.msgHandler_->message(PLUGMGR_REGAPIOK,pm.msgs_)
+	<< key << CoinMessageEol ;
+  return (retval) ; 
 }
 
 /*
@@ -123,13 +188,111 @@ PluginManager &PluginManager::getInstance()
 
 
 /*
+  Load a plugin given a full path to the plugin.
+
+  Returns:
+    -3: library failed to initialise
+    -2: failed to find initFunc
+    -1: library failed to load
+     0: library loaded and initialised without error
+
+
+  \todo Implement platform-independent path handling.
+  \todo Implement resolution of symbolic links.
+  \todo Implement conversion to absolute path.
+*/
+int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
+{
+/*
+  Construct the full path for the library.
+
+  Should this be converted to a standardised absolute path? That'd avoid issues
+  with different ways of specifying the same library.
+*/
+    std::string fullPath ;
+    if (dir == nullptr || (dir->compare("") == 0)) {
+      fullPath += getDfltPluginDir() ;
+    } else {
+      fullPath += *dir ;
+    }
+    fullPath += "/"+lib ;
+/*
+  Is this library already loaded? If so, don't do it again.
+*/
+    if (dynamicLibraryMap_.find(fullPath) != dynamicLibraryMap_.end()) {
+      msgHandler_->message(PLUGMGR_LIBLDDUP,msgs_)
+	<< fullPath << CoinMessageEol ;
+      return (1) ;
+    }
+/*
+  Attempt to load the library. A null return indicates failure. Report the
+  problem and return an error.
+*/
+    std::string errStr ;
+    DynamicLibrary *dynLib = DynamicLibrary::load(fullPath, errStr) ;
+    if (!dynLib) {
+      msgHandler_->message(PLUGMGR_LIBLDFAIL,msgs_)
+	<< fullPath << errStr << CoinMessageEol ;
+      return (-1) ;
+    }
+/*
+  Find the initialisation function "initPlugin". If this entry point is missing
+  from the library, we're in trouble.
+*/
+    InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin",errStr)) ;
+    if (!initFunc) {
+      msgHandler_->message(PLUGMGR_SYMLDFAIL,msgs_)
+	<< "function" << "initPlugin" << fullPath << errStr << CoinMessageEol ;
+      return (-2) ;
+    }
+/*
+  Invoke the initialisation function, which will (in the typical case) trigger
+  the registration of the various APIs implemented in this plugin library. We
+  should get back the exit function for the library.
+
+  Set initialisingPlugin_ to true so that the APIs will be registered into the
+  temporary wildcard and exact match vectors. If initialisation is successful,
+  we'll transfer them to the permanent vectors.
+*/
+  initialisingPlugin_ = true ;
+  tmpExactMatchMap_.clear() ;
+  tmpWildCardVec_.clear() ;
+  ExitFunc exitFunc = initFunc(&platformServices_) ;
+  if (!exitFunc) {
+      msgHandler_->message(PLUGMGR_LIBINITFAIL,msgs_)
+	<< fullPath << CoinMessageEol ;
+    return (-3) ;
+  }
+  msgHandler_->message(PLUGMGR_LIBINITOK,msgs_)
+	<< fullPath << CoinMessageEol ;
+/*
+  We have happiness: the library is loaded and initialised. Do the
+  bookkeeping.  Enter the library in the library map. Add the exit function
+  to the vector of exit functions, and copy information from the temporary
+  wildcard and exact match vectors to the permanent vectors.
+*/
+  dynamicLibraryMap_[fullPath] = dynLib ; 
+  exitFuncVec_.push_back(exitFunc) ;
+  exactMatchMap_.insert(tmpExactMatchMap_.begin(),tmpExactMatchMap_.end()) ;
+  tmpExactMatchMap_.clear() ;
+  wildCardVec_.insert(wildCardVec_.end(),
+		      tmpWildCardVec_.begin(),tmpWildCardVec_.end()) ;
+  tmpWildCardVec_.clear() ;
+    
+  msgHandler_->message(PLUGMGR_LIBLDOK,msgs_) << fullPath << CoinMessageEol ;
+
+  return (0) ;
+}
+
+
+/*
  We're not going to implement loadAll functionality in the first round.
  Make this method into a guaranteed failure, so we'll catch it when it's
  called.
 */
 
-int32_t PluginManager::loadAll (const std::string &pluginDirectory,
-				    InvokeServiceFunc func)
+int PluginManager::loadAllLibs (const std::string &libDir,
+				InvokeServiceFunc func)
 {
   assert(false) ;
 
@@ -138,15 +301,15 @@ int32_t PluginManager::loadAll (const std::string &pluginDirectory,
 
 #if defined(OSI2_IMPLEMENT_LOADALL)
 
-int32_t PluginManager::loadAll(const std::string &pluginDirectory,
+int32_t PluginManager::loadAll(const std::string &libDir,
 				   InvokeServiceFunc func)
 {
-  if (pluginDirectory.empty()) // Check that the path is non-empty.
+  if (libDir.empty()) // Check that the path is non-empty.
     return -1 ;
 
   platformServices_.invokeService = func ;
 
-  Path dir_path(pluginDirectory) ;
+  Path dir_path(libDir) ;
   if (!dir_path.exists() || !dir_path.isDirectory())
     return -1 ;
 
@@ -166,25 +329,13 @@ int32_t PluginManager::loadAll(const std::string &pluginDirectory,
       continue ;
 
     // Ignore return value
-    /*int32_t res = */ loadByPath(std::string(full_path)) ;
+    /*int32_t res = */ loadOneLib(std::string(full_path)) ;
   }
 
   return 0 ;
 }
 #endif		// OSI2_IMPLEMENT_LOADALL
 
-int32_t PluginManager::initializePlugin (InitFunc initFunc)
-{
-  PluginManager &pm = PluginManager::getInstance() ;
-
-  ExitFunc exitFunc = initFunc(&pm.platformServices_) ;
-  if (!exitFunc)
-    return -1 ;
-  
-  // Store the exit func so it can be called when unloading this plugin
-  pm.exitFuncVec_.push_back(exitFunc) ;
-  return 0 ;
-}
 
 /*
   Run through the exit functions of the loaded plugins and execute each one.
@@ -197,14 +348,15 @@ int32_t PluginManager::initializePlugin (InitFunc initFunc)
   \todo: Should we have a clear() method for the plugin manager object? Given
 	 that it'll likely become more complex as we go.
 */
-int32_t PluginManager::shutdown()
+int PluginManager::shutdown()
 {
-  int32_t result = 0 ;
+  int overallResult = 0 ;
 
   for (ExitFuncVec::iterator func = exitFuncVec_.begin() ;
        func != exitFuncVec_.end() ;
        ++func)
-  {
+  { int result = 0 ;
+    bool threwError = false ;
     try
     {
       result = (*func)() ;
@@ -212,82 +364,35 @@ int32_t PluginManager::shutdown()
     catch (...)
     {
       std::cout << "Whoa! Exit function threw!" << std::endl ;
-      result = -1 ;
+      threwError = true ;
+    }
+    if (threwError || result != 0) {
+      msgHandler_->message(PLUGMGR_LIBEXITFAIL,msgs_) << CoinMessageEol ;
+      overallResult-- ;
+    } else {
+      msgHandler_->message(PLUGMGR_LIBEXITOK,msgs_) << CoinMessageEol ;
     }
   }
-  // Clear out the maps
+  /*
+    Clear out the maps. Before we clear dynamicLibraryMap_, go through and
+    delete the DynamicLibrary objects; the destructor will close the library.
+    The other vectors hold actual objects rather than pointers.
+  */
+  for (DynamicLibraryMap::iterator fwd = dynamicLibraryMap_.begin() ;
+       fwd != dynamicLibraryMap_.end() ;
+       fwd++) {
+    
+    msgHandler_->message(PLUGMGR_LIBCLOSE,msgs_)
+      << fwd->second->getLibPath() << CoinMessageEol ;
+    delete fwd->second ;
+  }
   dynamicLibraryMap_.clear() ;
   exactMatchMap_.clear() ;
   wildCardVec_.clear() ;
   exitFuncVec_.clear() ;
   
-  return (result) ;
+  return (overallResult) ;
 }
-
-/*
-  Load a plugin given a full path to the plugin.
-*/
-int32_t PluginManager::loadByPath (const std::string &pluginPath)
-{
-    /*
-      Until we implement Path.
-    
-      Path path(pluginPath) ;
-    */
-    std::string path = pluginPath ;
-    
-    /*
-      STARTUP HACK
-      Assume for now we won't have to deal with symbolic links.
-
-    // Resolve symbolic links
-    #ifndef WIN32 
-    if (path.isSymbolicLink())
-    {
-      char buff[APR_PATH_MAX+1] ;
-      int length = ::readlink(path, buff, APR_PATH_MAX) ;
-      if (length < 0)
-        return -1 ;
-        
-      path = std::string(buff, length) ;
-    }
-    #endif
-    */
-             
-    // Don't load the same dynamic library twice
-    if (dynamicLibraryMap_.find(std::string(path)) != dynamicLibraryMap_.end())
-      return -1 ;
-
-    /*
-      STARTUP HACK
-      Assume for now this isn't necessary.
-
-    path.makeAbsolute() ;
-    */
-
-    std::string errorString ;
-    DynamicLibrary *d = loadLibrary(std::string(path), errorString) ;
-    if (!d) // not a dynamic library? 
-      return -1 ;
-                    
-/*
-  Find and execute the initPlugin() function. If this entry point is missing
-  from the library, we're in trouble.
-*/
-    std::string errStr ;
-    InitFunc initFunc = (InitFunc)(d->getSymbol("initPlugin",errStr)) ;
-    if (!initFunc) {
-      std::cerr << errStr << std::endl ;
-      return (-1) ;
-    }
-    
-    int32_t res = initializePlugin(initFunc) ;
-    if (res < 0) // failed to initalize?
-      return res ;
-    
-    return 0 ;
-}
-
 
 // ---------------------------------------------------------------
 
@@ -409,22 +514,6 @@ void *PluginManager::createObject (const std::string &objectType,
   return (nullptr) ;
 }
 
-DynamicLibrary *PluginManager::loadLibrary (const std::string &path,
-						    std::string & errorString)
-{
-    DynamicLibrary *d = DynamicLibrary::load(path, errorString) ;
-    if (!d) // not a dynamic library? 
-      return (nullptr) ;
-    /*
-      STARTUP HACK
-      Assume for now we don't need to worry about absolute paths.
-
-    // Add library to map, so it can be unloaded
-    dynamicLibraryMap_[Path::makeAbsolute(path)] = boost::shared_ptr<DynamicLibrary>(d) ;
-    */
-    dynamicLibraryMap_[path] = d ;
-    return (d) ;
-}
 
 const PluginManager::RegistrationMap &PluginManager::getRegistrationMap ()
 {

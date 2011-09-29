@@ -26,32 +26,20 @@ int main(int argC, char* argV[])
   /*
     Now let's try to load the shim.
   */
+
   std::string dfltDir = plugMgr.getDfltPluginDir() ;
   std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
-  std::string errMsg ;
-  DynamicLibrary *clpShim = DynamicLibrary::load(clpShimPath,errMsg) ;
-  if (clpShim == 0) {
+
+  int retval = plugMgr.loadOneLib("libOsi2ClpShim.so.0") ;
+
+  if (retval != 0) {
     std::cout
       << "Apparent failure opening " << clpShimPath << "." << std::endl ;
     std::cout
-      << "Error is " << errMsg << "." << std::endl ;
+      << "Error code is " << retval << "." << std::endl ;
     return (-1) ;
   }
-  /*
-    Now let's see if we can invoke the init method
-  */
-  InitFunc initFunc =
-    reinterpret_cast<InitFunc>(clpShim->getSymbol("initPlugin",errMsg)) ;
-  if (initFunc == 0) {
-    std::cout
-      << "Apparent failure to obtain the init method." << std::endl ;
-    std::cerr << errMsg << std::endl ;
-    return (-1) ;
-  }
-  /*
-    And invoke it.
-  */
-  int32_t res = plugMgr.initializePlugin(initFunc) ;
+
   /*
     And can we invoke createObject? Did it work?
   */
@@ -69,16 +57,12 @@ int main(int argC, char* argV[])
     delete clp ;
   }
   /*
-    Shut down the plugin manager.
+    Shut down the plugin manager. This will call the plugin library exit
+    functions and unload the libraries.
   */
   std::cout
     << "Shutting down plugins (executing exit functions)." << std::endl ;
   plugMgr.shutdown() ;
-  /*
-    Close the shim library.
-  */
-  std::cout << "Unloading libOsi2ClpShim." << std::endl ;
-  delete clpShim ;
 
   std::cout << "END UNIT TEST" << std::endl ;
   return (0) ;
