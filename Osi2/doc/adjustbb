@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Simple filter to tweak the bounding box of a postscript file. It looks for
+# the BoundingBox line, adjusts it according to the parameters, and replaces it
+# in the input file.
+# usage: adjustbb <deltallx> <deltally> <deltaurx> <deltaury>
+# The origin is the lower left corner of the page. To increase the bounding
+# box by 1pt all around, use adjustbb -1 -1 +1 +1
+
+# Grab the deltas and strip any '+' signs; expr doesn't like them.
+
+deltallx=`echo $1 | sed -e 's/+//'`
+deltally=`echo $2 | sed -e 's/+//'`
+deltaurx=`echo $3 | sed -e 's/+//'`
+deltaury=`echo $4 | sed -e 's/+//'`
+
+# Grab the file name and strip the path to make a temp file name.
+fileName="$5"
+if expr "$5" : '.*/.*' >/dev/null 2>&1 ; then
+  baseName=`echo $5 | sed -n -e 's,^.*/\([^/][^/]*\)$,\1,p'`
+else
+  baseName="$5"
+fi
+tmpFile="/tmp/$baseName.$$"
+
+# Allow for the possibility that there may be negative numbers in the
+# bounding box.
+bbLine=`cat $fileName | sed -n -e '/^%%BoundingBox:[ 0-9-]*$/p'`
+
+set $bbLine
+llx=`expr $2 + $deltallx`
+lly=`expr $3 + $deltally`
+urx=`expr $4 + $deltaurx`
+ury=`expr $5 + $deltaury`
+
+newBB="%%BoundingBox: $llx $lly $urx $ury"
+
+sed -e "s/^%%BoundingBox:.*$/$newBB/" $fileName > $tmpFile
+mv $tmpFile $fileName
+

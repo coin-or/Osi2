@@ -1,0 +1,195 @@
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2010.3.7)  29 SEP 2011 15:45
+entering extended mode
+ %&-line parsing enabled.
+**osi2design.tex
+(./osi2design.tex
+LaTeX2e <2005/12/01>
+Babel <v3.8h> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, arabic, basque, bulgarian, coptic, welsh, czech, slovak, german, ng
+erman, danish, esperanto, spanish, catalan, galician, estonian, farsi, finnish,
+ french, greek, monogreek, ancientgreek, croatian, hungarian, interlingua, ibyc
+us, indonesian, icelandic, italian, latin, mongolian, dutch, norsk, polish, por
+tuguese, pinyin, romanian, russian, slovenian, uppersorbian, serbian, swedish, 
+turkish, ukenglish, ukrainian, loaded.
+(/usr/share/texmf/tex/latex/base/article.cls
+Document Class: article 2005/09/16 v1.4f Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/size10.clo
+File: size10.clo 2005/09/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (./loustandard.sty
+Package: loustandard 1996/04/10 v1.0 Lou Hafer Standard macros, style modificat
+ions, etc.
+
+(/usr/share/texmf/tex/latex/tools/calc.sty
+Package: calc 2005/08/06 v4.2 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count87
+\calc@Bcount=\count88
+\calc@Adimen=\dimen103
+\calc@Bdimen=\dimen104
+\calc@Askip=\skip43
+\calc@Bskip=\skip44
+LaTeX Info: Redefining \setlength on input line 75.
+LaTeX Info: Redefining \addtolength on input line 76.
+\calc@Ccount=\count89
+\calc@Cskip=\skip45
+)
+(/usr/share/texmf/tex/latex/tools/xspace.sty
+Package: xspace 2006/05/08 v1.12 Space after command names (DPC,MH)
+)
+(/usr/share/texmf/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+(/usr/share/texmf/tex/latex/tools/array.sty
+Package: array 2005/08/23 v2.4b Tabular extension package (FMi)
+\col@sep=\dimen105
+\extrarowheight=\dimen106
+\NC@list=\toks14
+\extratabsurround=\skip46
+\backup@length=\skip47
+)
+(/usr/share/texmf/tex/latex/ltxmisc/version.sty)
+\c@currsizecode=\count90
+\tmp@len=\skip48
+)
+(/usr/share/texmf/tex/latex/graphics/graphics.sty
+Package: graphics 2006/02/20 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/share/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: pdftex.def on input line 90.
+
+(/usr/share/texmf/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2007/01/08 v0.04d Graphics/color for pdfTeX
+\Gread@gobject=\count91
+)) (./codedocn.sty
+Package: codedocn 1996/04/10 v1.0 Lou Hafer Code documentation macros.
+
+(/usr/share/texmf/tex/latex/moreverb/moreverb.sty
+Package: moreverb 1997/12/07 v2.2d.2 `more' verbatim facilities
+
+(/usr/share/texmf/tex/latex/tools/verbatim.sty
+Package: verbatim 2003/08/22 v1.5q LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks15
+\verbatim@line=\toks16
+\verbatim@in@stream=\read1
+)
+\verbatim@out=\write3
+\tab@position=\count92
+\tab@size=\count93
+\listing@line=\count94
+)
+\code@docnbx=\box26
+\code@docnlen=\skip49
+\code@docnbxA=\box27
+\code@docnlenA=\skip50
+\code@snippetlen=\skip51
+\assem@comindent=\skip52
+\assem@datasze=\skip53
+\assem@addrsze=\skip54
+\assem@blkcomsze=\skip55
+\assem@commentsze=\skip56
+\assem@operandsze=\skip57
+\assem@opcodesze=\skip58
+\assem@lblsze=\skip59
+) (./osi2design.aux)
+\openout1 = `osi2design.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+
+(/usr/share/texmf/tex/context/base/supp-pdf.tex
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count95
+\scratchdimen=\dimen107
+\scratchbox=\box28
+\nofMPsegments=\count96
+\nofMParguments=\count97
+\MPscratchCnt=\count98
+\MPscratchDim=\dimen108
+\MPnumerator=\count99
+\everyMPtoPDFconversion=\toks17
+)
+LaTeX Font Info:    Try loading font information for U+pzd on input line 22.
+ (/usr/share/texmf/tex/latex/psnfss/upzd.fd
+File: upzd.fd 2001/06/04 font definitions for U/pzd.
+)
+Overfull \hbox (29.9015pt too wide) in paragraph at lines 81--87
+\OT1/cmr/m/n/10 method is then passed as a pa-ram-e-ter to the plu-gin man-ager
+'s \OT1/cmtt/m/n/10 initializePlugin \OT1/cmr/m/n/10 method. \OT1/cmtt/m/n/10 i
+nitializePlugin
+ []
+
+LaTeX Font Info:    Try loading font information for OT1+pzc on input line 91.
+(/usr/share/texmf/tex/latex/psnfss/ot1pzc.fd
+File: ot1pzc.fd 2001/06/04 font definitions for OT1/pzc.
+)
+LaTeX Font Info:    Font shape `OT1/pzc/m/it' in size <10> not available
+(Font)              Font shape `OT1/pzc/mb/it' tried instead on input line 91.
+LaTeX Font Info:    Font shape `OT1/pzc/m/it' in size <12> not available
+(Font)              Font shape `OT1/pzc/mb/it' tried instead on input line 91.
+ [1{/home/lou/.texlive2007/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+]
+Overfull \hbox (10.2995pt too wide) in paragraph at lines 111--115
+[]\OT1/cmr/m/n/10 The \OT1/cmtt/m/n/10 initPlugin \OT1/cmr/m/n/10 method re-tur
+ns an ap-pro-pri-ate cleanup method (an \OT1/cmtt/m/n/10 ExitFunc\OT1/cmr/m/n/1
+0 ) to the \OT1/cmtt/m/n/10 initializePlugin
+ []
+
+
+Overfull \hbox (6.59523pt too wide) in paragraph at lines 119--129
+[]\OT1/cmr/m/n/10 Using the plu-gin man-ager's \OT1/cmtt/m/n/10 createObject \O
+T1/cmr/m/n/10 method, the user asks for an API by name. The \OT1/cmtt/m/n/10 cr
+eateObject
+ []
+
+<apihierarchy.pdf, id=11, 90.3375pt x 149.55875pt>
+File: apihierarchy.pdf Graphic file (type pdf)
+ <use apihierarchy.pdf>
+(./osi2design.bbl) [2] [3 <./apihierarchy.pdf>] (./osi2design.aux) ) 
+Here is how much of TeX's memory you used:
+ 1216 strings out of 256216
+ 14966 string characters out of 1917073
+ 66642 words of memory out of 1500000
+ 4520 multiletter control sequences out of 10000+200000
+ 7315 words of font info for 23 fonts, out of 1200000 for 2000
+ 645 hyphenation exceptions out of 8191
+ 25i,6n,19p,205b,213s stack positions out of 5000i,500n,6000p,200000b,15000s
+{/usr/share
+/texmf/fonts/enc/dvips/base/8r.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmb
+x10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmbx12.pfb></usr/share/texmf/f
+onts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmti10
+.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/font
+s/type1/urw/zapfchan/uzcmi8a.pfb></usr/share/texmf/fonts/type1/urw/zapfding/uzd
+r.pfb>
+Output written on osi2design.pdf (3 pages, 64392 bytes).
+PDF statistics:
+ 49 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 131072)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+
