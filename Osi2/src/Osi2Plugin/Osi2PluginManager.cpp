@@ -278,8 +278,9 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   to the vector of exit functions, and copy information from the temporary
   wildcard and exact match vectors to the permanent vectors.
 */
-  dynamicLibraryMap_[fullPath] = dynLib ; 
-  exitFuncVec_.push_back(exitFunc) ;
+  DynLibInfo &info = dynamicLibraryMap_[fullPath] ;
+  info.dynLib_ = dynLib ; 
+  info.exitFunc_ = exitFunc ;
   exactMatchMap_.insert(tmpExactMatchMap_.begin(),tmpExactMatchMap_.end()) ;
   tmpExactMatchMap_.clear() ;
   wildCardVec_.insert(wildCardVec_.end(),
@@ -343,7 +344,6 @@ int32_t PluginManager::loadAll(const std::string &libDir,
 }
 #endif		// OSI2_IMPLEMENT_LOADALL
 
-
 /*
   Run through the exit functions of the loaded plugins and execute each one.
   Then clear out the maps in the manager.
@@ -355,25 +355,29 @@ int PluginManager::shutdown()
 {
   int overallResult = 0 ;
 
-  for (ExitFuncVec::iterator func = exitFuncVec_.begin() ;
-       func != exitFuncVec_.end() ;
-       ++func)
+  for (DynamicLibraryMap::iterator dlmIter = dynamicLibraryMap_.begin() ;
+       dlmIter != dynamicLibraryMap_.end() ;
+       dlmIter++)
   { int result = 0 ;
     bool threwError = false ;
+    ExitFunc func = dlmIter->second.exitFunc_ ;
+    DynamicLibrary *dynLib = dlmIter->second.dynLib_ ;
     try
     {
       result = (*func)() ;
     }
     catch (...)
     {
-      std::cout << "Whoa! Exit function threw!" << std::endl ;
+      // std::cout << "Whoa! Exit function threw!" << std::endl ;
       threwError = true ;
     }
     if (threwError || result != 0) {
-      msgHandler_->message(PLUGMGR_LIBEXITFAIL,msgs_) << CoinMessageEol ;
+      msgHandler_->message(PLUGMGR_LIBEXITFAIL,msgs_)
+          << dynLib->getLibPath() << CoinMessageEol ;
       overallResult-- ;
     } else {
-      msgHandler_->message(PLUGMGR_LIBEXITOK,msgs_) << CoinMessageEol ;
+      msgHandler_->message(PLUGMGR_LIBEXITOK,msgs_)
+          << dynLib->getLibPath() << CoinMessageEol ;
     }
   }
   /*
@@ -381,18 +385,18 @@ int PluginManager::shutdown()
     delete the DynamicLibrary objects; the destructor will unload the library.
     The other vectors hold actual objects rather than pointers.
   */
-  for (DynamicLibraryMap::iterator fwd = dynamicLibraryMap_.begin() ;
-       fwd != dynamicLibraryMap_.end() ;
-       fwd++) {
-    
+  for (DynamicLibraryMap::iterator dlmIter = dynamicLibraryMap_.begin() ;
+       dlmIter != dynamicLibraryMap_.end() ;
+       dlmIter++) {
+    DynamicLibrary *dynLib = dlmIter->second.dynLib_ ;
     msgHandler_->message(PLUGMGR_LIBCLOSE,msgs_)
-      << fwd->second->getLibPath() << CoinMessageEol ;
-    delete fwd->second ;
+      << dynLib->getLibPath() << CoinMessageEol ;
+    delete dynLib ;
   }
   dynamicLibraryMap_.clear() ;
   exactMatchMap_.clear() ;
   wildCardVec_.clear() ;
-  exitFuncVec_.clear() ;
+  // exitFuncVec_.clear() ;
   
   return (overallResult) ;
 }

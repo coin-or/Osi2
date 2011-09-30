@@ -13,6 +13,21 @@ namespace Osi2 {
 class DynamicLibrary ;
 struct IObjectAdapter ;
 
+/*! \brief Dynamic library management information
+
+  This class holds the information needed to manage a dynamic library.
+*/
+struct DynLibInfo
+{
+
+  /// The dynamic library
+  DynamicLibrary *dynLib_ ;
+  /// Exit (cleanup) function for the library; called prior to unload
+  ExitFunc exitFunc_ ;
+
+} ;
+
+
 /*! \brief Plugin library manager
 
   This class provides generic support for loading and unloading plugin
@@ -186,22 +201,17 @@ private:
   bool initialisingPlugin_ ;
 
   /// Map DynamicLibrary objects to names
-  typedef std::map<std::string,DynamicLibrary*> DynamicLibraryMap ;
+  typedef std::map<std::string,DynLibInfo> DynamicLibraryMap ;
   /// Vector of plugin registration parameters
   typedef std::vector<RegisterParams> RegistrationVec ;
-  /// Vector of plugin exit functions
-  typedef std::vector<ExitFunc> ExitFuncVec ;
   /// Registration map
   typedef std::map<std::string,RegisterParams> RegistrationMap ;
 
   /// Get the plugin registration map
   const RegistrationMap &getRegistrationMap() ;
 
-
   PlatformServices platformServices_ ;
   DynamicLibraryMap   dynamicLibraryMap_ ;
-
-  ExitFuncVec         exitFuncVec_ ;
 
   RegistrationMap     tmpExactMatchMap_;   // register exact-match object types
   RegistrationVec     tmpWildCardVec_;     // wild card ('*') object types

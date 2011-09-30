@@ -46,7 +46,7 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_INIT, 0, 7, "Plugin Manager initialising." },
   { PLUGMGR_LIBLDOK, 1, 4, "Loaded plugin library \"%s\"." },
   { PLUGMGR_LIBINITOK, 2, 4, "Initialised plugin library \"%s\"." },
-  { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library." },
+  { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library \"%s\"." },
   { PLUGMGR_LIBCLOSE, 4, 4, "Unloading plugin library \"%s\"." },
   { PLUGMGR_REGAPIOK, 12, 5, "Registered API \"%s\"." },
 
@@ -59,7 +59,8 @@ static OnePlugMgrMessage us_english[] = {
       "Load failed for plugin library \"%s\"; error \"%s\"." },
   { PLUGMGR_LIBINITFAIL, 6001, 1,
       "Initialisation failed for plugin library \"%s\"." },
-  { PLUGMGR_LIBEXITFAIL, 6002, 1, "Shutdown failed for plugin library." },
+  { PLUGMGR_LIBEXITFAIL, 6002, 1,
+      "Shutdown failed for plugin library \"%s\"." },
   { PLUGMGR_SYMLDFAIL, 6020, 1,
       "Failed to find %s \"%s\" in plugin library \"%s\", error \"%s\"." },
 
