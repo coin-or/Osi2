@@ -51,7 +51,7 @@ AC_COIN_PROG_CXX
 
 AC_COIN_CHECK_CXX_CHEADER(stdint)
 if test x"$GXX" = xyes ; then
-  CXXFLAGS="$CXXFLAGS -std=c++0x"
+  CXXFLAGS="$CXXFLAGS -std=c++98"
 fi
 
 # Initialize automake and libtool

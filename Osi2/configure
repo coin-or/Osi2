@@ -5028,7 +5028,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 if test x"$GXX" = xyes ; then
-  CXXFLAGS="$CXXFLAGS -std=c++0x"
+  CXXFLAGS="$CXXFLAGS -std=c++98"
 fi
 
 # Initialize automake and libtool
