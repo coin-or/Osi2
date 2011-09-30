@@ -124,9 +124,27 @@ public:
   //@{
 
   /// Set the log (verbosity) level
-  inline void setLogLvl(int logLvl) { logLvl_ = logLvl ; }
+  inline void setLogLvl(int logLvl) {
+    logLvl_ = logLvl ; msgHandler_->setLogLevel(logLvl_) ;
+  }
+
   /// Get the log (verbosity) level
   inline int getLogLvl() const { return (logLvl_) ; }
+
+  /*! \brief Set the message handler
+
+    Replaces the current message handler. If newHandler is null, the existing
+    handler is replaced with a default handler. It is the responsibility of
+    the client to destroy any handler it supplies. The plugin manager takes
+    responsibility for a default handler.
+  */
+  void setMsgHandler(CoinMessageHandler *newHandler) ;
+
+  /// Get the message handler
+  inline CoinMessageHandler *getMsgHandler() const { return (msgHandler_) ; }
+
+  /// Report owner of message handler (false if owned by client).
+  inline bool dfltHandler () const { return (dfltHandler_) ; }
 
   //@}
 
@@ -194,6 +212,8 @@ private:
   /// Default plugin directory
   std::string dfltPluginDir_ ;
 
+  /// Indicator; false if the message handler belongs to the client
+  bool dfltHandler_ ;
   /// Message handler
   CoinMessageHandler *msgHandler_ ;
   /// Messages

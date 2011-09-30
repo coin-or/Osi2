@@ -37,6 +37,7 @@ using namespace Osi2 ;
 */
 PluginManager::PluginManager()
   : initialisingPlugin_(false),
+    dfltHandler_(true),
     logLvl_(7)
 {
   msgHandler_ = new CoinMessageHandler() ;
@@ -44,13 +45,13 @@ PluginManager::PluginManager()
   msgHandler_->setLogLevel(logLvl_) ;
   msgHandler_->message(PLUGMGR_INIT,msgs_) << CoinMessageEol ;
   dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
-  platformServices_.version.major = 1 ;
-  platformServices_.version.minor = 0 ;
-  platformServices_.dfltPluginDir =
+  platformServices_.version_.major_ = 1 ;
+  platformServices_.version_.minor_ = 0 ;
+  platformServices_.dfltPluginDir_ =
     reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
   // can be populated during loadAll()
-  platformServices_.invokeService = (nullptr) ;
-  platformServices_.registerObject = registerObject ;
+  platformServices_.invokeService_ = (nullptr) ;
+  platformServices_.registerObject_ = registerObject ;
 }
 
 /*
@@ -62,8 +63,14 @@ PluginManager::~PluginManager ()
 {
   // Just in case it wasn't called earlier
   shutdown() ;
-
-  delete msgHandler_ ;
+  /*
+    If this is our handler, delete it. Otherwise it's the client's
+    responsibility.
+  */
+  if (dfltHandler_) {
+    delete msgHandler_ ;
+    msgHandler_ = nullptr ;
+  }
 }
 
 /*
@@ -94,20 +101,20 @@ bool PluginManager::validateRegParams (const CharString *apiStr,
     retval = false ;
   } else {
     // There must be a constructor
-    if (!params->createFunc) {
+    if (!params->createFunc_) {
       errStr += "; missing constructor" ;
       retval = false ;
     }
     // There must be a destructor
-    if (!params->destroyFunc) {
+    if (!params->destroyFunc_) {
       errStr += "; missing destructor" ;
       retval = false ;
     }
     // The major version must match
-    PluginAPIVersion ver = pm.platformServices_.version ;
-    if (ver.major != params->version.major) {
+    PluginAPIVersion ver = pm.platformServices_.version_ ;
+    if (ver.major_ != params->version_.major_) {
       pm.msgHandler_->message(PLUGMGR_BADVER,msgs_)
-	<< params->version.major << ver.major << CoinMessageEol ;
+	<< params->version_.major_ << ver.major_ << CoinMessageEol ;
       errStr += "; version mismatch" ;
       retval = false ;
     }
@@ -390,52 +397,78 @@ int PluginManager::shutdown()
   return (overallResult) ;
 }
 
-// ---------------------------------------------------------------
+/*
+  Replace the current handler with a new handler. The current handler may or
+  may not be our responsibility. If newHandler is null, create a default
+  handler. (We can't be without one; the code isn't prepared for that.)
+*/
+void PluginManager::setMsgHandler (CoinMessageHandler *newHandler)
+{
+  if (dfltHandler_) {
+    delete msgHandler_ ;
+    msgHandler_ = nullptr ;
+  }
+  if (newHandler) {
+    dfltHandler_ = false ;
+    msgHandler_ = newHandler ;
+  } else {
+    dfltHandler_ = true ;
+    msgHandler_ = new CoinMessageHandler() ;
+    msgHandler_->setLogLevel(logLvl_) ;
+  }
+}
 
-//template <typename T, typename U>
-//T *PluginManager::createObject(const std::string & objectType, IObjectAdapter<T, U> & adapter)
-//{
-//  // "*" is not a valid object type
-//  if (objectType == std::string("*"))
-//    return (nullptr) ;
-//  
-//  // Prepare object params
-//  ObjectParams np ;
-//  np.objectType = objectType.c_str() ;
-//  np.platformServices = &ServiceProvider::getInstance() ;
-//
-//  // Exact match found
-//  if (exactMatchMap_.find(objectType) != exactMatchMap_.end())
-//  {        
-//    RegisterParams & rp = exactMatchMap_[objectType] ;
-//    IObject * object = createObject(rp, np, adapter) ;
-//    if (object) // great, it worked
-//      return object ;
-//  }
-//  
-//  for (Size i = 0; i < wildCardVec_.size(); ++i)
-//  {
-//    RegisterParams & rp = wildCardVec_[i] ;
-//    IObject * object = createObject(rp, np, adapter) ;
-//    if (object) // great, it worked
-//    {
-//      // promote registration to exactMatc_ 
-//      // (but keep also the wild card registration for other object types)
-//      int32_t res = registerObject(np.objectType, &rp) ;
-//      if (res < 0)
-//      {
-//        THROW << "PluginManager::createObject(" << np.objectType << "), registration failed" ;
-//        delete object ;
-//        return (nullptr) ;
-//      }
-//      return object ;
-//    }      
-//  }
-//
-//  // Too bad no one can create this objectType
-//  return (nullptr) ;
-//}
 
+#ifdef UNDEFINED
+
+/*
+  Presumably this avoids requiring the client to cast to the appropriate type.
+  Might be worth exploring.  -- lh, 110929 --
+*/
+template <typename T, typename U>
+T *PluginManager::createObject(const std::string & objectType, IObjectAdapter<T, U> & adapter)
+{
+  // "*" is not a valid object type
+  if (objectType == std::string("*"))
+    return (nullptr) ;
+  
+  // Prepare object params
+  ObjectParams np ;
+  np.objectType = objectType.c_str() ;
+  np.platformServices = &ServiceProvider::getInstance() ;
+
+  // Exact match found
+  if (exactMatchMap_.find(objectType) != exactMatchMap_.end())
+  {        
+    RegisterParams & rp = exactMatchMap_[objectType] ;
+    IObject * object = createObject(rp, np, adapter) ;
+    if (object) // great, it worked
+      return object ;
+  }
+  
+  for (Size i = 0; i < wildCardVec_.size(); ++i)
+  {
+    RegisterParams & rp = wildCardVec_[i] ;
+    IObject * object = createObject(rp, np, adapter) ;
+    if (object) // great, it worked
+    {
+      // promote registration to exactMatc_ 
+      // (but keep also the wild card registration for other object types)
+      int32_t res = registerObject(np.objectType, &rp) ;
+      if (res < 0)
+      {
+        THROW << "PluginManager::createObject(" << np.objectType << "), registration failed" ;
+        delete object ;
+        return (nullptr) ;
+      }
+      return object ;
+    }      
+  }
+
+  // Too bad no one can create this objectType
+  return (nullptr) ;
+}
+#endif
 
 // ---------------------------------------------------------------
 
@@ -453,8 +486,8 @@ void *PluginManager::createObject (const std::string &objectType,
   that's suitable.
 */
   ObjectParams np ;
-  np.objectType = reinterpret_cast<const CharString *>(objectType.c_str()) ;
-  np.platformServices = &platformServices_ ;
+  np.apiStr_ = reinterpret_cast<const CharString *>(objectType.c_str()) ;
+  np.platformServices_ = &platformServices_ ;
 
 /*
   Check for an exact (string) match. If so, add the plugin's management object
@@ -463,11 +496,11 @@ void *PluginManager::createObject (const std::string &objectType,
 */
   if (exactMatchMap_.find(objectType) != exactMatchMap_.end()) {        
     RegisterParams &rp = exactMatchMap_[objectType] ;
-    np.client = rp.client ;
-    void *object = rp.createFunc(&np) ;
+    np.ctrlObj_ = rp.ctrlObj_ ;
+    void *object = rp.createFunc_(&np) ;
     if (object) {
-      if (rp.lang == Plugin_C)
-        object = adapter.adapt(object, rp.destroyFunc) ;
+      if (rp.lang_ == Plugin_C)
+        object = adapter.adapt(object, rp.destroyFunc_) ;
       return (object) ; 
     }
   }
@@ -484,18 +517,18 @@ void *PluginManager::createObject (const std::string &objectType,
 */
   for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
     RegisterParams &rp = wildCardVec_[i] ;
-    np.client = rp.client ;
-    void *object = rp.createFunc(&np) ;
+    np.ctrlObj_ = rp.ctrlObj_ ;
+    void *object = rp.createFunc_(&np) ;
     if (object) {
-      if (rp.lang == Plugin_C)
-        object = adapter.adapt(object,rp.destroyFunc) ;
-      int32_t res = registerObject(np.objectType,&rp) ;
+      if (rp.lang_ == Plugin_C)
+        object = adapter.adapt(object,rp.destroyFunc_) ;
+      int32_t res = registerObject(np.apiStr_,&rp) ;
       if (res < 0) {
 	std::cout
-	  << "Eh? Can't register exact match entry for object "
-	  << np.objectType << " successfully created as wildcard."
+	  << "Eh? Can't register exact match entry for object with API "
+	  << np.apiStr_ << " successfully created as wildcard."
 	  << std::endl ;
-        rp.destroyFunc(object) ;
+        rp.destroyFunc_(object,&np) ;
         return (nullptr) ;
       }
       return (object) ;
@@ -506,7 +539,7 @@ void *PluginManager::createObject (const std::string &objectType,
 */
   std::cout
     << "No plugin was able to create an object with API "
-    << np.objectType << "." << std::endl ;
+    << np.apiStr_ << "." << std::endl ;
   return (nullptr) ;
 }
 

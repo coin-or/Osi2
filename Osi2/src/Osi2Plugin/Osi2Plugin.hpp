@@ -38,86 +38,84 @@ enum PluginLang
 /// Plugin manager API version number
 struct PluginAPIVersion
 {
-  int32_t major ;
-  int32_t minor ;
+  int32_t major_ ;
+  int32_t minor_ ;
 } ;
 
-/*! \brief A plugin manager client (i.e., a plugin) object
+/*! \brief A plugin state object
 
-  This object is responsible for keeping track of whatever information
-  is necessary to manage the plugin's state (e.g., the underlying solver and
-  factories that return objects to the plugin manager. A pointer to the
-  client object is included in the #RegisterParams object returned by the
-  client when it registers APIs.
+  This object is responsible for keeping track of whatever information is
+  necessary to manage the plugin's state with respect to objects supporting
+  a given API.  A pointer to a plugin state object can be returned in the
+  #RegisterParams object supplied by the client when it registers an API.
+  It will be passed back to the plugin in the #ObjectParams structure when the
+  plugin is asked to create or destroy an object of the given API.
 
-  Typically, this is an instance of the class that implements the (static)
-  \link Osi2::CreateFunc \endlink and \link Osi2::DestroyFunc \endlink
-  methods. In essence, we're handing these static functions an explicit
-  pointer to an instance of their class which can be used to maintain state
-  information.
+  Typically, the referenced object is a instance of the class that implements
+  the (static) \link Osi2::CreateFunc \endlink and \link Osi2::DestroyFunc
+  \endlink methods. In essence, we're handing these static functions an
+  explicit pointer to an instance of their class which can be used to
+  maintain state information.
 */
-typedef void* PluginMgrClient ;
+typedef void PluginState ;
 
 /*! \defgroup PluginFuncs Plugin Management Functions
 
-    These methods are used to communicate between the plugin and the plugin
-    manager. All methods must be defined by any plugin library, even if they do
-    nothing.
+  These methods are used to communicate between the plugin and the plugin
+  manager. All methods must be defined by any plugin library, even if they
+  do nothing.
 */
 //@{
 /*! \brief Constructor for a plugin object
 
-  This method is provided by the plugin and invoked to create instances of
-  objects (APIs) supported by the plugin. A \c CreateFunc is required for each
-  registered API, but a single CreateFunc can be used for multiple APIs. This
-  is a decision for the plugin writer.
+  This function is implemented by the plugin and invoked by the plugin
+  manager to create instances of objects (APIs) supported by the plugin. A
+  \c CreateFunc must be specified for each registered API, but exactly
+  how the function is implemented is a decision for the plugin author.
 
-  \param parms \link Osi2::ObjectParams object creation parameters \endlink.
-  \returns Pointer to an object supporting the requested API, or NULL for
+  \param parms \link Osi2::ObjectParams object parameters \endlink for use
+  	   by the plugin.
+  \returns Pointer to an object supporting the requested API, or null for
 	   failure.
-
-  \todo Seems like this will need a pointer to the PluginMgrClient object
-	(currently included in ObjectParams, but think about something more
-	general that covers DestroyFunc, etc.).
 */
-typedef void *(*CreateFunc)(ObjectParams *parms) ;
+typedef void *(*CreateFunc)(const ObjectParams *parms) ;
 
 /*! \brief Destructor for a plugin object
 
-  This method is provided by the plugin and invoked to destroy instances of
-  objects (APIs) supplied by the plugin. As with the constructor, a \c
-  DestroyFunc is required for each registered API, but how this is arranged is
-  the business of the plugin writer.
+  This function is implemented by the plugin and invoked by the plugin
+  manager to destroy instances of objects (APIs) supported by the plugin. A
+  \c DestroyFunc must be specified for each registered API, but exactly how
+  the function is implemented is a decision for the plugin author.
 
   \param victim the object to be destroyed.
+  \param parms \link Osi2::ObjectParams object parameters \endlink for use
+  	   by the plugin.
   \returns 0 for success, nonzero for failure.
-
-  \todo Seems like this will need a pointer to the PluginMgrClient object.
 */
-typedef int32_t (*DestroyFunc)(void *victim) ;
+typedef int32_t (*DestroyFunc)(void *victim, const ObjectParams *parms) ;
 
 /*! \brief Function invoked by the plugin to register an API.
 
   This function is implemented by the plugin manager and passed to the plugin
-  in a PlatformServices parameter. The plugin should invoke this function to
+  in a #PlatformServices parameter. The plugin should invoke this function to
   register each API that it can provide. Typically this method is called as
   part of the execution of the \link Osi2::Initfunc \endlink. It can also be
   invoked at any time while the plugin is active to register new APIs.
 
-  \param apiName A null-terminated character string identifying the API.
-  \param params  \link Osi2::RegisterParams registration information \endlink
+  \param apiStr A null-terminated character string identifying the API.
+  \param parms  \link Osi2::RegisterParams registration information \endlink
 		 for consumption by the plugin manager.
   \returns 0 for a successful registration, nonzero otherwise.
 */
-typedef int32_t (*RegisterFunc)(const CharString *apiName,
-				const RegisterParams *params) ;
+typedef int32_t (*RegisterFunc)(const CharString *apiStr,
+				const RegisterParams *parms) ;
 
 /*! \brief Function to allow the plugin to invoke services provided by the
 	   plugin manager.
 
   This method is implemented by the plugin manager and passed to the plugin in
-  a PlatformServices parameter. The plugin can invoke this function to access
-  services provided by the plugin manager.
+  a #PlatformServices parameter object. The plugin can invoke this function to
+  access services provided by the plugin manager.
 
   \param serviceName A null-terminated character string identifying the
 		     service.
@@ -128,7 +126,7 @@ typedef int32_t (*RegisterFunc)(const CharString *apiName,
   \todo Implement this! Currently unimplemented.
 */
 typedef int32_t (*InvokeServiceFunc)(const CharString *serviceName,
-					  void * serviceParams) ;
+					  void *serviceParams) ;
 
 /*! \brief Type definition of the plugin exit function
 
@@ -148,9 +146,9 @@ typedef int32_t (*ExitFunc)() ;
   it to initialise the plugin library.
 
   Note the return type is \link Osi2::ExitFunc \endlink (used by
-  PluginManager to tell plugins to cleanup). If the initialization failed for
+  #PluginManager to tell plugins to cleanup). If the initialization failed for
   any reason the plugin must return NULL. It may also (optionally) report the
-  error via the error reporting function provided in the PlatformServices
+  error via the error reporting function provided in the #PlatformServices
   parameter.
 
   \param services Services provided by the plugin manager.
@@ -168,14 +166,23 @@ typedef ExitFunc (*InitFunc)(const PlatformServices *services) ;
 */
 struct RegisterParams
 {
-  /// Plugin manager API expected by the plugin
-  PluginAPIVersion version ;
+  /// Plugin manager version expected by the plugin
+  PluginAPIVersion version_ ;
   /// Constructor for API being registered
-  CreateFunc createFunc ;
+  CreateFunc createFunc_ ;
   /// Destructor for API being registered
-  DestroyFunc destroyFunc ;
-  PluginLang lang ;
-  PluginMgrClient client ;
+  DestroyFunc destroyFunc_ ;
+  /// Implementation language of the API
+  PluginLang lang_ ;
+  /*! \brief Plugin control object for this API
+
+    Optional pointer to an object holding state information used to manage
+    objects supporting this API. This reference will be returned to the plugin
+    as part of the \link #Osi2::ObjectParams parameters \endlink to the
+    \link Osi2::CreateFunc create \endlink and \link Osi2::DestroyFunc destroy
+    \endlink functions for objects of this API.
+  */
+  PluginState *ctrlObj_ ;
 } ;
 
 /*! \brief Parameters passed to a plugin for object creation and destruction.
@@ -187,31 +194,38 @@ struct RegisterParams
 struct ObjectParams
 {
   /// Character string specifying the API(s) to be supplied
-  const CharString *objectType ;
+  const CharString *apiStr_ ;
   /*! \brief Services provided by the plugin manager
 
     See Osi2::PlatformServices.
   */
-  const struct PlatformServices *platformServices ;
-  /// Pointer to the plugin object
-  PluginMgrClient client ;
+  const struct PlatformServices *platformServices_ ;
+  /*! \brief Plugin control object for this API
+
+    Optional pointer to an object holding state information used to manage
+    objects supporting this API. This is the control object supplied with the
+    \link Osi2::RegisterParams registration parameters \endlink for this API.
+  */
+  PluginState *ctrlObj_ ;
 } ;
 
 /*! \brief Attributes and methods provided by the plugin framework for use
 	   by plugins.
+
+  \todo Provide some services!
 */
 struct PlatformServices
 {
   /// Plugin manager version
-  PluginAPIVersion version ;
+  PluginAPIVersion version_ ;
   /// Default directory to search for plugins
-  const CharString *dfltPluginDir ;
+  const CharString *dfltPluginDir_ ;
   /// Method to register an object supported by the plugin
-  RegisterFunc registerObject; 
+  RegisterFunc registerObject_ ; 
   /*! \brief Method to allow the plugin to invoke a service provided by the
   	     plugin manager.
   */
-  InvokeServiceFunc invokeService; 
+  InvokeServiceFunc invokeService_; 
 } ;
 
 

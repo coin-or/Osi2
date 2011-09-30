@@ -27,10 +27,10 @@ class ClpShim {
     Create clp-specific objects to satisfy the Osi2 API specified as the
     \p objectType member of of \p params.
   */
-  static void *create (ObjectParams *params) ;
+  static void *create (const ObjectParams *params) ;
 
   /// Cleanup method
-  static int32_t cleanup (void *param) ;
+  static int32_t cleanup (void *victim, const ObjectParams *params) ;
 
   /// Set libClp handle
   inline void setLibClp (DynamicLibrary *libClp) { libClp_ = libClp ; }

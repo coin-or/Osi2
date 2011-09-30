@@ -35,9 +35,9 @@ typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
   Create clp-specific objects to satisfy the Osi2 API specified as the
   \p objectType member of of \p params.
 */
-void *ClpShim::create (ObjectParams *params)
+void *ClpShim::create (const ObjectParams *params)
 {
-  std::string what = reinterpret_cast<const char *>(params->objectType) ;
+  std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
   void *retval = 0 ;
 
   std::cout << "Clp create: type " << what << "." << std::endl ;
@@ -45,7 +45,7 @@ void *ClpShim::create (ObjectParams *params)
   if (what == "ClpSimplex" || what == "ProbMgmt") {
     std::cout
       << "Request to create " << what << " recognised." << std::endl ;
-    ClpShim *shim = static_cast<ClpShim*>(params->client) ;
+    ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
     DynamicLibrary *libClp = shim->libClp_ ;
     std::string errStr ;
     ClpFactory factory =
@@ -81,9 +81,10 @@ void *ClpShim::create (ObjectParams *params)
 
 /*! \brief Cleanup method
 
-  Hmmm ... how to keep track when we have no apparent object?
+  Hmmm ... how to do this? At least now we have the object parameters, which
+  include a pointer to the ClpShim object.
 */
-int32_t ClpShim::cleanup (void *params)
+int32_t ClpShim::cleanup (void *victim, const ObjectParams *objParms)
 {
   return (0) ;
 }
@@ -106,7 +107,7 @@ ExitFunc initPlugin (const PlatformServices *services)
   Attempt to load clp.
 */
   std::string libClpName = "libClp.so.0" ;
-  const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir) ;
+  const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir_) ;
   std::string libPath(tmp) ;
   std::string errMsg ;
   std::string fullPath = libPath+"/"+libClpName ;
@@ -128,18 +129,18 @@ ExitFunc initPlugin (const PlatformServices *services)
   RegisterParams reginfo ;
   ClpShim *shim = new ClpShim() ;
   shim->setLibClp(libClp) ;
-  reginfo.client = static_cast<void*>(shim) ;
+  reginfo.ctrlObj_ = static_cast<void*>(shim) ;
 /*
   Fill in the rest of the registration parameters and invoke the registration
   method.
 */
-  reginfo.version.major = 1 ;
-  reginfo.version.minor = CLP_VERSION_MINOR ;
-  reginfo.lang = Plugin_CPP ;
-  reginfo.createFunc = ClpShim::create ;
-  reginfo.destroyFunc = ClpShim::cleanup ;
+  reginfo.version_.major_ = 1 ;
+  reginfo.version_.minor_ = CLP_VERSION_MINOR ;
+  reginfo.lang_ = Plugin_CPP ;
+  reginfo.createFunc_ = ClpShim::create ;
+  reginfo.destroyFunc_ = ClpShim::cleanup ;
   int retval =
-      services->registerObject(
+      services->registerObject_(
 	  reinterpret_cast<const unsigned char*>("ClpSimplex"),&reginfo) ;
   if (retval < 0) {
     std::cout
@@ -147,7 +148,7 @@ ExitFunc initPlugin (const PlatformServices *services)
     return (0) ;
   }
   retval =
-      services->registerObject(
+      services->registerObject_(
 	  reinterpret_cast<const unsigned char*>("ProbMgmt"),&reginfo) ;
   if (retval < 0) {
     std::cout

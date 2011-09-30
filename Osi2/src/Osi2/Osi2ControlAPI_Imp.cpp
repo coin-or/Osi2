@@ -78,6 +78,21 @@ ControlAPI *ControlAPI_Imp::clone ()
 
 /*
   Load and unload
+
+  I need to rethink my approach here. The Osi2 client wants access to an API.
+  They really don't care about the `load' part. This should be a lazy
+  operation, where Osi2 asks the plugin manager if something that supports
+  this API is already loaded, we just return an object of the proper sort.
+  If not, we ask for a load.
+
+  But how clean can I make that? Some object, somewhere, must know the
+  relation between the requested API and a solver library. Or how to find a
+  default solver.
+
+  Or maybe I want a blended interface. With the control API, the client can
+  ask to load a particular plugin library, getting back a simply true/false.
+  The business of asking for objects that implement particular APIs then
+  becomes a different set of methods (createAPI, destroyAPI).
 */
 
 API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
@@ -100,6 +115,14 @@ API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
 */
   std::string dfltDir = pluginMgr_->getDfltPluginDir() ;
   if (solver.compare("clp") == 0) {
+    int retval = pluginMgr_->loadOneLib("libOsi2ClpShim.so.0") ;
+    if (retval < 0) {
+    /*
+      Ok, who should own the Osi2 message handler? The base API class?
+      The ControlAPI class? Should we borrow it from the plugin manager?
+    */
+    }
+  /*
     std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
     std::string errMsg ;
     DynamicLibrary *clpShim = DynamicLibrary::load(clpShimPath,errMsg) ;
@@ -111,6 +134,7 @@ API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
       rtncode = -3 ;
       return (apiPtr) ;
     }
+  */
   }
 /*
   Check that the solver implements the required API.
@@ -130,6 +154,10 @@ API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
   return (apiPtr) ;
 }
 
+/*
+  Just what does it mean to unload an API? Unloading a library has meaning,
+  but for an individual API it's questionable.
+*/
 int ControlAPI_Imp::unload (API *api)
 {
   return (-1) ;
