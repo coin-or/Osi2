@@ -120,15 +120,16 @@ ExitFunc initPlugin (const PlatformServices *services)
     return (0) ;
   }
 /*
-  Arrange to remember the handle to libClp, and in general remember what we're
-  doing with an ClpShim object. Stash the handle for libClp in the
-  ClpShim, then stash a pointer to the shim in RegisterParams. This
-  allows the plugin manager to hand back the shim object with each call, which
-  in turn allows us to remember what we're doing.
+  Arrange to remember the handle to libClp, and in general remember what
+  we're doing with an ClpShim object. Stash the handle for libClp in the
+  ClpShim, then stash a pointer to the shim in RegisterParams. This allows
+  the plugin manager to hand back the shim object with each call, which in
+  turn allows us to remember what we're doing.
 */
   RegisterParams reginfo ;
   ClpShim *shim = new ClpShim() ;
   shim->setLibClp(libClp) ;
+  shim->setPluginID(services->pluginID_) ;
   reginfo.ctrlObj_ = static_cast<void*>(shim) ;
 /*
   Fill in the rest of the registration parameters and invoke the registration
@@ -137,6 +138,7 @@ ExitFunc initPlugin (const PlatformServices *services)
   reginfo.version_.major_ = 1 ;
   reginfo.version_.minor_ = CLP_VERSION_MINOR ;
   reginfo.lang_ = Plugin_CPP ;
+  reginfo.pluginID_ = shim->getPluginID() ;
   reginfo.createFunc_ = ClpShim::create ;
   reginfo.destroyFunc_ = ClpShim::cleanup ;
   int retval =

@@ -48,7 +48,7 @@ PluginManager::PluginManager()
   platformServices_.version_.major_ = 1 ;
   platformServices_.version_.minor_ = 0 ;
   platformServices_.dfltPluginDir_ =
-    reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
+      reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
   // can be populated during loadAll()
   platformServices_.invokeService_ = (nullptr) ;
   platformServices_.registerObject_ = registerObject ;
@@ -78,16 +78,19 @@ PluginManager::~PluginManager ()
   validation of the parameters it gives to the plugin manager when registering
   an API.
 
-  \todo
-  This should be improved as we add parameters.
+  \parm Registration string supplied by plugin
+  \parm Registration parameter block supplied by plugin
+
+  \returns Pointer to the DynamicLibrary struct for this library, or
+  	   null on error.
 */
 
-bool PluginManager::validateRegParams (const CharString *apiStr,
-				       const RegisterParams *params) const
+DynamicLibrary *PluginManager::validateRegParams (const CharString *apiStr,
+					 const RegisterParams *params) const
 {
-  PluginManager &pm = getInstance() ;
   bool retval = true ;
   std::string errStr = "" ;
+  DynamicLibrary *dynLib = nullptr ;
 
   // The API to be registered must have a name
   if (!apiStr || !(*apiStr)) {
@@ -100,6 +103,32 @@ bool PluginManager::validateRegParams (const CharString *apiStr,
     errStr += "; no registration parameter block" ;
     retval = false ;
   } else {
+    /*
+      The pluginID must be valid. If we're initialising the library, it will
+      not appear in dynamicLibraryMap.
+    */
+    if (initialisingPlugin_) {
+      if (libInInit_ != params->pluginID_) {
+	errStr += "; bad plugin library ID" ;
+	retval = false ;
+      } else {
+        dynLib = libInInit_ ;
+      }
+    } else {
+      DynamicLibraryMap::const_iterator dlmIter ;
+      for (dlmIter = dynamicLibraryMap_.begin() ;
+	   dlmIter != dynamicLibraryMap_.end() ;
+	   dlmIter++)
+      {
+	if (params->pluginID_ == dlmIter->second.dynLib_) break ;
+      }
+      if (dlmIter == dynamicLibraryMap_.end()) {
+	errStr += "; bad plugin library ID" ;
+	retval = false ;
+      } else {
+	dynLib = dlmIter->second.dynLib_ ;
+      }
+    }
     // There must be a constructor
     if (!params->createFunc_) {
       errStr += "; missing constructor" ;
@@ -111,9 +140,9 @@ bool PluginManager::validateRegParams (const CharString *apiStr,
       retval = false ;
     }
     // The major version must match
-    PluginAPIVersion ver = pm.platformServices_.version_ ;
+    PluginAPIVersion ver = platformServices_.version_ ;
     if (ver.major_ != params->version_.major_) {
-      pm.msgHandler_->message(PLUGMGR_BADVER,msgs_)
+      msgHandler_->message(PLUGMGR_BADVER,msgs_)
 	<< params->version_.major_ << ver.major_ << CoinMessageEol ;
       errStr += "; version mismatch" ;
       retval = false ;
@@ -125,22 +154,22 @@ bool PluginManager::validateRegParams (const CharString *apiStr,
     msgHandler_->message(PLUGMGR_BADAPIPARM,msgs_) << errStr << CoinMessageEol ;
   }
   
-  return (retval) ;
+  return (dynLib) ;
 }
 /*
   This method is used by the plugin to register the APIs it supports. A pointer
-  to the method is passed to the plugin in a PlatformServices object.
+  to this method is passed to the plugin in a PlatformServices object.
 
   Returns 0 for success, -1 for failure.
 */
-int32_t PluginManager::registerObject (const CharString *objectType,
+int32_t PluginManager::registerObject (const CharString *apiStr,
 				       const RegisterParams *params)
 {
   PluginManager &pm = getInstance() ;
 
   // Validate the parameter block
-  if (!pm.validateRegParams(objectType,params)) return (-1) ;
-
+  DynamicLibrary *dynLib = pm.validateRegParams(apiStr,params) ;
+  if (dynLib == nullptr) return (-1) ;
 /*
   If the registration is a wild card, add it to the wild card vector. If the
   registration is for a specific API, check before adding to the exact match
@@ -148,8 +177,11 @@ int32_t PluginManager::registerObject (const CharString *objectType,
 
   If this call comes while we're initialising a plugin, add the APIs to
   temporary vectors for merge if initialisation is successful.
+
+  Note that we cannot just store a pointer to the RegisterParams block;
+  there's no telling how the plugin is handling it and we don't get ownership.
 */
-  std::string key((const char *) objectType) ;
+  std::string key((const char *) apiStr) ;
   int retval = 0 ;
 
   if (key == std::string("*")) {
@@ -159,12 +191,15 @@ int32_t PluginManager::registerObject (const CharString *objectType,
       pm.wildCardVec_.push_back(*params) ;
     }
   } else {
-    if (pm.exactMatchMap_.find(key) != pm.exactMatchMap_.end()) {
+    RegistrationMap::const_iterator oldAPI = pm.exactMatchMap_.find(key) ;
+    if (oldAPI != pm.exactMatchMap_.end()) {
       retval = -1 ;
     } else
-    if (pm.initialisingPlugin_ &&
-	pm.tmpExactMatchMap_.find(key) != pm.tmpExactMatchMap_.end()) {
-      retval = -1 ;
+    if (pm.initialisingPlugin_) {
+      oldAPI = pm.tmpExactMatchMap_.find(key) ;
+      if (oldAPI != pm.tmpExactMatchMap_.end()) {
+	retval = -1 ;
+      }
     }
     if (retval) {
       pm.msgHandler_->message(PLUGMGR_REGDUPAPI,pm.msgs_)
@@ -179,7 +214,7 @@ int32_t PluginManager::registerObject (const CharString *objectType,
   }
   if (!retval)
     pm.msgHandler_->message(PLUGMGR_REGAPIOK,pm.msgs_)
-	<< key << CoinMessageEol ;
+	<< key << dynLib->getLibPath() << CoinMessageEol ;
   return (retval) ; 
 }
 
@@ -262,12 +297,21 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   we'll transfer them to the permanent vectors.
 */
   initialisingPlugin_ = true ;
+  libInInit_ = dynLib ;
   tmpExactMatchMap_.clear() ;
   tmpWildCardVec_.clear() ;
+  platformServices_.dfltPluginDir_ =
+      reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
+  platformServices_.pluginID_ = dynLib ;
+  std::cout
+    << "Plugin ID passed to plugin is " << platformServices_.pluginID_
+    << std::endl ;
   ExitFunc exitFunc = initFunc(&platformServices_) ;
   if (!exitFunc) {
       msgHandler_->message(PLUGMGR_LIBINITFAIL,msgs_)
 	<< fullPath << CoinMessageEol ;
+    /// Should unload library here!
+    initialisingPlugin_ = false ;
     return (-3) ;
   }
   msgHandler_->message(PLUGMGR_LIBINITOK,msgs_)
@@ -286,6 +330,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   wildCardVec_.insert(wildCardVec_.end(),
 		      tmpWildCardVec_.begin(),tmpWildCardVec_.end()) ;
   tmpWildCardVec_.clear() ;
+  initialisingPlugin_ = false ;
     
   msgHandler_->message(PLUGMGR_LIBLDOK,msgs_) << fullPath << CoinMessageEol ;
 
@@ -396,7 +441,6 @@ int PluginManager::shutdown()
   dynamicLibraryMap_.clear() ;
   exactMatchMap_.clear() ;
   wildCardVec_.clear() ;
-  // exitFuncVec_.clear() ;
   
   return (overallResult) ;
 }
@@ -430,21 +474,21 @@ void PluginManager::setMsgHandler (CoinMessageHandler *newHandler)
   Might be worth exploring.  -- lh, 110929 --
 */
 template <typename T, typename U>
-T *PluginManager::createObject(const std::string & objectType, IObjectAdapter<T, U> & adapter)
+T *PluginManager::createObject(const std::string & apiStr, IObjectAdapter<T, U> & adapter)
 {
   // "*" is not a valid object type
-  if (objectType == std::string("*"))
+  if (apiStr == std::string("*"))
     return (nullptr) ;
   
   // Prepare object params
   ObjectParams np ;
-  np.objectType = objectType.c_str() ;
+  np.apiStr = apiStr.c_str() ;
   np.platformServices = &ServiceProvider::getInstance() ;
 
   // Exact match found
-  if (exactMatchMap_.find(objectType) != exactMatchMap_.end())
+  if (exactMatchMap_.find(apiStr) != exactMatchMap_.end())
   {        
-    RegisterParams & rp = exactMatchMap_[objectType] ;
+    RegisterParams & rp = exactMatchMap_[apiStr] ;
     IObject * object = createObject(rp, np, adapter) ;
     if (object) // great, it worked
       return object ;
@@ -458,10 +502,10 @@ T *PluginManager::createObject(const std::string & objectType, IObjectAdapter<T,
     {
       // promote registration to exactMatc_ 
       // (but keep also the wild card registration for other object types)
-      int32_t res = registerObject(np.objectType, &rp) ;
+      int32_t res = registerObject(np.apiStr, &rp) ;
       if (res < 0)
       {
-        THROW << "PluginManager::createObject(" << np.objectType << "), registration failed" ;
+        THROW << "PluginManager::createObject(" << np.apiStr << "), registration failed" ;
         delete object ;
         return (nullptr) ;
       }
@@ -477,20 +521,20 @@ T *PluginManager::createObject(const std::string & objectType, IObjectAdapter<T,
 // ---------------------------------------------------------------
 
 
-void *PluginManager::createObject (const std::string &objectType,
+void *PluginManager::createObject (const std::string &apiStr,
 				   IObjectAdapter &adapter)
 {
 /*
   "*" is not a valid object type --- some qualification is needed.
 */
-  if (objectType == std::string("*")) return (nullptr) ;
+  if (apiStr == std::string("*")) return (nullptr) ;
   
 /*
   Set up a parameter block to pass to the plugin (assuming we find one
   that's suitable.
 */
   ObjectParams np ;
-  np.apiStr_ = reinterpret_cast<const CharString *>(objectType.c_str()) ;
+  np.apiStr_ = reinterpret_cast<const CharString *>(apiStr.c_str()) ;
   np.platformServices_ = &platformServices_ ;
 
 /*
@@ -498,8 +542,8 @@ void *PluginManager::createObject (const std::string &objectType,
   to the parameter block and ask for an object. If we're successful, we need
   one last step for a C plugin --- wrap it for C++ use.
 */
-  if (exactMatchMap_.find(objectType) != exactMatchMap_.end()) {        
-    RegisterParams &rp = exactMatchMap_[objectType] ;
+  if (exactMatchMap_.find(apiStr) != exactMatchMap_.end()) {        
+    RegisterParams &rp = exactMatchMap_[apiStr] ;
     np.ctrlObj_ = rp.ctrlObj_ ;
     void *object = rp.createFunc_(&np) ;
     if (object) {
@@ -547,11 +591,6 @@ void *PluginManager::createObject (const std::string &objectType,
   return (nullptr) ;
 }
 
-
-const PluginManager::RegistrationMap &PluginManager::getRegistrationMap ()
-{
-  return (exactMatchMap_) ;
-}
 
 PlatformServices &PluginManager::getPlatformServices ()
 {

@@ -32,6 +32,10 @@ class ClpShim {
   /// Cleanup method
   static int32_t cleanup (void *victim, const ObjectParams *params) ;
 
+  /// Set our unique ID (supplied by the plugin manager)
+  inline void setPluginID (PluginUniqueID id) { ourID_ = id ; }
+  /// Get our unique ID
+  inline PluginUniqueID getPluginID () const { return (ourID_) ; }
   /// Set libClp handle
   inline void setLibClp (DynamicLibrary *libClp) { libClp_ = libClp ; }
   /// Get libClp handle
@@ -55,6 +59,9 @@ class ClpShim {
 
   /// The handle for libClp
   DynamicLibrary *libClp_ ;
+
+  /// Our registration ID from the plugin manager
+  PluginUniqueID ourID_ ;
 
   /// Verbosity level for information messages
   int verbosity_ ;

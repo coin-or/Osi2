@@ -13,20 +13,6 @@ namespace Osi2 {
 class DynamicLibrary ;
 struct IObjectAdapter ;
 
-/*! \brief Dynamic library management information
-
-  This class holds the information needed to manage a dynamic library.
-*/
-struct DynLibInfo
-{
-
-  /// The dynamic library
-  DynamicLibrary *dynLib_ ;
-  /// Exit (cleanup) function for the library; called prior to unload
-  ExitFunc exitFunc_ ;
-
-} ;
-
 
 /*! \brief Plugin library manager
 
@@ -35,13 +21,26 @@ struct DynLibInfo
   with the manager. Clients can then ask for objects which support a registered
   API. APIs are identified by strings.
 
+  There is a single instance of the plugin manager (declared as a static
+  object private to #getInstance).
+
   The act of loading a plugin library is an atomic transaction managed by
-  #loadOneLib: The library must be found, loaded, and successfully execute
+  #loadOneLib: The library must be found, loaded, and successfully complete
   its initialisation function before registration information is copied into
   the manager's client-accessible data structures.
 
-  There is a single instance of the plugin manager (declared as a static
-  object private to #getInstance).
+  APIs are registered by plugin libraries; a character string identifies each
+  API. If the registration string is exactly "*", the registration is classed
+  as a wildcard and entered in the #wildCardVec_. Otherwise, it will be
+  entered in the #exactMatchMap_ using the character string as the key.
+  
+  Clients request an object supporting a specific API by specifying a
+  character string.  If an exact match for the API requested by the client
+  is not found in #exactMatchMap_, the #wildCardVec_ is scanned. For each
+  entry, the corresponding create function is asked to create an object
+  supporting the requested API. If this is successful, an entry is made in the
+  #exactMatchMap_ so that subsequent requests for the same API can be
+  satisfied more efficiently.
 
   \todo What about unloading an individual library? Currently, all we can do
 	is shut down the plugin manager, unloading all plugin libraries. For
@@ -171,7 +170,6 @@ private:
   static int32_t registerObject(const CharString *nodeType,
                                 const RegisterParams *params) ;
 
-
   /*! \name Constructors and Destructors
 
     Private because the plugin manager should be a single static instance.
@@ -189,9 +187,58 @@ private:
 
     Check the validity of a registration parameter block supplied by
     a plugin to register an API.
+
+    \returns A reference to the dynamic library object for the plugin
+    	     library attempting the registration, or null on error.
   */
-  bool validateRegParams(const CharString *apiStr,
-			 const RegisterParams *params) const ;
+  DynamicLibrary *validateRegParams(const CharString *apiStr,
+		    const RegisterParams *params) const ;
+
+
+  /// Partially filled-in platform services record
+  PlatformServices platformServices_ ;
+
+  /*! \brief Plugin library management information
+
+    This struct holds the information needed to manage a plugin library.
+  */
+  struct DynLibInfo
+  {
+
+    /// The dynamic library
+    DynamicLibrary *dynLib_ ;
+    /// Exit (cleanup) function for the library; called prior to unload
+    ExitFunc exitFunc_ ;
+
+  } ;
+
+  /// Map type for plugin library management
+  typedef std::map<std::string,DynLibInfo> DynamicLibraryMap ;
+
+  /*! \brief Plugin library management map
+
+    Maps the full path used to specify the plugin library to a block of
+    information (#DynLibInfo) used to manage the library.
+  */
+  DynamicLibraryMap dynamicLibraryMap_ ;
+
+  /// Map type for API management
+  typedef std::map<std::string,RegisterParams> RegistrationMap ;
+  /// Vector type for wildcard management
+  typedef std::vector<RegisterParams> RegistrationVec ;
+
+  /*! \brief API management information map
+
+    Maps specific APIs registered by plugin libraries to a block of
+    information (#APIInfo) used to manage the API.
+  */
+  RegistrationMap exactMatchMap_ ;
+  /*! \brief Wildcard management information
+
+    Records management information for wildcard registrations by plugin
+    libraries.
+  */
+  RegistrationVec wildCardVec_ ;
 
   /*! \brief Initialising a plugin?
 
@@ -199,25 +246,16 @@ private:
     activity (API registration, etc) should go to temporary structures.
   */
   bool initialisingPlugin_ ;
+  /*! \brief The library we're initialising;
 
-  /// Map DynamicLibrary objects to names
-  typedef std::map<std::string,DynLibInfo> DynamicLibraryMap ;
-  /// Vector of plugin registration parameters
-  typedef std::vector<RegisterParams> RegistrationVec ;
-  /// Registration map
-  typedef std::map<std::string,RegisterParams> RegistrationMap ;
+    Valid exactly when #initialisingPlugin_ is true.
+  */
+  DynamicLibrary *libInInit_ ;
 
-  /// Get the plugin registration map
-  const RegistrationMap &getRegistrationMap() ;
-
-  PlatformServices platformServices_ ;
-  DynamicLibraryMap   dynamicLibraryMap_ ;
-
-  RegistrationMap     tmpExactMatchMap_;   // register exact-match object types
-  RegistrationVec     tmpWildCardVec_;     // wild card ('*') object types
-
-  RegistrationMap     exactMatchMap_;   // register exact-match object types
-  RegistrationVec     wildCardVec_;     // wild card ('*') object types
+  /// Temporary API map used during plugin library initialisation
+  RegistrationMap tmpExactMatchMap_ ;
+  /// Temporary wildcard vector used during plugin library initialisation
+  RegistrationVec tmpWildCardVec_ ;     // wild card ('*') object types
 
   /// Default plugin directory
   std::string dfltPluginDir_ ;

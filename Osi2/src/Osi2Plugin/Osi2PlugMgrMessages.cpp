@@ -48,7 +48,8 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_LIBINITOK, 2, 4, "Initialised plugin library \"%s\"." },
   { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library \"%s\"." },
   { PLUGMGR_LIBCLOSE, 4, 4, "Unloading plugin library \"%s\"." },
-  { PLUGMGR_REGAPIOK, 12, 5, "Registered API \"%s\"." },
+  { PLUGMGR_REGAPIOK, 12, 5,
+      "Registered API \"%s\" for plugin library \"%s\"." },
 
   // Warning: 3000 -- 5999
   { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
