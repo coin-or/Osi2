@@ -187,6 +187,8 @@ private:
   ~PluginManager() ;
   //@}
 
+  /*! \name Utility methods */
+  //@{
   /*! \brief Validate registration parameters
 
     Check the validity of a registration parameter block supplied by
@@ -197,7 +199,14 @@ private:
   */
   DynamicLibrary *validateRegParams(const CharString *apiStr,
 		    const RegisterParams *params) const ;
+  /*! \brief Construct an ObjectParams block
 
+    Constructs the parameter block passed to the plugin for object creation
+    or destruction.
+  */
+  ObjectParams *buildObjectParams(const std::string apiStr,
+				  const RegisterParams &rp) ;
+  //@}
 
   /// Partially filled-in platform services record
   PlatformServices platformServices_ ;
@@ -218,12 +227,22 @@ private:
 
   } ;
 
+  /// Map type to map library path strings to PluginUniqueID
+  typedef std::map<std::string,PluginUniqueID> LibPathToIDMap ;
+
+  /*! \brief Plugin library path to ID map
+
+    So that we don't have to work with strings internally, map the full
+    path to a more tractable ID.
+  */
+  LibPathToIDMap libPathToIDMap_ ;
+
   /// Map type for plugin library management
-  typedef std::map<std::string,DynLibInfo> DynamicLibraryMap ;
+  typedef std::map<PluginUniqueID,DynLibInfo> DynamicLibraryMap ;
 
   /*! \brief Plugin library management map
 
-    Maps the full path used to specify the plugin library to a block of
+    Maps the unique ID assigned to the plugin library to a block of
     information (#DynLibInfo) used to manage the library.
   */
   DynamicLibraryMap dynamicLibraryMap_ ;

@@ -261,7 +261,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
 /*
   Is this library already loaded? If so, don't do it again.
 */
-  if (dynamicLibraryMap_.find(fullPath) != dynamicLibraryMap_.end()) {
+  if (libPathToIDMap_.find(fullPath) != libPathToIDMap_.end()) {
     msgHandler_->message(PLUGMGR_LIBLDDUP,msgs_)
       << fullPath << CoinMessageEol ;
     return (1) ;
@@ -307,7 +307,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   if (!exitFunc) {
       msgHandler_->message(PLUGMGR_LIBINITFAIL,msgs_)
 	<< fullPath << CoinMessageEol ;
-    /// Should unload library here!
+    delete dynLib ;
     initialisingPlugin_ = false ;
     return (-3) ;
   }
@@ -319,7 +319,8 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   to the vector of exit functions, and copy information from the temporary
   wildcard and exact match vectors to the permanent vectors.
 */
-  DynLibInfo &info = dynamicLibraryMap_[fullPath] ;
+  libPathToIDMap_[fullPath] = dynLib ;
+  DynLibInfo &info = dynamicLibraryMap_[dynLib] ;
   info.dynLib_ = dynLib ; 
   info.ctrlObj_ = platformServices_.ctrlObj_ ;
   info.exitFunc_ = exitFunc ;
@@ -414,12 +415,14 @@ int PluginManager::unloadOneLib (const std::string &lib,
 /*
   Find the entry for the library. Warn the user if the library is not loaded.
 */
-  DynamicLibraryMap::iterator dlmIter = dynamicLibraryMap_.find(fullPath) ;
-  if (dlmIter == dynamicLibraryMap_.end()) {
+  LibPathToIDMap::iterator lpiIter = libPathToIDMap_.find(fullPath) ;
+  if (lpiIter == libPathToIDMap_.end()) {
     msgHandler_->message(PLUGMGR_LIBNOTFOUND,msgs_)
       << fullPath << CoinMessageEol ;
     return (1) ;
   }
+  DynamicLibraryMap::iterator dlmIter =
+      dynamicLibraryMap_.find(lpiIter->second) ;
 /*
   Step through the exact match map and remove any entries that are registered
   to this library. Regrettably, erase for a map is defined to invalidate the
@@ -487,6 +490,7 @@ int PluginManager::unloadOneLib (const std::string &lib,
     << dynLib->getLibPath() << CoinMessageEol ;
   delete dynLib ;
   dynamicLibraryMap_.erase(dlmIter) ;
+  libPathToIDMap_.erase(lpiIter) ;
 
   return (result) ;
 }
@@ -544,6 +548,7 @@ int PluginManager::shutdown()
       << dynLib->getLibPath() << CoinMessageEol ;
     delete dynLib ;
   }
+  libPathToIDMap_.clear() ;
   dynamicLibraryMap_.clear() ;
   exactMatchMap_.clear() ;
   wildCardVec_.clear() ;
@@ -572,6 +577,105 @@ void PluginManager::setMsgHandler (CoinMessageHandler *newHandler)
   }
 }
 
+
+// ---------------------------------------------------------------
+
+/*
+  Construct an ObjectParams block to pass to the plugin.
+
+  This method hides the details of constructing the object creation parameters.
+  In particular, it hides the business of finding the correct library state
+  object.
+*/
+ObjectParams *PluginManager::buildObjectParams (const std::string apiStr,
+						const RegisterParams &rp)
+{
+  ObjectParams *objParms = new ObjectParams() ;
+  objParms->apiStr_ = reinterpret_cast<const CharString *>(apiStr.c_str()) ;
+
+  DynamicLibraryMap::iterator dlmIter =
+      dynamicLibraryMap_.find(rp.pluginID_) ;
+  DynLibInfo &dynLib = dlmIter->second ;
+  platformServices_.pluginID_ = rp.pluginID_ ;
+  platformServices_.ctrlObj_ = dynLib.ctrlObj_ ;
+  objParms->platformServices_ = &platformServices_ ;
+  objParms->ctrlObj_ = rp.ctrlObj_ ;
+
+  return (objParms) ;
+}
+
+
+void *PluginManager::createObject (const std::string &apiStr,
+				   IObjectAdapter &adapter)
+{
+/*
+  "*" is not a valid object type --- some qualification is needed.
+*/
+  if (apiStr == std::string("*")) {
+    msgHandler_->message(PLUGMGR_APICREATEFAIL,msgs_)
+      << apiStr << "wildcard is invalid for createObject" << CoinMessageEol ;
+    return (nullptr) ;
+  }
+/*
+  Check for an exact (string) match. If so, add the plugin's management object
+  to the parameter block and ask for an object. If we're successful, we need
+  one last step for a C plugin --- wrap it for C++ use.
+*/
+  if (exactMatchMap_.find(apiStr) != exactMatchMap_.end()) {        
+    RegisterParams &rp = exactMatchMap_[apiStr] ;
+    ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
+    void *object = rp.createFunc_(objParms) ;
+    delete objParms ;
+    if (object) {
+      msgHandler_->message(PLUGMGR_APICREATEOK,msgs_)
+	<< apiStr << "exact" << CoinMessageEol ;
+      if (rp.lang_ == Plugin_C)
+        object = adapter.adapt(object,rp.destroyFunc_) ;
+      return (object) ; 
+    }
+  }
+/*
+  No exact match. Try for a wildcard match. If some plugin volunteers an
+  object, register 
+
+  Surely we could do better here than just blindly calling create functions?
+  Maybe not. It's not really all that different from having a separate `Can
+  you do this?' method, given the feedback where the manager adds the requested
+  string to the exactMatchMap via the registerObject method. Note that the
+  entry in the wildCardVec is not removed.
+  -- lh, 110913 --
+
+  Do we need to tweak the registration parameter block before registering the
+  `exact match' object?  -- lh, 111005 --
+
+  If we wrap a C plugin object with an adapter, shouldn't we call destroyFunc
+  on the C object and delete on the adapter object?  -- lh, 111005 --
+*/
+  for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
+    RegisterParams &rp = wildCardVec_[i] ;
+    ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
+    void *object = rp.createFunc_(objParms) ;
+    if (object) {
+      msgHandler_->message(PLUGMGR_APICREATEOK,msgs_)
+	<< apiStr << "wildcard" << CoinMessageEol ;
+      if (rp.lang_ == Plugin_C)
+        object = adapter.adapt(object,rp.destroyFunc_) ;
+      int32_t res = registerObject(objParms->apiStr_,&rp) ;
+      if (res < 0) {
+        rp.destroyFunc_(object,objParms) ;
+	object = nullptr ;
+      }
+    }
+    delete objParms ;
+    return (object) ;
+  }
+/*
+  No plugin volunteered. We can't create this object.
+*/
+  msgHandler_->message(PLUGMGR_APICREATEFAIL,msgs_)
+      << apiStr << "no capable plugin" << CoinMessageEol ;
+  return (nullptr) ;
+}
 
 #ifdef UNDEFINED
 
@@ -623,79 +727,6 @@ T *PluginManager::createObject(const std::string & apiStr, IObjectAdapter<T, U> 
   return (nullptr) ;
 }
 #endif
-
-// ---------------------------------------------------------------
-
-
-void *PluginManager::createObject (const std::string &apiStr,
-				   IObjectAdapter &adapter)
-{
-/*
-  "*" is not a valid object type --- some qualification is needed.
-*/
-  if (apiStr == std::string("*")) return (nullptr) ;
-  
-/*
-  Set up a parameter block to pass to the plugin (assuming we find one
-  that's suitable.
-*/
-  ObjectParams np ;
-  np.apiStr_ = reinterpret_cast<const CharString *>(apiStr.c_str()) ;
-  np.platformServices_ = &platformServices_ ;
-
-/*
-  Check for an exact (string) match. If so, add the plugin's management object
-  to the parameter block and ask for an object. If we're successful, we need
-  one last step for a C plugin --- wrap it for C++ use.
-*/
-  if (exactMatchMap_.find(apiStr) != exactMatchMap_.end()) {        
-    RegisterParams &rp = exactMatchMap_[apiStr] ;
-    np.ctrlObj_ = rp.ctrlObj_ ;
-    void *object = rp.createFunc_(&np) ;
-    if (object) {
-      if (rp.lang_ == Plugin_C)
-        object = adapter.adapt(object, rp.destroyFunc_) ;
-      return (object) ; 
-    }
-  }
-/*
-  No exact match. Try for a wildcard match. If some plugin volunteers an
-  object, register 
-
-  Surely we could do better here than just blindly calling create functions?
-  Maybe not. It's not really all that different from having a separate `Can
-  you do this?' method, given the feedback where the manager adds the requested
-  string to the exactMatchMap via the registerObject method. Note that the
-  entry in the wildCardVec is not removed.
-  -- lh, 110913 --
-*/
-  for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
-    RegisterParams &rp = wildCardVec_[i] ;
-    np.ctrlObj_ = rp.ctrlObj_ ;
-    void *object = rp.createFunc_(&np) ;
-    if (object) {
-      if (rp.lang_ == Plugin_C)
-        object = adapter.adapt(object,rp.destroyFunc_) ;
-      int32_t res = registerObject(np.apiStr_,&rp) ;
-      if (res < 0) {
-	std::cout
-	  << "Eh? Can't register exact match entry for object with API "
-	  << np.apiStr_ << " successfully created as wildcard."
-	  << std::endl ;
-        rp.destroyFunc_(object,&np) ;
-        return (nullptr) ;
-      }
-      return (object) ;
-    }
-  }
-/*
-  No plugin volunteered. We can't create this object.
-*/
-  std::cout
-    << "No plugin was able to create an object with API "
-    << np.apiStr_ << "." << std::endl ;
-  return (nullptr) ;
-}
 
 
 PlatformServices &PluginManager::getPlatformServices ()

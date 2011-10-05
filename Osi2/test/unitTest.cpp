@@ -39,7 +39,6 @@ int main(int argC, char* argV[])
       << "Error code is " << retval << "." << std::endl ;
     return (-1) ;
   }
-
   /*
     And can we invoke createObject? Did it work?
   */
@@ -55,7 +54,41 @@ int main(int argC, char* argV[])
   */
     clp->readMps("exmip1.mps",true) ;
     delete clp ;
+    clp = nullptr ;
   }
+  /*
+    Check that we fail when asking for a bogus API.
+  */
+  ProbMgmtAPI *bogus =
+    static_cast<ProbMgmtAPI*>(plugMgr.createObject("BogusAPI",dummy)) ;
+  if (bogus == nullptr) {
+    std::cout
+      << "Apparent failure to create a BogusAPI object (expected)."
+      << std::endl ;
+  } else {
+    std::cout
+      << "Eh? We shouldn't be able to create a BogusAPI object!"
+      << std::endl ;
+  }
+  /*
+    See if wildcard creation works.
+  */
+  clp = static_cast<ProbMgmtAPI*>(plugMgr.createObject("WildProbMgmt",dummy)) ;
+  if (clp == nullptr) {
+    std::cout
+      << "Apparent failure to create a WildProbMgmt object." << std::endl ;
+  } else {
+  /*
+    See if we can invoke a nontrivial method.
+  */
+    clp->readMps("exmip1.mps",true) ;
+    delete clp ;
+    clp = nullptr ;
+  }
+  /*
+    Unload the plugin library.
+  */
+  plugMgr.unloadOneLib("libOsi2ClpShim.so.0") ;
   /*
     Shut down the plugin manager. This will call the plugin library exit
     functions and unload the libraries.

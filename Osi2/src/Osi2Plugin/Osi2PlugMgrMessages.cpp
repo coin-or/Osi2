@@ -43,15 +43,16 @@ typedef struct {
 */
 static OnePlugMgrMessage us_english[] = {
   // Information: 0 -- 2999
-  { PLUGMGR_INIT, 0, 7, "Plugin Manager initialising." },
-  { PLUGMGR_LIBLDOK, 1, 4, "Loaded plugin library \"%s\"." },
-  { PLUGMGR_LIBINITOK, 2, 4, "Initialised plugin library \"%s\"." },
-  { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library \"%s\"." },
-  { PLUGMGR_LIBCLOSE, 4, 4, "Unloading plugin library \"%s\"." },
-  { PLUGMGR_APIREGOK, 12, 5,
+  { PLUGMGR_INIT, 0000, 7, "Plugin Manager initialising." },
+  { PLUGMGR_LIBLDOK, 0001, 4, "Loaded plugin library \"%s\"." },
+  { PLUGMGR_LIBINITOK, 0002, 4, "Initialised plugin library \"%s\"." },
+  { PLUGMGR_LIBEXITOK, 0003, 4, "Shut down plugin library \"%s\"." },
+  { PLUGMGR_LIBCLOSE, 0004, 4, "Unloading plugin library \"%s\"." },
+  { PLUGMGR_APIREGOK, 0010, 5,
       "Registered API \"%s\" for plugin library \"%s\"." },
-  { PLUGMGR_APIUNREG, 12, 5,
+  { PLUGMGR_APIUNREG, 0011, 5,
       "Unregistered API \"%s\" for plugin library \"%s\"." },
+  { PLUGMGR_APICREATEOK, 0012, 5, "Created object \"%s\" (%s)." },
 
   // Warning: 3000 -- 5999
   { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
@@ -67,6 +68,7 @@ static OnePlugMgrMessage us_english[] = {
       "Shutdown failed for plugin library \"%s\"." },
   { PLUGMGR_SYMLDFAIL, 6020, 1,
       "Failed to find %s \"%s\" in plugin library \"%s\", error \"%s\"." },
+  { PLUGMGR_APICREATEFAIL, 6030, 1, "Failed to create API \"%s\"; %s." },
 
   { PLUGMGR_APIREGDUP, 6051, 1, "API \"%s\" is already registered." },
   { PLUGMGR_BADVER, 6052, 1,

@@ -34,6 +34,8 @@ typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
 
   Create clp-specific objects to satisfy the Osi2 API specified as the
   \p objectType member of of \p params.
+
+  Object "WildProbMgmt" is used for testing wildcard object creation.
 */
 void *ClpShim::create (const ObjectParams *params)
 {
@@ -42,7 +44,7 @@ void *ClpShim::create (const ObjectParams *params)
 
   std::cout << "Clp create: type " << what << "." << std::endl ;
 
-  if (what == "ClpSimplex" || what == "ProbMgmt") {
+  if (what == "ClpSimplex" || what == "ProbMgmt" || what == "WildProbMgmt") {
     std::cout
       << "Request to create " << what << " recognised." << std::endl ;
     ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
@@ -65,7 +67,7 @@ void *ClpShim::create (const ObjectParams *params)
       return (0) ;
     }
     ClpSimplex *retval = underlyingModel(wrapper) ;
-    if (what == "ProbMgmt") {
+    if (what == "ProbMgmt" || what == "WildProbMgmt") {
       ProbMgmtAPI *probMgmt = new ProbMgmtAPI_Clp(libClp,wrapper) ;
       return (probMgmt) ;
     } else {
@@ -160,6 +162,17 @@ ExitFunc initPlugin (PlatformServices *services)
   if (retval < 0) {
     std::cout
       << "Apparent failure to register ProgMgmt plugin." << std::endl ;
+    return (0) ;
+  }
+/*
+  Register a wildcard object (for testing)
+*/
+  retval =
+      services->registerObject_(
+	  reinterpret_cast<const unsigned char*>("*"),&reginfo) ;
+  if (retval < 0) {
+    std::cout
+      << "Apparent failure to register wildcard plugin." << std::endl ;
     return (0) ;
   }
 
