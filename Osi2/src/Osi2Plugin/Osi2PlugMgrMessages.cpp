@@ -48,8 +48,10 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_LIBINITOK, 2, 4, "Initialised plugin library \"%s\"." },
   { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library \"%s\"." },
   { PLUGMGR_LIBCLOSE, 4, 4, "Unloading plugin library \"%s\"." },
-  { PLUGMGR_REGAPIOK, 12, 5,
+  { PLUGMGR_APIREGOK, 12, 5,
       "Registered API \"%s\" for plugin library \"%s\"." },
+  { PLUGMGR_APIUNREG, 12, 5,
+      "Unregistered API \"%s\" for plugin library \"%s\"." },
 
   // Warning: 3000 -- 5999
   { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
@@ -66,10 +68,10 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_SYMLDFAIL, 6020, 1,
       "Failed to find %s \"%s\" in plugin library \"%s\", error \"%s\"." },
 
-  { PLUGMGR_REGDUPAPI, 6051, 1, "API \"%s\" is already registered." },
+  { PLUGMGR_APIREGDUP, 6051, 1, "API \"%s\" is already registered." },
   { PLUGMGR_BADVER, 6052, 1,
     "Plugin version %d does not match Manager version %d." },
-  { PLUGMGR_BADAPIPARM, 6053, 1, "Invalid API registration parameters: %s." },
+  { PLUGMGR_APIBADPARM, 6053, 1, "Invalid API registration parameters: %s." },
 
   // Fatal Error: 9000 -- 9999
   { PLUGMGR_DUMMY_END, 999999, 0, "" }

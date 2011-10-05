@@ -204,7 +204,7 @@ typedef int32_t (*ExitFunc)(const PlatformServices *services) ;
   \returns A pointer to the library's \link Osi2::ExitFunc exit function
 	   \endlink, or null if initialisation fails.
  */
-typedef ExitFunc (*InitFunc)(const PlatformServices *services) ;
+typedef ExitFunc (*InitFunc)(PlatformServices *services) ;
 
 //@}
 

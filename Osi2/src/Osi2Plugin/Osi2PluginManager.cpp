@@ -151,7 +151,7 @@ DynamicLibrary *PluginManager::validateRegParams (const CharString *apiStr,
 
   if (!retval) {
     errStr = errStr.substr(2) ;
-    msgHandler_->message(PLUGMGR_BADAPIPARM,msgs_) << errStr << CoinMessageEol ;
+    msgHandler_->message(PLUGMGR_APIBADPARM,msgs_) << errStr << CoinMessageEol ;
   }
   
   return (dynLib) ;
@@ -202,7 +202,7 @@ int32_t PluginManager::registerObject (const CharString *apiStr,
       }
     }
     if (retval) {
-      pm.msgHandler_->message(PLUGMGR_REGDUPAPI,pm.msgs_)
+      pm.msgHandler_->message(PLUGMGR_APIREGDUP,pm.msgs_)
 	  << key << CoinMessageEol ;
     } else {
       if (pm.initialisingPlugin_) {
@@ -213,7 +213,7 @@ int32_t PluginManager::registerObject (const CharString *apiStr,
     }
   }
   if (!retval)
-    pm.msgHandler_->message(PLUGMGR_REGAPIOK,pm.msgs_)
+    pm.msgHandler_->message(PLUGMGR_APIREGOK,pm.msgs_)
 	<< key << dynLib->getLibPath() << CoinMessageEol ;
   return (retval) ; 
 }
@@ -426,12 +426,16 @@ int PluginManager::unloadOneLib (const std::string &lib,
   iterator pointing to the element. But not iterators pointing to other
   elements, so we need to advance prior to erasing.
 */
-  DynamicLibrary *dynLib = dlmIter->second.dynLib_ ;
+  DynLibInfo &libInfo = dlmIter->second ;
+  DynamicLibrary *dynLib = libInfo.dynLib_ ;
   RegistrationMap::iterator rmIter = exactMatchMap_.begin() ;
   while (rmIter != exactMatchMap_.end()) {
     RegisterParams &regParms = rmIter->second ;
     if (regParms.pluginID_ == dynLib) {
-      RegistrationMap::iterator tmpIter = rmIter++ ;
+      RegistrationMap::iterator tmpIter = rmIter ;
+      rmIter++ ;
+      msgHandler_->message(PLUGMGR_APIUNREG,msgs_)
+	<< tmpIter->first << dynLib->getLibPath() << CoinMessageEol ;
       exactMatchMap_.erase(tmpIter) ;
     } else {
       rmIter++ ;
@@ -447,6 +451,8 @@ int PluginManager::unloadOneLib (const std::string &lib,
        rvIter++) {
     RegisterParams &regParms = *rvIter ;
     if (regParms.pluginID_ == dynLib) {
+      msgHandler_->message(PLUGMGR_APIUNREG,msgs_)
+	<< "wildcard" << dynLib->getLibPath() << CoinMessageEol ;
       wildCardVec_.erase(rvIter) ;
       break ;
     }
@@ -455,9 +461,9 @@ int PluginManager::unloadOneLib (const std::string &lib,
   Execute the exit function for the library.
 */
   bool threwError = false ;
-  ExitFunc func = dlmIter->second.exitFunc_ ;
+  ExitFunc func = libInfo.exitFunc_ ;
   platformServices_.pluginID_ = dynLib ;
-  platformServices_.ctrlObj_ = dlmIter->second.ctrlObj_ ;
+  platformServices_.ctrlObj_ = libInfo.ctrlObj_ ;
   try
   {
     result = (*func)(&platformServices_) ;

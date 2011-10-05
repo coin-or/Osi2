@@ -97,7 +97,7 @@ int32_t ClpShim::cleanup (void *victim, const ObjectParams *objParms)
   be called before the plugin is unloaded.
 */
 extern "C"
-ExitFunc initPlugin (const PlatformServices *services)
+ExitFunc initPlugin (PlatformServices *services)
 {
   std::string version = CLP_VERSION ;
   std::cout
@@ -120,21 +120,26 @@ ExitFunc initPlugin (const PlatformServices *services)
     return (0) ;
   }
 /*
-  Arrange to remember the handle to libClp, and in general remember what
-  we're doing with an ClpShim object. Stash the handle for libClp in the
-  ClpShim, then stash a pointer to the shim in RegisterParams. This allows
-  the plugin manager to hand back the shim object with each call, which in
-  turn allows us to remember what we're doing.
+  Create the plugin library state object, ClpShim.  Arrange to remember the
+  handle to libClp, and our unique ID from the plugin manager.  Then stash a
+  pointer to the shim in PlatformServices to return it to the plugin
+  manager.  This allows the plugin manager to hand back the shim object with
+  each call, which in turn allows us to remember what we're doing.
 */
-  RegisterParams reginfo ;
   ClpShim *shim = new ClpShim() ;
   shim->setLibClp(libClp) ;
   shim->setPluginID(services->pluginID_) ;
-  reginfo.ctrlObj_ = static_cast<void*>(shim) ;
+  services->ctrlObj_ = static_cast<PluginState *>(shim) ;
+/*
+  RegisterParams.
+*/
 /*
   Fill in the rest of the registration parameters and invoke the registration
-  method.
+  method. We could specify a separate state object for each API, but so far
+  that doesn't seem necessary --- just use the library's state object.
 */
+  RegisterParams reginfo ;
+  reginfo.ctrlObj_ = static_cast<PluginState *>(shim) ;
   reginfo.version_.major_ = 1 ;
   reginfo.version_.minor_ = CLP_VERSION_MINOR ;
   reginfo.lang_ = Plugin_CPP ;
