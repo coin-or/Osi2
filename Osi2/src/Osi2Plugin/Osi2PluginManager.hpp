@@ -64,17 +64,6 @@ public:
   */
   //@{
 
-  /*! \brief Shut down the plugin manager
-
-    Will invoke the exit method for all plugins, unload all libraries, and
-    shut down the plugin manager.
-
-    \todo It's minorly awkward that there's no way to associate a library with
-	  an exit function. If the exit function fails, there's no way to say
-	  which library it belongs to.
-  */
-  int shutdown() ;
-
   /// Get the default plugin directory
   inline std::string getDfltPluginDir() const { return (dfltPluginDir_) ; }
 
@@ -82,14 +71,8 @@ public:
   inline void setDfltPluginDir(std::string dfltDir)
   { dfltPluginDir_ = dfltDir ; }
 
-  /*! \brief Load and initialise all plugin libraries in the directory.
-
-    Currently unimplemented until we can create platform-independent file
-    system support. For that matter, it's questionable whether we want this
-    functionality.
-  */
-  int loadAllLibs(const std::string &pluginDirectory,
-		  const InvokeServiceFunc func = NULL) ;
+  /// Get the services provided by the plugin manager
+  PlatformServices &getPlatformServices() ;
 
   /*! \brief Load and initialise the specified plugin library.
 
@@ -108,8 +91,29 @@ public:
   */
   int loadOneLib(const std::string &lib, const std::string *dir = 0) ;
 
-  /// Get the services provided by the plugin manager
-  PlatformServices &getPlatformServices() ;
+  /*! \brief Load and initialise all plugin libraries in the directory.
+
+    \todo
+    Currently unimplemented until we can create platform-independent file
+    system support. For that matter, it's questionable whether we want this
+    functionality.
+  */
+  int loadAllLibs(const std::string &pluginDirectory,
+		  const InvokeServiceFunc func = NULL) ;
+
+  /*! \brief unload the specified plugin library
+
+    Removes all APIs registered by the specified plugin library, invokes the
+    library's exit function, and unloads the library.
+  */
+  int unloadOneLib(const std::string &lib, const std::string *dir = 0) ;
+
+  /*! \brief Shut down the plugin manager
+
+    Will invoke the exit method for all plugins, unload all libraries, and
+    shut down the plugin manager.
+  */
+  int shutdown() ;
 
   //@}
 
@@ -207,6 +211,8 @@ private:
 
     /// The dynamic library
     DynamicLibrary *dynLib_ ;
+    /// Plugin library state object supplied by plugin (opaque pointer)
+    PluginState *ctrlObj_ ;
     /// Exit (cleanup) function for the library; called prior to unload
     ExitFunc exitFunc_ ;
 

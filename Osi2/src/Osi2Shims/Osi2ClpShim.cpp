@@ -165,7 +165,7 @@ ExitFunc initPlugin (const PlatformServices *services)
   Plugin cleanup method. Does whatever is needed to clean up after the plugin
   prior to unloading the library.
 */
-extern "C" int32_t cleanupPlugin ()
+extern "C" int32_t cleanupPlugin (const PlatformServices *services)
 {
   return (0) ;
 }

@@ -251,42 +251,42 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   Should this be converted to a standardised absolute path? That'd avoid issues
   with different ways of specifying the same library.
 */
-    std::string fullPath ;
-    if (dir == nullptr || (dir->compare("") == 0)) {
-      fullPath += getDfltPluginDir() ;
-    } else {
-      fullPath += *dir ;
-    }
-    fullPath += "/"+lib ;
+  std::string fullPath ;
+  if (dir == nullptr || (dir->compare("") == 0)) {
+    fullPath += getDfltPluginDir() ;
+  } else {
+    fullPath += *dir ;
+  }
+  fullPath += "/"+lib ;
 /*
   Is this library already loaded? If so, don't do it again.
 */
-    if (dynamicLibraryMap_.find(fullPath) != dynamicLibraryMap_.end()) {
-      msgHandler_->message(PLUGMGR_LIBLDDUP,msgs_)
-	<< fullPath << CoinMessageEol ;
-      return (1) ;
-    }
+  if (dynamicLibraryMap_.find(fullPath) != dynamicLibraryMap_.end()) {
+    msgHandler_->message(PLUGMGR_LIBLDDUP,msgs_)
+      << fullPath << CoinMessageEol ;
+    return (1) ;
+  }
 /*
   Attempt to load the library. A null return indicates failure. Report the
   problem and return an error.
 */
-    std::string errStr ;
-    DynamicLibrary *dynLib = DynamicLibrary::load(fullPath, errStr) ;
-    if (!dynLib) {
-      msgHandler_->message(PLUGMGR_LIBLDFAIL,msgs_)
-	<< fullPath << errStr << CoinMessageEol ;
-      return (-1) ;
-    }
+  std::string errStr ;
+  DynamicLibrary *dynLib = DynamicLibrary::load(fullPath, errStr) ;
+  if (!dynLib) {
+    msgHandler_->message(PLUGMGR_LIBLDFAIL,msgs_)
+      << fullPath << errStr << CoinMessageEol ;
+    return (-1) ;
+  }
 /*
   Find the initialisation function "initPlugin". If this entry point is missing
   from the library, we're in trouble.
 */
-    InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin",errStr)) ;
-    if (!initFunc) {
-      msgHandler_->message(PLUGMGR_SYMLDFAIL,msgs_)
-	<< "function" << "initPlugin" << fullPath << errStr << CoinMessageEol ;
-      return (-2) ;
-    }
+  InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin",errStr)) ;
+  if (!initFunc) {
+    msgHandler_->message(PLUGMGR_SYMLDFAIL,msgs_)
+      << "function" << "initPlugin" << fullPath << errStr << CoinMessageEol ;
+    return (-2) ;
+  }
 /*
   Invoke the initialisation function, which will (in the typical case) trigger
   the registration of the various APIs implemented in this plugin library. We
@@ -303,9 +303,6 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   platformServices_.dfltPluginDir_ =
       reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
   platformServices_.pluginID_ = dynLib ;
-  std::cout
-    << "Plugin ID passed to plugin is " << platformServices_.pluginID_
-    << std::endl ;
   ExitFunc exitFunc = initFunc(&platformServices_) ;
   if (!exitFunc) {
       msgHandler_->message(PLUGMGR_LIBINITFAIL,msgs_)
@@ -324,6 +321,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
 */
   DynLibInfo &info = dynamicLibraryMap_[fullPath] ;
   info.dynLib_ = dynLib ; 
+  info.ctrlObj_ = platformServices_.ctrlObj_ ;
   info.exitFunc_ = exitFunc ;
   exactMatchMap_.insert(tmpExactMatchMap_.begin(),tmpExactMatchMap_.end()) ;
   tmpExactMatchMap_.clear() ;
@@ -389,9 +387,110 @@ int32_t PluginManager::loadAll(const std::string &libDir,
 }
 #endif		// OSI2_IMPLEMENT_LOADALL
 
+
 /*
-  Run through the exit functions of the loaded plugins and execute each one.
-  Then clear out the maps in the manager.
+  Unload a single library specified by name. The name must exactly match the
+  name used to load the library. Issue a warning if the library isn't loaded.
+
+  Returns:  1 if the library isn't loaded
+	    0 if the library unloads successfully
+	   -1 exit function failed
+*/
+int PluginManager::unloadOneLib (const std::string &lib,
+				 const std::string *dir)
+{
+  int result = 0 ;
+
+/*
+  If no directory is specified, use the default plugin directory.
+*/
+  std::string fullPath ;
+  if (dir == nullptr || (dir->compare("") == 0)) {
+    fullPath += getDfltPluginDir() ;
+  } else {
+    fullPath += *dir ;
+  }
+  fullPath += "/"+lib ;
+/*
+  Find the entry for the library. Warn the user if the library is not loaded.
+*/
+  DynamicLibraryMap::iterator dlmIter = dynamicLibraryMap_.find(fullPath) ;
+  if (dlmIter == dynamicLibraryMap_.end()) {
+    msgHandler_->message(PLUGMGR_LIBNOTFOUND,msgs_)
+      << fullPath << CoinMessageEol ;
+    return (1) ;
+  }
+/*
+  Step through the exact match map and remove any entries that are registered
+  to this library. Regrettably, erase for a map is defined to invalidate the
+  iterator pointing to the element. But not iterators pointing to other
+  elements, so we need to advance prior to erasing.
+*/
+  DynamicLibrary *dynLib = dlmIter->second.dynLib_ ;
+  RegistrationMap::iterator rmIter = exactMatchMap_.begin() ;
+  while (rmIter != exactMatchMap_.end()) {
+    RegisterParams &regParms = rmIter->second ;
+    if (regParms.pluginID_ == dynLib) {
+      RegistrationMap::iterator tmpIter = rmIter++ ;
+      exactMatchMap_.erase(tmpIter) ;
+    } else {
+      rmIter++ ;
+    }
+  }
+/*
+  See if there's an entry in the wildcard vector. Vectors don't have the
+  same problem as maps (erase returns a valid iterator), but there's only
+  one entry so it's irrelevant.
+*/
+  for (RegistrationVec::iterator rvIter = wildCardVec_.begin() ;
+       rvIter != wildCardVec_.end() ;
+       rvIter++) {
+    RegisterParams &regParms = *rvIter ;
+    if (regParms.pluginID_ == dynLib) {
+      wildCardVec_.erase(rvIter) ;
+      break ;
+    }
+  }
+/*
+  Execute the exit function for the library.
+*/
+  bool threwError = false ;
+  ExitFunc func = dlmIter->second.exitFunc_ ;
+  platformServices_.pluginID_ = dynLib ;
+  platformServices_.ctrlObj_ = dlmIter->second.ctrlObj_ ;
+  try
+  {
+    result = (*func)(&platformServices_) ;
+  }
+  catch (...)
+  {
+    threwError = true ;
+  }
+  if (threwError || result != 0) {
+    msgHandler_->message(PLUGMGR_LIBEXITFAIL,msgs_)
+	<< dynLib->getLibPath() << CoinMessageEol ;
+    result = -1 ;
+  } else {
+    msgHandler_->message(PLUGMGR_LIBEXITOK,msgs_)
+	<< dynLib->getLibPath() << CoinMessageEol ;
+  }
+/*
+  Unload the library and remove the map entry.
+*/
+  msgHandler_->message(PLUGMGR_LIBCLOSE,msgs_)
+    << dynLib->getLibPath() << CoinMessageEol ;
+  delete dynLib ;
+  dynamicLibraryMap_.erase(dlmIter) ;
+
+  return (result) ;
+}
+
+
+
+/*
+  Execute the exit function for each library, then clear out the maps in the
+  manager. Executing the destructor for the DynamicLibrary object will unload
+  the library.
 
   \todo: The exit functions can throw? Why isn't there a catch block for all
 	 the others (init function, etc.)
@@ -407,13 +506,14 @@ int PluginManager::shutdown()
     bool threwError = false ;
     ExitFunc func = dlmIter->second.exitFunc_ ;
     DynamicLibrary *dynLib = dlmIter->second.dynLib_ ;
+    platformServices_.pluginID_ = dynLib ;
+    platformServices_.ctrlObj_ = dlmIter->second.ctrlObj_ ;
     try
     {
-      result = (*func)() ;
+      result = (*func)(&platformServices_) ;
     }
     catch (...)
     {
-      // std::cout << "Whoa! Exit function threw!" << std::endl ;
       threwError = true ;
     }
     if (threwError || result != 0) {

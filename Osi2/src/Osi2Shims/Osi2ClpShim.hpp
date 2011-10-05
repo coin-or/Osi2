@@ -92,7 +92,7 @@ ExitFunc initPlugin (const PlatformServices *services) ;
   passed to the plugin manager as the return value of #initPlugin().
 */
 extern "C"
-int32_t cleanupPlugin () ;
+int32_t cleanupPlugin (const PlatformServices *services) ;
 
 }  // end namespace Osi2
 

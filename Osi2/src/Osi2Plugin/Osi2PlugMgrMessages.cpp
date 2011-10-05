@@ -53,6 +53,7 @@ static OnePlugMgrMessage us_english[] = {
 
   // Warning: 3000 -- 5999
   { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
+  { PLUGMGR_LIBNOTFOUND, 3001, 3, "Plugin library \"%s\" is not loaded." },
 
   // Nonfatal Error: 6000 -- 8999
 
