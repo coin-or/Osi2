@@ -8,6 +8,7 @@
 #ifndef Osi2ProbMgmtAPI_H
 #define Osi2ProbMgmtAPI_H
 
+#include "Osi2API.hpp"
 
 /*! \brief Proof of concept API.
 
@@ -15,7 +16,7 @@
 
 namespace Osi2 {
 
-class ProbMgmtAPI {
+class ProbMgmtAPI : public API {
 
 public:
 

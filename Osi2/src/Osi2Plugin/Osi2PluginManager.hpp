@@ -123,15 +123,27 @@ public:
   */
   //@{
 
-  /*! \brief Invoked by application to create an object
+  /*! \brief Invoked by client to create an object
 
     Plugins register the objects they can create. This method is invoked by the
-    application to request an object. The pointer returned must be cast to
-    the appropriate type.
+    client to request an object. The pointer returned must be cast to the
+    appropriate type; this is the client's responsibility.
 
-    An explanation of adapter is needed somewhere.
+    \todo An explanation of adapter is needed somewhere, once I (Lou)
+	  understand it.
   */
-  void *createObject(const std::string &objectType, IObjectAdapter &adapter) ;
+  void *createObject(const std::string &apiStr, IObjectAdapter &adapter) ;
+
+  /*! \brief Invoked by client to destroy an object
+
+    This method should be invoked by the client to destroy an object. This
+    allows the plugin to specify an arbitrary function which will not
+    necessarily be equivalent to a standard C++ destructor. (Suppose the
+    plugin really hands out multiple pointers to the same object and keeps a
+    usage count. Directly invoking the object's destructor with `delete'
+    would not be good.)
+  */
+  int destroyObject(const std::string &apiStr, void *victim) ;
 
   //@}
 

@@ -29,8 +29,11 @@ class ClpShim {
   */
   static void *create (const ObjectParams *params) ;
 
-  /// Cleanup method
-  static int32_t cleanup (void *victim, const ObjectParams *params) ;
+  /*! \brief Object destructor
+
+    Destroys objects created by this shim.
+  */
+  static int32_t destroy (void *victim, const ObjectParams *params) ;
 
   /// Set our unique ID (supplied by the plugin manager)
   inline void setPluginID (PluginUniqueID id) { ourID_ = id ; }
@@ -44,9 +47,6 @@ class ClpShim {
   inline void setVerbosity (int verbosity) { verbosity_ = verbosity ; }
   /// Get verbosity
   inline int getVerbosity () const { return (verbosity_) ; }
-
-  /// Just to test out an arbitrary method!
-  void printSomeStuff () ;
 
   private:
 

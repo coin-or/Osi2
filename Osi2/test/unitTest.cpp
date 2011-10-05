@@ -11,9 +11,6 @@
 
 using namespace Osi2 ;
 
-// Hedge agaaist C++0x
-const int nullptr = 0 ;
-  
 int main(int argC, char* argV[])
 {
 
@@ -53,7 +50,13 @@ int main(int argC, char* argV[])
     See if we can invoke a nontrivial method.
   */
     clp->readMps("exmip1.mps",true) ;
-    delete clp ;
+  /*
+    And destroy the object.
+  */
+    int retval = plugMgr.destroyObject("ProbMgmt",clp) ;
+    if (retval < 0)
+      std::cout
+	<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
     clp = nullptr ;
   }
   /*
@@ -82,6 +85,13 @@ int main(int argC, char* argV[])
     See if we can invoke a nontrivial method.
   */
     clp->readMps("exmip1.mps",true) ;
+  /*
+    And destroy the object.
+  */
+    int retval = plugMgr.destroyObject("WildProbMgmt",clp) ;
+    if (retval < 0)
+      std::cout
+	<< "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
     delete clp ;
     clp = nullptr ;
   }

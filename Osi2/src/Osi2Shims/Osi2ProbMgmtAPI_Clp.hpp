@@ -9,6 +9,8 @@
 #define Osi2ProbMgmtAPI_Clp_HPP
 
 #include "Osi2DynamicLibrary.hpp"
+
+#include "Osi2API.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 #include "ClpSimplex.hpp"
 

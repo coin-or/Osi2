@@ -621,8 +621,9 @@ void *PluginManager::createObject (const std::string &apiStr,
   to the parameter block and ask for an object. If we're successful, we need
   one last step for a C plugin --- wrap it for C++ use.
 */
-  if (exactMatchMap_.find(apiStr) != exactMatchMap_.end()) {        
-    RegisterParams &rp = exactMatchMap_[apiStr] ;
+  RegistrationMap::iterator apiIter = exactMatchMap_.find(apiStr) ;
+  if (apiIter != exactMatchMap_.end()) {        
+    RegisterParams &rp = apiIter->second ;
     ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
     void *object = rp.createFunc_(objParms) ;
     delete objParms ;
@@ -727,6 +728,39 @@ T *PluginManager::createObject(const std::string & apiStr, IObjectAdapter<T, U> 
   return (nullptr) ;
 }
 #endif
+
+
+/*
+  Destroy an object.
+
+  Given that anything handed out by this manager is a C++ object, the client
+  can invoke standard C++ delete and the destructor will do its work. But
+  suppose that the plugin wants to do more than just invoke the destructor?
+  This provides a way to invoke an arbitrary function. The only requirement is
+  that the specified object be destroyed as part of the execution.
+*/
+int PluginManager::destroyObject (const std::string &apiStr, void *victim)
+{
+  int result = 0 ;
+  RegistrationMap::iterator apiIter = exactMatchMap_.find(apiStr) ;
+  if (apiIter == exactMatchMap_.end()) {
+    msgHandler_->message(PLUGMGR_APIDELFAIL,msgs_)
+      << apiStr << "no such API" << CoinMessageEol ;
+    result = -1 ;
+  } else {
+    RegisterParams &rp = apiIter->second ;
+    ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
+    result = rp.destroyFunc_(victim,objParms) ;
+    if (result < 0) {
+      msgHandler_->message(PLUGMGR_APIDELFAIL,msgs_)
+	<< apiStr << "DestroyFunc failed" << CoinMessageEol ;
+    }
+  }
+  if (result >= 0)
+    msgHandler_->message(PLUGMGR_APIDELOK,msgs_) << apiStr << CoinMessageEol ;
+
+  return (result) ;
+}
 
 
 PlatformServices &PluginManager::getPlatformServices ()

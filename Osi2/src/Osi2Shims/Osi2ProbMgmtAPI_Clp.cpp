@@ -11,6 +11,8 @@
 #include "Clp_C_Interface.h"
 #include "ClpConfig.h"
 
+#include "Osi2API.hpp"
+#include "Osi2ProbMgmtAPI.hpp"
 #include "Osi2ProbMgmtAPI_Clp.hpp"
 
 namespace Osi2 {
@@ -30,6 +32,8 @@ ProbMgmtAPI_Clp::ProbMgmtAPI_Clp (DynamicLibrary *libClp,
 ProbMgmtAPI_Clp::~ProbMgmtAPI_Clp ()
 {
   /* Nothing to do yet. */
+  std::cout
+    << "ProbMgmtAPI_Clp object destroyed." << std::endl ;
 }
 
 /*

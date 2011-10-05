@@ -81,13 +81,19 @@ void *ClpShim::create (const ObjectParams *params)
   return (retval) ;
 }
 
-/*! \brief Cleanup method
+/*! \brief Object destructor
 
-  Hmmm ... how to do this? At least now we have the object parameters, which
-  include a pointer to the ClpShim object.
+  Given that ClpShim only hands out C++ objects that are derived from
+  Osi2::API, we can simply invoke the destructor with delete.
 */
-int32_t ClpShim::cleanup (void *victim, const ObjectParams *objParms)
+int32_t ClpShim::destroy (void *victim, const ObjectParams *objParms)
 {
+  std::string what = reinterpret_cast<const char *>(objParms->apiStr_) ;
+  std::cout
+    << "Request to destroy " << what << " recognised." << std::endl ;
+  API *api = static_cast<API *>(victim) ;
+  delete api ;
+
   return (0) ;
 }
 
@@ -147,7 +153,7 @@ ExitFunc initPlugin (PlatformServices *services)
   reginfo.lang_ = Plugin_CPP ;
   reginfo.pluginID_ = shim->getPluginID() ;
   reginfo.createFunc_ = ClpShim::create ;
-  reginfo.destroyFunc_ = ClpShim::cleanup ;
+  reginfo.destroyFunc_ = ClpShim::destroy ;
   int retval =
       services->registerObject_(
 	  reinterpret_cast<const unsigned char*>("ClpSimplex"),&reginfo) ;

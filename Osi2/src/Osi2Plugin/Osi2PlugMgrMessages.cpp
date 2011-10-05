@@ -53,6 +53,7 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_APIUNREG, 0011, 5,
       "Unregistered API \"%s\" for plugin library \"%s\"." },
   { PLUGMGR_APICREATEOK, 0012, 5, "Created object \"%s\" (%s)." },
+  { PLUGMGR_APIDELOK, 0013, 5, "Destroyed object \"%s\"." },
 
   // Warning: 3000 -- 5999
   { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
@@ -69,6 +70,7 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_SYMLDFAIL, 6020, 1,
       "Failed to find %s \"%s\" in plugin library \"%s\", error \"%s\"." },
   { PLUGMGR_APICREATEFAIL, 6030, 1, "Failed to create API \"%s\"; %s." },
+  { PLUGMGR_APIDELFAIL, 6031, 1, "Failed to destroy API \"%s\"; %s." },
 
   { PLUGMGR_APIREGDUP, 6051, 1, "API \"%s\" is already registered." },
   { PLUGMGR_BADVER, 6052, 1,
