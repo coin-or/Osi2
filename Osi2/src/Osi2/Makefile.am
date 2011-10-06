@@ -19,7 +19,8 @@ lib_LTLIBRARIES = libOsi2.la
 
 libOsi2_la_SOURCES = \
 	Osi2API.hpp \
-	Osi2ControlAPI.hpp Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp
+	Osi2ControlAPI.hpp Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
+	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp
 
 # This is for libtool
 libOsi2_la_LDFLAGS = $(LT_LDFLAGS)
@@ -45,5 +46,6 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
 	Osi2API.hpp \
-	Osi2ControlAPI.hpp
+	Osi2ControlAPI.hpp \
+	Osi2ProbMgmtAPI.hpp
 

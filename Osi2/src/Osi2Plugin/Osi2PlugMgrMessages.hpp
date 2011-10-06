@@ -2,8 +2,8 @@
   Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 */
-/*! \file Osi2PluginMessage.hpp
-    \brief Type definitions for Osi2 plugin manager messages
+/*! \file Osi2PlugMgrMessages.hpp
+    \brief Type definitions for Osi2 PluginManager messages
 */
 
 #ifndef Osi2PlugMgrMessages_HPP
@@ -46,7 +46,7 @@ enum PlugMgrMsg {
 
 /*! \brief Osi2 plugin manager messages
 
-  This class holds the array of messages once they loaded and provides the
+  This class holds the array of messages once they are loaded and provides the
   methods to use them. Its only reason for existence is the custom constructor,
   which loads the messages in the order defined by PlugMgrMsg. All else is
   inherited from CoinMessages.

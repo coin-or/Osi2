@@ -172,13 +172,10 @@ typedef int32_t (*InvokeServiceFunc)(const CharString *serviceName,
 
   This function is called by the PluginManager to tell the plugin to clean
   up in preparation for unloading the plugin library. The plugin library's
-  control object (as returned by the \link Osi2::InitFunc initialisation
-  function \endlink will be included, as will the library's \link
-  PluginUniqueID unique id \endlink.
+  control object and unique ID will be provided in the \p services parameter.
 
-  The PluginManager will locate the \c exitPlugin function with
-  DynamicLibrary::getSymbol using the string \c "exitPlugin" during plugin
-  initialisation.
+  The PluginManager expects the exit function to be returned by the \link
+  Osi2::InitFunc initialisation function \endlink.
 
   \param services Services provided by the plugin manager.
   \returns 0 for successful execution, nonzero otherwise.

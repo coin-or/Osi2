@@ -7,6 +7,7 @@
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
 
+#include "Osi2ControlAPI_Imp.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 
 using namespace Osi2 ;
@@ -99,6 +100,13 @@ int main(int argC, char* argV[])
     Unload the plugin library.
   */
   plugMgr.unloadOneLib("libOsi2ClpShim.so.0") ;
+  /*
+    Ok, that takes care of testing basic plugin manager functionality. Now
+    let's try via the Osi2 control API.
+  */
+  std::cout << "Attempting a ControlAPI_Imp object." << std::endl ;
+  ControlAPI_Imp ctrlAPI ;
+  std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
   /*
     Shut down the plugin manager. This will call the plugin library exit
     functions and unload the libraries.

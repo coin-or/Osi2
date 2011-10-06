@@ -78,7 +78,7 @@ static OnePlugMgrMessage us_english[] = {
   { PLUGMGR_APIBADPARM, 6053, 1, "Invalid API registration parameters: %s." },
 
   // Fatal Error: 9000 -- 9999
-  { PLUGMGR_DUMMY_END, 999999, 0, "" }
+  { PLUGMGR_DUMMY_END, 9999, 0, "" }
 } ;
 
 /*
@@ -108,8 +108,6 @@ PlugMgrMessages::PlugMgrMessages (Language language)
     If we want to allow language-specific overrides of individual messages,
     code to do that should go here, prior to compacting the messages.
   */
-
-  // Compact the whole structure.
   toCompact() ;
 }
 

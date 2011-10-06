@@ -29,14 +29,33 @@ namespace Osi2 {
 
   Nothing to do so far.
 */
-ControlAPI_Imp::ControlAPI_Imp () { }
+ControlAPI_Imp::ControlAPI_Imp ()
+  : logLvl_(7)
+{
+  msgHandler_ = new CoinMessageHandler() ;
+  msgs_ = CtrlAPIMessages() ;
+  msgHandler_->setLogLevel(logLvl_) ;
+  msgHandler_->message(CTRLAPI_INIT,msgs_) << "default" << CoinMessageEol ;
+}
 
 /*
   Copy constructor
 
   Nothing to do so far.
 */
-ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &original) { }
+ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
+  : dfltHandler_(rhs.dfltHandler_),
+    logLvl_(rhs.logLvl_)
+{
+  if (dfltHandler_) {
+    msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
+  } else {
+    msgHandler_ = rhs.msgHandler_ ;
+  }
+  msgs_ = rhs.msgs_ ;
+  msgHandler_->setLogLevel(logLvl_) ;
+  msgHandler_->message(CTRLAPI_INIT,msgs_) << "copy" << CoinMessageEol ;
+}
 
 /*
   Assignment
@@ -45,18 +64,48 @@ ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &original) { }
 */
 ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 {
-  if (this != &rhs) {
-    /* nothing to do yet */
+/*
+  Self-assignment requires no work.
+*/
+  if (this == &rhs) return (*this) ;
+/*
+  If it's our handler, we need to delete the old and replace with the new.
+  If it's the user's handler, it's the user's problem. We just assign the
+  pointer.
+*/
+  if (dfltHandler_) {
+    delete msgHandler_ ;
+    msgHandler_ = nullptr ;
   }
+  dfltHandler_ = rhs.dfltHandler_ ;
+  if (dfltHandler_) {
+    msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
+  } else {
+    msgHandler_ = rhs.msgHandler_ ;
+  }
+  msgs_ = rhs.msgs_ ;
+  msgHandler_->setLogLevel(logLvl_) ;
+
   return (*this) ;
 }
+
 
 /*
   Destructor
 
   Nothing to do so far.
 */
-ControlAPI_Imp::~ControlAPI_Imp () { }
+ControlAPI_Imp::~ControlAPI_Imp ()
+{
+/*
+  If this is our handler, delete it. Otherwise it's the client's
+  responsibility.
+*/
+  if (dfltHandler_) {
+    delete msgHandler_ ;
+    msgHandler_ = nullptr ;
+  }
+}
 
 /*
   Virtual constructor

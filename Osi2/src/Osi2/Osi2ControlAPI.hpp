@@ -11,6 +11,8 @@
 
 #include <string>
 
+#include "Osi2API.hpp"
+
 namespace Osi2 {
 
 /*! \brief Osi2 ControlAPI virtual base class
@@ -29,7 +31,7 @@ class ControlAPI : public API {
   /// Virtual copy constructor
   virtual ControlAPI *clone() = 0 ;
   /// Virtual destructor
-  virtual ~ControlAPI () = 0 ;
+  virtual ~ControlAPI() {}
   //@}
 
   /*! \name API load and unload
@@ -65,6 +67,8 @@ class ControlAPI : public API {
     non-zero on error.
   */
   virtual int unload(API *api) = 0 ;
+
+  //@}
 
 } ;
 

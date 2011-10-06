@@ -22,7 +22,9 @@ unitTest_SOURCES = unitTest.cpp
 
 # Add the necessary libraries
 
-unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la $(OSI2PLUGIN_LIBS)
+unitTest_LDADD = \
+  ../src/Osi2/libOsi2.la \
+  ../src/Osi2Plugin/libOsi2Plugin.la $(OSI2PLUGIN_LIBS)
 
 # Now add the include paths for compilation
 # Here list all include flags, relative to this "srcdir" directory.  This

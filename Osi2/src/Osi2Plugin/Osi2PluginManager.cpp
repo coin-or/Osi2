@@ -63,10 +63,10 @@ PluginManager::~PluginManager ()
 {
   // Just in case it wasn't called earlier
   shutdown() ;
-  /*
-    If this is our handler, delete it. Otherwise it's the client's
-    responsibility.
-  */
+/*
+  If this is our handler, delete it. Otherwise it's the client's
+  responsibility.
+*/
   if (dfltHandler_) {
     delete msgHandler_ ;
     msgHandler_ = nullptr ;
