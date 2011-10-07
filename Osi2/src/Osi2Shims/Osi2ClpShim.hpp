@@ -79,7 +79,7 @@ class ClpShim {
   DynamicLibrary::getSymbol.
 */
 extern "C"
-ExitFunc initPlugin (const PlatformServices *services) ;
+ExitFunc initPlugin (PlatformServices *services) ;
 
 /*! \brief Plugin cleanup method
     \relates ClpShim
