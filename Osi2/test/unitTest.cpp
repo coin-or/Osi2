@@ -93,7 +93,6 @@ int main(int argC, char* argV[])
     if (retval < 0)
       std::cout
 	<< "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
-    delete clp ;
     clp = nullptr ;
   }
   /*
