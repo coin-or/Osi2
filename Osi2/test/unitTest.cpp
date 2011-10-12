@@ -1,6 +1,13 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
 
-// #include "CoinMessageHandler.hpp" 
-// #include "CoinPackedMatrix.hpp"
+  $Id$
+
+  This file contains the unit test for the OSI2 PluginManager and OSI2 APIs.
+*/
+
+#include "CoinHelperFunctions.hpp"
 
 
 #include "Osi2PluginManager.hpp"
@@ -12,56 +19,71 @@
 
 using namespace Osi2 ;
 
-int main(int argC, char* argV[])
-{
+namespace {
 
-  std::cout << "START UNIT TEST" << std::endl ;
+/*
+  Test the bare PluginManager API:
+    * Initialise the PluginManager.
+    * Load a plugin library.
+    * Create ProbMgmt objects: exact match and wild card. Also check that
+      we fail correctly for a nonexistent object.
+
+  The test is (sort of) clp-specific, but only in the sense that the test clp
+  plugin will return a ProbMgmt object via the wildcard mechanism when asked
+  for a WildProgMgmt object.
+
+  Over time, this test should be expanded and broken out into a separate file.
+  Arguably, it should be a separate executable.
+*/
+int testPluginManager (const std::string libName)
+{
+  int errcnt = 0 ;
 
   std::cout << "Instantiating PluginManager." << std::endl ;
 
   PluginManager &plugMgr = PluginManager::getInstance() ;
-
   /*
     Now let's try to load the shim.
   */
-
   std::string dfltDir = plugMgr.getDfltPluginDir() ;
-  std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string shimPath = dfltDir+dirSep+libName ;
 
-  int retval = plugMgr.loadOneLib("libOsi2ClpShim.so.0") ;
+  int retval = plugMgr.loadOneLib(libName) ;
 
   if (retval != 0) {
+    errcnt++ ;
     std::cout
-      << "Apparent failure opening " << clpShimPath << "." << std::endl ;
+      << "Apparent failure to load " << shimPath << "." << std::endl ;
     std::cout
       << "Error code is " << retval << "." << std::endl ;
-    return (-1) ;
+    return (errcnt) ;
   }
   /*
-    And can we invoke createObject? Did it work?
+    Invoke createObject. If it works, try to invoke a nontrivial method. Which
+    will fail, because exmip1 is not available, but that's not the point. Then
+    destroy the object.
   */
   DummyAdapter dummy ;
   ProbMgmtAPI *clp =
     static_cast<ProbMgmtAPI*>(plugMgr.createObject("ProbMgmt",dummy)) ;
   if (clp == nullptr) {
+    errcnt++ ;
     std::cout
       << "Apparent failure to create a ProbMgmt object." << std::endl ;
   } else {
-  /*
-    See if we can invoke a nontrivial method.
-  */
     clp->readMps("exmip1.mps",true) ;
-  /*
-    And destroy the object.
-  */
     int retval = plugMgr.destroyObject("ProbMgmt",clp) ;
-    if (retval < 0)
+    if (retval < 0) {
+      errcnt++ ;
       std::cout
 	<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+    }
     clp = nullptr ;
   }
   /*
-    Check that we fail when asking for a bogus API.
+    Ask for a nonexistent API and check that we (correctly) fail to provide
+    one.
   */
   ProbMgmtAPI *bogus =
     static_cast<ProbMgmtAPI*>(plugMgr.createObject("BogusAPI",dummy)) ;
@@ -70,51 +92,114 @@ int main(int argC, char* argV[])
       << "Apparent failure to create a BogusAPI object (expected)."
       << std::endl ;
   } else {
+    errcnt++ ;
     std::cout
       << "Eh? We shouldn't be able to create a BogusAPI object!"
       << std::endl ;
   }
   /*
-    See if wildcard creation works.
+    Check that we can create an object through the wildcard mechanism.
   */
   clp = static_cast<ProbMgmtAPI*>(plugMgr.createObject("WildProbMgmt",dummy)) ;
   if (clp == nullptr) {
+    errcnt++ ;
     std::cout
       << "Apparent failure to create a WildProbMgmt object." << std::endl ;
   } else {
-  /*
-    See if we can invoke a nontrivial method.
-  */
     clp->readMps("exmip1.mps",true) ;
-  /*
-    And destroy the object.
-  */
     int retval = plugMgr.destroyObject("WildProbMgmt",clp) ;
-    if (retval < 0)
+    if (retval < 0) {
       std::cout
 	<< "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
+    }
     clp = nullptr ;
   }
   /*
     Unload the plugin library.
   */
-  plugMgr.unloadOneLib("libOsi2ClpShim.so.0") ;
-  /*
-    Ok, that takes care of testing basic plugin manager functionality. Now
-    let's try via the Osi2 control API.
-  */
-  std::cout << "Attempting a ControlAPI_Imp object." << std::endl ;
-  ControlAPI_Imp ctrlAPI ;
-  std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
+  retval = plugMgr.unloadOneLib(libName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to unload " << shimPath << "." << std::endl ;
+    std::cout
+      << "Error code is " << retval << "." << std::endl ;
+    }
   /*
     Shut down the plugin manager. This will call the plugin library exit
     functions and unload the libraries.
   */
   std::cout
+    << "Shutting down PluginManager (executing exit functions)." << std::endl ;
+  retval = plugMgr.shutdown() ;
+  if (retval < 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure of PluginManager shutdown." << std::endl ;
+  }
+
+  return (errcnt) ;
+}
+
+int testControlAPI (std::string shortName)
+{
+  int retval = 0 ;
+  std::cout
+    << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
+  ControlAPI_Imp ctrlAPI ;
+  std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
+/*
+  Load a shim.
+*/
+  retval = ctrlAPI.load(shortName) ;
+/*
+  Unload the shim.
+*/
+  retval = ctrlAPI.unload(shortName) ;
+
+  return (retval) ;
+}
+
+} // end unnamed file-local namespace
+
+
+int main(int argC, char* argV[])
+{
+
+  std::cout << "START UNIT TEST" << std::endl ;
+/*
+  Test the bare PluginManager. There's no sense proceeding to the API tests if
+  the PluginManager isn't working.
+*/
+  std::cout << "Testing bare PluginManager." << std::endl ;
+  int retval = testPluginManager("libOsi2ClpShim.so") ;
+  std::cout
+    << "End test of bare PluginManager, " << retval << " errors."
+    << std::endl << std::endl ;
+  if (retval != 0) {
+    std::cout << "Aborting unitTest; errors in PluginManager." << std::endl ;
+    return (retval) ;
+  }
+/*
+  Now let's try the Osi2 control API.
+*/
+  std::cout << "Testing ControlAPI." << std::endl ;
+  retval = testControlAPI("clp") ;
+  std::cout
+    << "End test of ControlAPI, " << retval << " errors."
+    << std::endl << std::endl ;
+  /*
+    Shut down the plugin manager. This will call the plugin library exit
+    functions and unload the libraries.
+  */
+  PluginManager &plugMgr = PluginManager::getInstance() ;
+  std::cout
     << "Shutting down plugins (executing exit functions)." << std::endl ;
   plugMgr.shutdown() ;
 
   std::cout << "END UNIT TEST" << std::endl ;
-  return (0) ;
+
+  return (retval) ;
 
 }
+

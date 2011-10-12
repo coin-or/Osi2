@@ -39,39 +39,44 @@ public:
   ControlAPI_Imp &operator=(const ControlAPI_Imp &rhs) ;
   //@}
 
-  /*! \name API load and unload
-      \brief Methods to load and unload objects implementing specific APIs.
+  /*! \name Library load and unload
+      \brief Methods to load and unload plugin libraries
 
-      The general paradigm is that specific APIs are designated by names
-      (strings), as are solvers.
+    Given only a short name xxx the method will look for libOsi2XxxShim.so in
+    the default plugin library directory. The other load methods allow for an
+    arbitrary mapping between the short name and the plugin library.
   */
   //@{
 
-  /*! \brief Load the specified API.
+  /*! \brief Load the specified plugin library
 
-    A call to load a specific API may simply return a reference to an existing
-    object implementing the API, or it may trigger the dynamic loading of a
-    plugin which can supply an object implementing the specified API. A request
-    for a specific solver is handled in the same manner: If the specified
-    solver is already loaded, it will be used, otherwise it will be loaded.
-
-    The load method returns the requested object as a generic API*; this can be
-    cast to the requested API with dynamic_cast. This provides a semblance of
-    type safety as the dynamic cast will fail if the client attempts to cast it
-    to something other than what was requested.
-
-    The method will return nullptr on failure; more detailed information may
-    be available in \p rtncode. \p rtncode will be 0 if the call is
-    successful.
+    Given \p shortName 'xxx', attempt to load libOsi2XxxShim.so from the
+    default plugin library directory. Associate the plugin library with
+    \p shortName.
   */
-  API *load(std::string api, std::string solver, int &rtncode) ;
+  virtual int load(const std::string &shortName) ;
 
-  /*! \brief Unload the specified API.
+  /*! \brief Load the specified plugin library
 
-    Unloads the specified API. The return value will be 0 if all went smoothly,
-    non-zero on error.
+    Attempt to load library \p libName from the default plugin library
+    directory. Associate the plugin library with \p shortName.
   */
-  int unload(API *api) ;
+  virtual int load(const std::string &shortName, const std::string &libName) ;
+
+  /*! \brief Load the specified plugin library
+
+    Attempt to load library \p libName from directory \p dirName. Associate
+    the plugin library with \p shortName.
+  */
+  virtual int load(const std::string &shortName,
+  		   const std::string &libName, const std::string *dirName) ;
+
+  /*! \brief Unload the specified library.
+
+    Unloads the specified library. The return value will be 0 if all went
+    smoothly, non-zero on error.
+  */
+  virtual int unload(const std::string &shortName) ;
 
   //@}
 
@@ -80,6 +85,14 @@ public:
     Miscellaneous methods that control the behaviour of a ControlAPI object.
   */
   //@{
+
+  /// Get the default plugin directory
+  inline std::string getDfltPluginDir() const { return (dfltPluginDir_) ; }
+
+  /// Set the default plugin directory
+  inline void setDfltPluginDir(std::string dfltDir)
+  { dfltPluginDir_ = dfltDir ; }
+
 
   /// Set the log (verbosity) level
   inline void setLogLvl(int logLvl) {
@@ -112,6 +125,14 @@ private:
   PluginManager *findPluginMgr() ;
   /// Cached reference to plugin manager.
   PluginManager *pluginMgr_ ;
+
+  /// Map type for knownLibMap_
+  typedef std::map<std::string,std::string> LibMapType ;
+  /// Map to associate short names with full paths for plugin libraries
+  LibMapType knownLibMap_ ;
+
+  /// Default plugin library directory
+  std::string dfltPluginDir_ ;
 
   /// Indicator; false if the message handler belongs to the client
   bool dfltHandler_ ;

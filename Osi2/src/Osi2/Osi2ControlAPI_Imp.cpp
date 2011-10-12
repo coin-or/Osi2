@@ -8,7 +8,7 @@
   API.
 */
 
-#include <iostream>
+#include "CoinHelperFunctions.hpp"
 
 #include "Osi2API.hpp"
 #include "Osi2ControlAPI.hpp"
@@ -32,6 +32,7 @@ namespace Osi2 {
 ControlAPI_Imp::ControlAPI_Imp ()
   : logLvl_(7)
 {
+  knownLibMap_.clear() ;
   msgHandler_ = new CoinMessageHandler() ;
   msgs_ = CtrlAPIMessages() ;
   msgHandler_->setLogLevel(logLvl_) ;
@@ -40,13 +41,17 @@ ControlAPI_Imp::ControlAPI_Imp ()
 
 /*
   Copy constructor
-
-  Nothing to do so far.
 */
 ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
   : dfltHandler_(rhs.dfltHandler_),
     logLvl_(rhs.logLvl_)
 {
+  knownLibMap_ = rhs.knownLibMap_ ;
+/*
+  If this is our handler, make an independent copy. If it's the client's
+  handler, we can't make an independent copy because the client won't know
+  about it and won't delete it.
+*/
   if (dfltHandler_) {
     msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
   } else {
@@ -59,8 +64,6 @@ ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
 
 /*
   Assignment
-
-  Nothing to do so far.
 */
 ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 {
@@ -68,6 +71,10 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
   Self-assignment requires no work.
 */
   if (this == &rhs) return (*this) ;
+/*
+  Otherwise, get to it.
+*/
+  knownLibMap_ = rhs.knownLibMap_ ;
 /*
   If it's our handler, we need to delete the old and replace with the new.
   If it's the user's handler, it's the user's problem. We just assign the
@@ -92,11 +99,10 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 
 /*
   Destructor
-
-  Nothing to do so far.
 */
 ControlAPI_Imp::~ControlAPI_Imp ()
 {
+  knownLibMap_.clear() ;
 /*
   If this is our handler, delete it. Otherwise it's the client's
   responsibility.
@@ -128,89 +134,169 @@ ControlAPI *ControlAPI_Imp::clone ()
 /*
   Load and unload
 
-  I need to rethink my approach here. The Osi2 client wants access to an API.
-  They really don't care about the `load' part. This should be a lazy
-  operation, where Osi2 asks the plugin manager if something that supports
-  this API is already loaded, we just return an object of the proper sort.
-  If not, we ask for a load.
+  This set of methods provides some sugar overtop of the PluginManager for
+  library load/unload. The business of asking for objects that implement
+  particular APIs is a different set of methods (createAPI, destroyAPI).
 
-  But how clean can I make that? Some object, somewhere, must know the
-  relation between the requested API and a solver library. Or how to find a
-  default solver.
+  The PluginManager load method expects a library name and a directory. The
+  bottom ControlAPI method takes exactly those parameters and calls
+  PluginManager::load. The next level up expects just the library name and
+  uses the default plugin directory. The top level expects just a short
+  name, xxx, and constructs the library name as libXxxShim.so.
 
-  Or maybe I want a blended interface. With the control API, the client can
-  ask to load a particular plugin library, getting back a simply true/false.
-  The business of asking for objects that implement particular APIs then
-  becomes a different set of methods (createAPI, destroyAPI).
+  As a convenience (and to easily allow alternate plugin libraries), the
+  ControlAPI keeps a map that associates shortName with the libName and
+  dirName.
+
+  Returns:
+   -4: no plugin manager
+   -3: initFunc failed
+   -2: no initFunc
+   -1: library failed to load
+    0: library loaded and initialised without error
+    1: library is already loaded
+
+  With the exception of -4, all return codes should match loadOneLib.
 */
 
-API *ControlAPI_Imp::load (std::string api, std::string solver, int &rtncode)
+int ControlAPI_Imp::load (const std::string &shortName,
+			  const std::string &libName,
+			  const std::string *dirName)
 {
-  rtncode = -1 ;
-  API *apiPtr = nullptr ;
-
+  int retval = -1 ;
 /*
-  Attempt to find the plugin manager.
+  Already loaded?
+*/
+  LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
+  if (knownIter != knownLibMap_.end()) return (1) ;
+/*
+  Not already loaded. Find the plugin manager.
 */
   if (findPluginMgr() == nullptr) {
-    std::cout
-      << "Osi2::ControlAPI::load: Apparent failure to find plugin manager."
-      << std::endl ;
-    rtncode = -2 ;
-    return (apiPtr) ;
+    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
+    retval = -4 ;
+    return (retval) ;
   }
 /*
-  Ask the plugin manager to load the solver.
+  Construct a full path and ask the plugin manager to load the solver. If
+  we're successful, enter it into the known libraries map.
 */
-  std::string dfltDir = pluginMgr_->getDfltPluginDir() ;
-  if (solver.compare("clp") == 0) {
-    int retval = pluginMgr_->loadOneLib("libOsi2ClpShim.so.0") ;
-    if (retval < 0) {
-    /*
-      Ok, who should own the Osi2 message handler? The base API class?
-      The ControlAPI class? Should we borrow it from the plugin manager?
-    */
-    }
-  /*
-    std::string clpShimPath = dfltDir+"/"+"libOsi2ClpShim.so.0" ;
-    std::string errMsg ;
-    DynamicLibrary *clpShim = DynamicLibrary::load(clpShimPath,errMsg) ;
-    if (clpShim == 0) {
-      std::cout
-	<< "Apparent failure opening " << clpShimPath << "." << std::endl ;
-      std::cout
-	<< "Error is " << errMsg << "." << std::endl ;
-      rtncode = -3 ;
-      return (apiPtr) ;
-    }
-  */
+  std::string fullPath = libName ;
+  if (dirName != nullptr && (*dirName) != "") {
+    char dirSep = CoinFindDirSeparator() ;
+    std::string fullPath = (*dirName)+dirSep+fullPath ;
   }
-/*
-  Check that the solver implements the required API.
-*/
-  /*
-    Sure. How? We could return a list of capabilities as part of the
-    registration info for the solver.  Or we could define a new capabilities
-    inquiry method.
-
-    And the decision will be to define an inquiry method that the solver shim
-    should provide. We can pass a list of capabilities in a string, separated
-    by some appropriate delimiter. The solver shim can look at the set of
-    capabilities, decide if it's capable of providing them simultaneously,
-    and return a boolean result.
-  */
-    
-  return (apiPtr) ;
+  retval = pluginMgr_->loadOneLib(fullPath) ;
+  if (retval < 0) return (retval) ;
+  if (retval == 1) {
+    msgHandler_->message(CTRLAPI_UNREG,msgs_)
+      << fullPath << shortName << CoinMessageEol ;
+  }
+  knownLibMap_[shortName] = fullPath ;
+  msgHandler_->message(CTRLAPI_LOADOK,msgs_)
+    << fullPath << shortName << CoinMessageEol ;
+  
+  return (retval) ;
 }
 
 /*
-  Just what does it mean to unload an API? Unloading a library has meaning,
-  but for an individual API it's questionable.
+  Determine the default directory and call the base load method.
+
+  Check first to see if we know a default. As a last resort, check the
+  PluginManager. (Remember, there's only one PluginManager, whereas there can
+  be multiple ControlAPI objects.)
 */
-int ControlAPI_Imp::unload (API *api)
+int ControlAPI_Imp::load (const std::string &shortName,
+			  const std::string &libName)
 {
-  return (-1) ;
+  int retval = -1 ;
+/*
+  Try to find a default plugin directory. First our own, then consult the
+  plugin manager. Both can come up empty.
+*/
+  std::string dirName = getDfltPluginDir() ;
+  if (dirName == "") {
+    if (findPluginMgr() == nullptr) {
+      msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
+      retval = -4 ;
+      return (retval) ;
+    }
+    dirName = pluginMgr_->getDfltPluginDir() ;
+  }
+  retval = load(shortName,libName,&dirName) ;
+
+  return (retval) ;
 }
+
+/*
+  Maximum syntactic sugar. Given the short name, construct a library name and
+  call the next method in the hierarchy.
+*/
+int ControlAPI_Imp::load (const std::string &shortName)
+{
+  int retval = -1 ;
+
+  std::string libName = "libOsi2" ;
+  std::string::const_iterator firstChar = shortName.begin() ;
+  const char ucChar = static_cast<char>(toupper(*firstChar)) ;
+  libName += ucChar+shortName.substr(1,std::string::npos)+
+  	     "Shim.so" ;
+  retval = load(shortName,libName) ;
+  return (retval) ;
+}
+
+/*
+  Unload a library.
+
+  Returns:
+    -2: No plugin manager
+    -1: exit function failed
+     0: library unloaded successfully
+     1: library is not loaded (PluginManager)
+     2: library is not registered (ControlAPI)
+*/
+int ControlAPI_Imp::unload (const std::string &shortName)
+{
+  int retval = -1 ;
+/*
+  Look for the map entry in known libraries. Return if we don't find it.
+*/
+  LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
+  if (knownIter == knownLibMap_.end()) {
+    msgHandler_->message(CTRLAPI_UNREG,msgs_) ;
+    msgHandler_->printing(false) << "" ;
+    msgHandler_->printing(true) << shortName << CoinMessageEol ;
+    retval = 2 ;
+    return (retval) ;
+  }
+/*
+  Make sure we can find the plugin manager.
+*/
+  if (findPluginMgr() == nullptr) {
+    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
+    retval = -2 ;
+    return (retval) ;
+  }
+/*
+  Separate the libName and directory, then call the plugin manager's unload.
+*/
+  std::string fullPath = knownIter->second ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string::size_type dirPos = fullPath.rfind(dirSep) ;
+  std::string libName ;
+  std::string dirName ;
+  if (dirPos != std::string::npos) {
+    libName = fullPath.substr(dirPos) ;
+    dirName = fullPath.substr(0,dirPos) ;
+    retval = pluginMgr_->unloadOneLib(libName,&dirName) ;
+  } else {
+    libName = fullPath ;
+    retval = pluginMgr_->unloadOneLib(libName) ;
+  }
+
+  return (retval) ;
+}
+
 
 
 /*

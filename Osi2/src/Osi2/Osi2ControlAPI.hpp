@@ -34,15 +34,49 @@ class ControlAPI : public API {
   virtual ~ControlAPI() {}
   //@}
 
-  /*! \name API load and unload
-      \brief Methods to load and unload objects implementing specific APIs.
+  /*! \name Library load and unload
+      \brief Methods to load and unload plugin libraries
 
-      The general paradigm is that specific APIs are designated by names
-      (strings), as are solvers.
+    Given only a short name xxx the method will look for libOsi2XxxShim.so in
+    the default plugin library directory. The other load methods allow for an
+    arbitrary mapping between the short name and the plugin library.
   */
   //@{
 
-  /*! \brief Load the specified API.
+  /*! \brief Load the specified plugin library
+
+    Given \p shortName 'xxx', attempt to load libOsi2XxxShim.so from the
+    default plugin library directory. Associate the plugin library with
+    \p shortName.
+  */
+  virtual int load(const std::string &shortName) = 0 ;
+
+  /*! \brief Load the specified plugin library
+
+    Attempt to load library \p libName from the default plugin library
+    directory. Associate the plugin library with \p shortName.
+  */
+  virtual int load(const std::string &shortName,
+  		   const std::string &libName) = 0 ;
+
+  /*! \brief Load the specified plugin library
+
+    Attempt to load library \p libName from directory \p dirName. Associate
+    the plugin library with \p shortName.
+  */
+  virtual int load(const std::string &shortName,
+  		   const std::string &libName, const std::string *dirName) = 0 ;
+
+  /*! \brief Unload the specified library.
+
+    Unloads the specified library. The return value will be 0 if all went
+    smoothly, non-zero on error.
+  */
+  virtual int unload(const std::string &shortName) = 0 ;
+
+  //@}
+
+  /*! \brief Create an object of the specified API
 
     A call to load a specific API may simply return a reference to an existing
     object implementing the API, or it may trigger the dynamic loading of a
@@ -58,17 +92,10 @@ class ControlAPI : public API {
     The method will return nullptr on failure; more detailed information may
     be available in \p rtncode. \p rtncode will be 0 if the call is
     successful.
+
+  virtual API *create(std::string api, std::string solver, int &rtncode) = 0 ;
   */
-  virtual API *load(std::string api, std::string solver, int &rtncode) = 0 ;
 
-  /*! \brief Unload the specified API.
-
-    Unloads the specified API. The return value will be 0 if all went smoothly,
-    non-zero on error.
-  */
-  virtual int unload(API *api) = 0 ;
-
-  //@}
 
 } ;
 

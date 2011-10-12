@@ -95,7 +95,7 @@ PlugMgrMessages::PlugMgrMessages (Language language)
   : CoinMessages(sizeof(us_english)/sizeof(OnePlugMgrMessage))
 {
   language_ = language ;
-  std::strcpy(source_, "OSI2") ;
+  std::strcpy(source_, "PMgr") ;
   class_ = 2 ;
 
   OnePlugMgrMessage *msg = &us_english[0] ;

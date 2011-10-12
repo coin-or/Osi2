@@ -21,6 +21,9 @@ namespace Osi2 {
 
 enum CtrlAPIMsg {
     CTRLAPI_INIT,
+    CTRLAPI_LOADOK,
+    CTRLAPI_UNREG,
+    CTRLAPI_NOPLUGMGR,
     CTRLAPI_DUMMY_END
 };
 

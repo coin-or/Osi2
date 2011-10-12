@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#include "CoinHelperFunctions.hpp"
+
 /*
   #include "Osi2Directory.hpp"
   #include "Osi2Path.hpp"
@@ -237,7 +239,7 @@ PluginManager &PluginManager::getInstance()
     -2: failed to find initFunc
     -1: library failed to load
      0: library loaded and initialised without error
-
+     1: library is already loaded
 
   \todo Implement platform-independent path handling.
   \todo Implement resolution of symbolic links.
@@ -257,7 +259,8 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
   } else {
     fullPath += *dir ;
   }
-  fullPath += "/"+lib ;
+  char dirSep = CoinFindDirSeparator() ;
+  fullPath += dirSep+lib ;
 /*
   Is this library already loaded? If so, don't do it again.
 */
@@ -411,7 +414,8 @@ int PluginManager::unloadOneLib (const std::string &lib,
   } else {
     fullPath += *dir ;
   }
-  fullPath += "/"+lib ;
+  char dirSep = CoinFindDirSeparator() ;
+  fullPath += dirSep+lib ;
 /*
   Find the entry for the library. Warn the user if the library is not loaded.
 */
