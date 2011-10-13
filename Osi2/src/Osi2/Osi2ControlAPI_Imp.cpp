@@ -30,7 +30,8 @@ namespace Osi2 {
   Nothing to do so far.
 */
 ControlAPI_Imp::ControlAPI_Imp ()
-  : logLvl_(7)
+  : pluginMgr_(0),
+    logLvl_(7)
 {
   knownLibMap_.clear() ;
   msgHandler_ = new CoinMessageHandler() ;
