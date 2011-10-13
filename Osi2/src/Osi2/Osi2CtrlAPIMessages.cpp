@@ -42,17 +42,27 @@ typedef struct {
   Don't put anything after DUMMY_END. It's a marker used in the constructor.
 */
 static OneCtrlAPIMessage us_english[] = {
+
   // Information: 0 -- 2999
+
   { CTRLAPI_INIT, 0000, 7, "Control API constructor (%s)." },
-  { CTRLAPI_LOADOK, 0001, 7, "Plugin library \"%s\" loaded as \"%s\"." },
+  { CTRLAPI_LIBLDOK, 0001, 7, "Plugin library \"%s\" (\"%s\") loaded." },
+  { CTRLAPI_LIBCLOSEOK, 0002, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
 
   // Warning: 3000 -- 5999
+
   { CTRLAPI_UNREG, 3000, 4,
     "%?PluginManager says \"%s\" already loaded but %?\"%s\" is not registered." },
 
   // Nonfatal Error: 6000 -- 8999
 
+  { CTRLAPI_LIBLDFAIL, 6001, 2,
+    "Load failed for plugin library \"%s\" (\"%s\")." },
+  { CTRLAPI_LIBCLOSEFAIL, 6001, 2,
+    "Load failed for plugin library \"%s\" (\"%s\")." },
+
   // Fatal Error: 9000 -- 9999
+
   { CTRLAPI_NOPLUGMGR, 9000, 1, "Cannot find plugin manager!" },
 
   { CTRLAPI_DUMMY_END, 9999, 0, "" }

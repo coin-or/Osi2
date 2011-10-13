@@ -44,10 +44,12 @@ ControlAPI_Imp::ControlAPI_Imp ()
   Copy constructor
 */
 ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
-  : dfltHandler_(rhs.dfltHandler_),
+  : pluginMgr_(rhs.pluginMgr_),
+    knownLibMap_(rhs.knownLibMap_),
+    dfltPluginDir_(rhs.dfltPluginDir_),
+    dfltHandler_(rhs.dfltHandler_),
     logLvl_(rhs.logLvl_)
 {
-  knownLibMap_ = rhs.knownLibMap_ ;
 /*
   If this is our handler, make an independent copy. If it's the client's
   handler, we can't make an independent copy because the client won't know
@@ -75,7 +77,9 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 /*
   Otherwise, get to it.
 */
+  pluginMgr_ = rhs.pluginMgr_ ;
   knownLibMap_ = rhs.knownLibMap_ ;
+  dfltPluginDir_ = rhs.dfltPluginDir_ ;
 /*
   If it's our handler, we need to delete the old and replace with the new.
   If it's the user's handler, it's the user's problem. We just assign the
@@ -185,17 +189,23 @@ int ControlAPI_Imp::load (const std::string &shortName,
   std::string fullPath = libName ;
   if (dirName != nullptr && (*dirName) != "") {
     char dirSep = CoinFindDirSeparator() ;
-    std::string fullPath = (*dirName)+dirSep+fullPath ;
+    fullPath = (*dirName)+dirSep+fullPath ;
+    retval = pluginMgr_->loadOneLib(libName,dirName) ;
+  } else {
+    retval = pluginMgr_->loadOneLib(fullPath) ;
   }
-  retval = pluginMgr_->loadOneLib(fullPath) ;
-  if (retval < 0) return (retval) ;
+  if (retval < 0) {
+    msgHandler_->message(CTRLAPI_LIBLDFAIL,msgs_)
+      << shortName << fullPath << CoinMessageEol ;
+    return (retval) ;
+  }
   if (retval == 1) {
     msgHandler_->message(CTRLAPI_UNREG,msgs_)
       << fullPath << shortName << CoinMessageEol ;
   }
   knownLibMap_[shortName] = fullPath ;
-  msgHandler_->message(CTRLAPI_LOADOK,msgs_)
-    << fullPath << shortName << CoinMessageEol ;
+  msgHandler_->message(CTRLAPI_LIBLDOK,msgs_)
+    << shortName << fullPath << CoinMessageEol ;
   
   return (retval) ;
 }
@@ -287,12 +297,19 @@ int ControlAPI_Imp::unload (const std::string &shortName)
   std::string libName ;
   std::string dirName ;
   if (dirPos != std::string::npos) {
-    libName = fullPath.substr(dirPos) ;
+    libName = fullPath.substr(dirPos+1) ;
     dirName = fullPath.substr(0,dirPos) ;
     retval = pluginMgr_->unloadOneLib(libName,&dirName) ;
   } else {
     libName = fullPath ;
     retval = pluginMgr_->unloadOneLib(libName) ;
+  }
+  if (retval == 0) {
+    msgHandler_->message(CTRLAPI_LIBCLOSEOK,msgs_)
+      << shortName << fullPath << CoinMessageEol ;
+  } else {
+    msgHandler_->message(CTRLAPI_LIBCLOSEFAIL,msgs_)
+      << shortName << fullPath << CoinMessageEol ;
   }
 
   return (retval) ;
