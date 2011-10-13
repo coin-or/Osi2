@@ -34,7 +34,7 @@ class ControlAPI : public API {
   virtual ~ControlAPI() {}
   //@}
 
-  /*! \name Library load and unload
+  /*! \name Library Management
       \brief Methods to load and unload plugin libraries
 
     Given only a short name xxx the method will look for libOsi2XxxShim.so in
@@ -76,26 +76,47 @@ class ControlAPI : public API {
 
   //@}
 
+  /*! \name API (Object) Management
+      \brief Methods to create and destroy API objects.
+  */
+  //@{
+
   /*! \brief Create an object of the specified API
 
-    A call to load a specific API may simply return a reference to an existing
-    object implementing the API, or it may trigger the dynamic loading of a
-    plugin which can supply an object implementing the specified API. A request
-    for a specific solver is handled in the same manner: If the specified
-    solver is already loaded, it will be used, otherwise it will be loaded.
+    The parameter \p apiName should contain a string specifying the API. This
+    string must be known to some plugin library. (In general, the APIs
+    supported by a plugin will be documented with the plugin.)
 
-    The load method returns the requested object as a generic API*; this can be
-    cast to the requested API with dynamic_cast. This provides a semblance of
-    type safety as the dynamic cast will fail if the client attempts to cast it
-    to something other than what was requested.
+    If \p shortName is specified, only the specified plugin library will be
+    considered. If \p shortName is not specified, an arbitrary choice will be
+    made from plugin libraries capable of supplying an object supporting the
+    API.
 
-    The method will return nullptr on failure; more detailed information may
-    be available in \p rtncode. \p rtncode will be 0 if the call is
-    successful.
+    If the call executes without error, \p obj will contain a reference to an
+    object supporting the requested API, otherwise it will be set to null.
 
-  virtual API *create(std::string api, std::string solver, int &rtncode) = 0 ;
+    \returns:
+      -1: error
+       0: the object was successfully created.
+
   */
+  virtual int createObject(API *&obj, const std::string &apiName,
+			   const std::string *shortName = 0) = 0 ;
 
+  /*! \brief Destroy the specified object
+
+    In general, invoking delete on the object will work just fine. This method
+    is necessary only if the plugin providing the object needs to know about
+    its demise.
+    
+    Note that all parameters are mandatory. The result of requesting that an
+    object be destroyed by a plugin library other than the one that created
+    it is undefined.
+  */
+  virtual int destroyObject(API *&obj, const std::string &apiName,
+			    const std::string *shortName) = 0 ;
+
+  //@}
 
 } ;
 

@@ -16,6 +16,7 @@
 
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
+#include "Osi2ObjectAdapter.hpp"
 
 
 namespace Osi2 {
@@ -178,7 +179,6 @@ int ControlAPI_Imp::load (const std::string &shortName,
   Not already loaded. Find the plugin manager.
 */
   if (findPluginMgr() == nullptr) {
-    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
     retval = -4 ;
     return (retval) ;
   }
@@ -187,12 +187,13 @@ int ControlAPI_Imp::load (const std::string &shortName,
   we're successful, enter it into the known libraries map.
 */
   std::string fullPath = libName ;
+  PluginUniqueID uniqueID ;
   if (dirName != nullptr && (*dirName) != "") {
     char dirSep = CoinFindDirSeparator() ;
     fullPath = (*dirName)+dirSep+fullPath ;
-    retval = pluginMgr_->loadOneLib(libName,dirName) ;
+    retval = pluginMgr_->loadOneLib(libName,dirName,&uniqueID) ;
   } else {
-    retval = pluginMgr_->loadOneLib(fullPath) ;
+    retval = pluginMgr_->loadOneLib(libName,0,&uniqueID) ;
   }
   if (retval < 0) {
     msgHandler_->message(CTRLAPI_LIBLDFAIL,msgs_)
@@ -203,7 +204,9 @@ int ControlAPI_Imp::load (const std::string &shortName,
     msgHandler_->message(CTRLAPI_UNREG,msgs_)
       << fullPath << shortName << CoinMessageEol ;
   }
-  knownLibMap_[shortName] = fullPath ;
+  DynLibInfo &info = knownLibMap_[shortName] ;
+  info.fullPath = fullPath ;
+  info.uniqueID = uniqueID ;
   msgHandler_->message(CTRLAPI_LIBLDOK,msgs_)
     << shortName << fullPath << CoinMessageEol ;
   
@@ -228,7 +231,6 @@ int ControlAPI_Imp::load (const std::string &shortName,
   std::string dirName = getDfltPluginDir() ;
   if (dirName == "") {
     if (findPluginMgr() == nullptr) {
-      msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
       retval = -4 ;
       return (retval) ;
     }
@@ -284,14 +286,13 @@ int ControlAPI_Imp::unload (const std::string &shortName)
   Make sure we can find the plugin manager.
 */
   if (findPluginMgr() == nullptr) {
-    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
     retval = -2 ;
     return (retval) ;
   }
 /*
   Separate the libName and directory, then call the plugin manager's unload.
 */
-  std::string fullPath = knownIter->second ;
+  std::string fullPath = knownIter->second.fullPath ;
   char dirSep = CoinFindDirSeparator() ;
   std::string::size_type dirPos = fullPath.rfind(dirSep) ;
   std::string libName ;
@@ -316,6 +317,126 @@ int ControlAPI_Imp::unload (const std::string &shortName)
 }
 
 
+/*
+  Create an object supporting the specified API. If a plugin library is
+  specified, only that library will be considered.
+
+  Returns:
+    -2: no plugin manager
+    -1: createObject failed
+     0: creation succeeded
+     1: creation succeeded but plugin restriction was ignored/invalid
+*/
+
+int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
+				  const std::string *shortName)
+{
+  int retval = -1 ;
+  obj = nullptr ;
+/*
+  Make sure we can find the plugin manager.
+*/
+  if (findPluginMgr() == nullptr) {
+    retval = -2 ;
+    return (retval) ;
+  }
+/*
+  Did the client specify a plugin library? If so, validate and obtain the
+  plugin's ID. Failure to find the specified library rates a warning but we'll
+  soldier on.
+*/
+  PluginUniqueID libID = 0 ;
+  bool restricted = false ;
+  std::string forPrinting = "bogus!" ;
+  if (shortName != 0 && (*shortName) != "") {
+    restricted = true ;
+    forPrinting = *shortName ;
+    LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
+    if (knownIter == knownLibMap_.end()) {
+      msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
+	<< (*shortName) << CoinMessageEol ;
+    } else {
+      libID = knownIter->second.uniqueID ;
+    }
+  }
+/*
+  Invoke the plugin manager's createObject method.
+*/
+  DummyAdapter dummy ;
+  obj = static_cast<API *>(pluginMgr_->createObject(apiName,dummy)) ;
+  if (obj == nullptr) {
+    msgHandler_->message(CTRLAPI_CREATEFAIL,msgs_) << apiName ;
+    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = -1 ;
+  } else {
+    msgHandler_->message(CTRLAPI_CREATEOK,msgs_) << apiName ;
+    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = (restricted && libID == 0)?1:0 ;
+  }
+
+  return (retval) ;
+}
+
+/*
+  Invoke the plugin manager's destroyObject method.
+
+  Returns:
+    -2: no plugin manager
+    -1: destroyObject failed
+     0: destruction succeeded
+     1: destruction succeeded but plugin restriction was ignored/invalid
+*/
+int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
+				   const std::string *shortName)
+{
+  int retval = -1 ;
+  obj = nullptr ;
+/*
+  Make sure we can find the plugin manager.
+*/
+  if (findPluginMgr() == nullptr) {
+    retval = -2 ;
+    return (retval) ;
+  }
+/*
+  Did the client specify a plugin library? If so, validate and obtain the
+  plugin's ID. Failure to find the specified library rates a warning but we'll
+  soldier on.
+*/
+  PluginUniqueID libID = 0 ;
+  bool restricted = false ;
+  std::string forPrinting = "bogus!" ;
+  if (shortName != 0 && (*shortName) != "") {
+    restricted = true ;
+    forPrinting = *shortName ;
+    LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
+    if (knownIter == knownLibMap_.end()) {
+      msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
+	<< (*shortName) << CoinMessageEol ;
+    } else {
+      libID = knownIter->second.uniqueID ;
+    }
+  }
+/*
+  Invoke the plugin manager's destroyObject.
+*/
+  retval = pluginMgr_->destroyObject(apiName,obj) ;
+  if (retval != 0) {
+    msgHandler_->message(CTRLAPI_DESTROYFAIL,msgs_) << apiName ;
+    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = -1 ;
+  } else {
+    msgHandler_->message(CTRLAPI_DESTROYOK,msgs_) << apiName ;
+    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = (restricted && libID == 0)?1:0 ;
+  }
+
+  return (retval) ;
+}
 
 /*
   Utility methods
@@ -329,6 +450,9 @@ PluginManager *ControlAPI_Imp::findPluginMgr()
 {
   if (pluginMgr_ == nullptr)
     pluginMgr_ = &PluginManager::getInstance() ;
+
+  if (pluginMgr_ == nullptr)
+    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
 
   return (pluginMgr_) ;
 }

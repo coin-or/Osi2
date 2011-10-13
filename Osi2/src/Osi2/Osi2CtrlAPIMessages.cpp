@@ -48,18 +48,25 @@ static OneCtrlAPIMessage us_english[] = {
   { CTRLAPI_INIT, 0000, 7, "Control API constructor (%s)." },
   { CTRLAPI_LIBLDOK, 0001, 7, "Plugin library \"%s\" (\"%s\") loaded." },
   { CTRLAPI_LIBCLOSEOK, 0002, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
+  { CTRLAPI_CREATEOK, 0003, 7, "API \"%s\"%?, library \"%s\"%? created." },
+  { CTRLAPI_DESTROYOK, 0004, 7, "API \"%s\"%?, library \"%s\"%? destroyed." },
 
   // Warning: 3000 -- 5999
 
-  { CTRLAPI_UNREG, 3000, 4,
+  { CTRLAPI_LIBUNREG, 3000, 4, "Library \"%s\" is not registered." },
+  { CTRLAPI_UNREG, 3001, 4,
     "%?PluginManager says \"%s\" already loaded but %?\"%s\" is not registered." },
 
   // Nonfatal Error: 6000 -- 8999
 
-  { CTRLAPI_LIBLDFAIL, 6001, 2,
+  { CTRLAPI_LIBLDFAIL, 6000, 2,
     "Load failed for plugin library \"%s\" (\"%s\")." },
   { CTRLAPI_LIBCLOSEFAIL, 6001, 2,
     "Load failed for plugin library \"%s\" (\"%s\")." },
+  { CTRLAPI_CREATEFAIL, 6002, 2,
+    "Create failed for API \"%s\"%?, library \"%s\"%?." },
+  { CTRLAPI_DESTROYFAIL, 6003, 2,
+    "Destroy failed for API \"%s\"%?, library \"%s\"%?." },
 
   // Fatal Error: 9000 -- 9999
 

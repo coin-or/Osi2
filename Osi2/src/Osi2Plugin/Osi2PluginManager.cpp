@@ -234,6 +234,9 @@ PluginManager &PluginManager::getInstance()
 /*
   Load a plugin given a full path to the plugin.
 
+  If uniqueID is supplied, it will be loaded with the PluginUniqueID assigned
+  to the library.
+
   Returns:
     -3: library failed to initialise
     -2: failed to find initFunc
@@ -245,8 +248,10 @@ PluginManager &PluginManager::getInstance()
   \todo Implement resolution of symbolic links.
   \todo Implement conversion to absolute path.
 */
-int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
+int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
+			       PluginUniqueID *uniqueID)
 {
+  if (uniqueID != 0) (*uniqueID) = 0 ;
 /*
   Construct the full path for the library.
 
@@ -333,6 +338,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir)
 		      tmpWildCardVec_.begin(),tmpWildCardVec_.end()) ;
   tmpWildCardVec_.clear() ;
   initialisingPlugin_ = false ;
+  if (uniqueID != 0) (*uniqueID) = dynLib ;
     
   msgHandler_->message(PLUGMGR_LIBLDOK,msgs_) << fullPath << CoinMessageEol ;
 
@@ -653,8 +659,9 @@ void *PluginManager::createObject (const std::string &apiStr,
   Do we need to tweak the registration parameter block before registering the
   `exact match' object?  -- lh, 111005 --
 
-  If we wrap a C plugin object with an adapter, shouldn't we call destroyFunc
-  on the C object and delete on the adapter object?  -- lh, 111005 --
+  If we wrap a C plugin object with an adapter, shouldn't we delete the
+  adapter object and give the adapter's delete the responsibility for
+  calling the proper destroyFunc?   -- lh, 111013 --
 */
   for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
     RegisterParams &rp = wildCardVec_[i] ;

@@ -80,6 +80,58 @@ public:
 
   //@}
 
+  /*! \name API (Object) Management
+      \brief Methods to create and destroy API objects.
+  */
+  //@{
+
+  /*! \brief Create an object of the specified API
+
+    The parameter \p apiName should contain a string specifying the API. This
+    string must be known to some plugin library. (In general, the APIs
+    supported by a plugin will be documented with the plugin.)
+
+    If \p shortName is specified, only the specified plugin library will be
+    considered. If \p shortName is not specified, an arbitrary choice will be
+    made from plugin libraries capable of supplying an object supporting the
+    API. If \p shortName is specified but not registered, the method will
+    issue a warning and proceed as if no restriction was given.
+
+    If the call executes without error, \p obj will contain a reference to an
+    object supporting the requested API, otherwise it will be set to null.
+
+    \returns:
+      -1: error
+       0: the object was successfully created.
+       1: the object was successfully created but the plugin restriction was
+	  ignored because it was not recognised
+
+  */
+  virtual int createObject(API *&obj, const std::string &apiName,
+			   const std::string *shortName = 0) ;
+
+  /*! \brief Destroy the specified object
+
+    In general, invoking delete on the object will work just fine. This method
+    is necessary only if the plugin providing the object needs to know about
+    its demise.
+    
+    Note that if the call to #create was restricted to a particular plugin
+    library, the restriction must be repeated here. The result of requesting
+    that an object be destroyed by a plugin library other than the one that
+    created it is undefined.
+
+    \p obj will be set to null on return.
+
+    \returns:
+      -1: an error occurred during destruction
+       0: destruction completed without error
+  */
+  virtual int destroyObject(API *&obj, const std::string &apiName,
+			    const std::string *shortName) ;
+
+  //@}
+
   /*! \name Control API control methods
 
     Miscellaneous methods that control the behaviour of a ControlAPI object.
@@ -126,8 +178,19 @@ private:
   /// Cached reference to plugin manager.
   PluginManager *pluginMgr_ ;
 
+  /*! \brief Plugin library management information
+
+    This data structure holds the information that the ControlAPI uses to
+    manage plugin libraries.
+  */
+  struct DynLibInfo {
+    /// Full path for the library
+    std::string fullPath ;
+    /// Unique ID for the library
+    PluginUniqueID uniqueID ;
+  } ;
   /// Map type for knownLibMap_
-  typedef std::map<std::string,std::string> LibMapType ;
+  typedef std::map<std::string,DynLibInfo> LibMapType ;
   /// Map to associate short names with full paths for plugin libraries
   LibMapType knownLibMap_ ;
 

@@ -79,6 +79,9 @@ public:
     Load the specified library \c dir/lib. If \p dir is not specified,
     #dfltPluginDir_ is used.
 
+    The PluginUniqueID assigned to the library will be returned in \p uniqueID
+    if a parameter is supplied.
+
     \return
     - -3: initialisation function failed
     - -2: failed to find the initialisation function
@@ -89,7 +92,8 @@ public:
     \todo Should deal with things like symbolic links but that functionality
 	  is currently disabled pending file system support.
   */
-  int loadOneLib(const std::string &lib, const std::string *dir = 0) ;
+  int loadOneLib(const std::string &lib, const std::string *dir = 0,
+		 PluginUniqueID *uniqueID = 0) ;
 
   /*! \brief Load and initialise all plugin libraries in the directory.
 

@@ -66,7 +66,7 @@ int testPluginManager (const std::string libName)
   */
   DummyAdapter dummy ;
   ProbMgmtAPI *clp =
-    static_cast<ProbMgmtAPI*>(plugMgr.createObject("ProbMgmt",dummy)) ;
+    static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt",dummy)) ;
   if (clp == nullptr) {
     errcnt++ ;
     std::cout
@@ -86,7 +86,7 @@ int testPluginManager (const std::string libName)
     one.
   */
   ProbMgmtAPI *bogus =
-    static_cast<ProbMgmtAPI*>(plugMgr.createObject("BogusAPI",dummy)) ;
+    static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",dummy)) ;
   if (bogus == nullptr) {
     std::cout
       << "Apparent failure to create a BogusAPI object (expected)."
@@ -100,7 +100,7 @@ int testPluginManager (const std::string libName)
   /*
     Check that we can create an object through the wildcard mechanism.
   */
-  clp = static_cast<ProbMgmtAPI*>(plugMgr.createObject("WildProbMgmt",dummy)) ;
+  clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",dummy)) ;
   if (clp == nullptr) {
     errcnt++ ;
     std::cout
@@ -144,20 +144,77 @@ int testPluginManager (const std::string libName)
 int testControlAPI (std::string shortName)
 {
   int retval = 0 ;
+  int errcnt = 0 ;
   std::cout
     << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
   ControlAPI_Imp ctrlAPI ;
   std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
 /*
-  Load a shim.
+  Load a shim. No sense proceeding if the load fails.
 */
   retval = ctrlAPI.load(shortName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to load " << shortName << "." << std::endl ;
+    std::cout
+      << "Error code is " << retval << "." << std::endl ;
+    return (errcnt) ;
+  }
+/*
+  Create a ProbMgmt object, invoke a nontrivial method, and destroy the object.
+*/
+  API *apiObj = nullptr ;
+  retval = ctrlAPI.createObject(apiObj,"ProbMgmt") ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to create a ProbMgmt object." << std::endl ;
+  } else {
+    ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
+    clp->readMps("exmip1.mps",true) ;
+    int retval = ctrlAPI.destroyObject(apiObj,"ProbMgmt",0) ;
+    if (retval < 0) {
+      errcnt++ ;
+      std::cout
+	<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+    }
+  }
+/*
+  Create a restricted ProbMgmt object, invoke a nontrivial method,
+  and destroy the object.
+*/
+  apiObj = nullptr ;
+  retval = ctrlAPI.createObject(apiObj,"ProbMgmt",&shortName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to create a restricted ProbMgmt object."
+      << std::endl ;
+  } else {
+    ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
+    clp->readMps("exmip1.mps",true) ;
+    int retval = ctrlAPI.destroyObject(apiObj,"ProbMgmt",&shortName) ;
+    if (retval < 0) {
+      errcnt++ ;
+      std::cout
+	<< "Apparent failure to destroy a restricted ProbMgmt object."
+	<< std::endl ;
+    }
+  }
 /*
   Unload the shim.
 */
   retval = ctrlAPI.unload(shortName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to unload " << shortName << "." << std::endl ;
+    std::cout
+      << "Error code is " << retval << "." << std::endl ;
+  }
 
-  return (retval) ;
+  return (errcnt) ;
 }
 
 } // end unnamed file-local namespace
