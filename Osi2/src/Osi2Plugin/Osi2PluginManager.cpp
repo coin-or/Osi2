@@ -34,6 +34,7 @@ const int nullptr = 0 ;
 
 using namespace Osi2 ;
 
+
 /*
   Plugin manager constructor.
 */
@@ -158,6 +159,40 @@ DynamicLibrary *PluginManager::validateRegParams (const CharString *apiStr,
   
   return (dynLib) ;
 }
+
+
+/*
+  Check for an entry that matches key and libID. Returns an iterator for the
+  entry, if it exists, else regMap.end(). A libID of 0 is a wildcard.
+*/
+PluginManager::RegistrationMap::iterator
+PluginManager::apiEntryExists (RegistrationMap &regMap,
+			       const std::string &key,
+			       PluginUniqueID libID)
+{
+  typedef RegistrationMap::iterator RMCI ;
+/*
+  See if we find anything. For the case where there's no entry at all for this
+  API, iterPair.first will be regMap.end(). For the case where the libID is a
+  wildCard (0), we're perfectly happy to use the first entry found. In either
+  case, we can simply return iterPair.first.
+*/
+  std::pair<RMCI,RMCI> iterPair = regMap.equal_range(key) ;
+  if (libID == 0 || iterPair.first == regMap.end()) return (iterPair.first) ;
+/*
+  There's at least one entry matching the API (key). Check to see if any of
+  them are from the same plugin library.
+*/
+  for (RMCI iter = iterPair.first ; iter != iterPair.second ; iter++) {
+    RegisterParams parms = iter->second ;
+    if (parms.pluginID_ == libID) return (iter) ;
+  }
+
+  return (regMap.end()) ;
+}
+
+
+
 /*
   This method is used by the plugin to register the APIs it supports. A pointer
   to this method is passed to the plugin in a PlatformServices object.
@@ -182,8 +217,15 @@ int32_t PluginManager::registerObject (const CharString *apiStr,
 
   Note that we cannot just store a pointer to the RegisterParams block;
   there's no telling how the plugin is handling it and we don't get ownership.
+
+  \todo
+  Note that the same API can be registered by multiple plugin libraries, so
+  checking for duplicate entries is a bit more work. If we're guarding against
+  a malfunctioning plugin making a duplicate registration, we should also check
+  for duplicate entries when inserting into the wildcard vector.
+  -- lh, 111013 --
 */
-  std::string key((const char *) apiStr) ;
+  const std::string key((const char *) apiStr) ;
   int retval = 0 ;
 
   if (key == std::string("*")) {
@@ -193,24 +235,23 @@ int32_t PluginManager::registerObject (const CharString *apiStr,
       pm.wildCardVec_.push_back(*params) ;
     }
   } else {
-    RegistrationMap::const_iterator oldAPI = pm.exactMatchMap_.find(key) ;
-    if (oldAPI != pm.exactMatchMap_.end()) {
-      retval = -1 ;
-    } else
+    RegistrationMap::const_iterator rmIter ;
     if (pm.initialisingPlugin_) {
-      oldAPI = pm.tmpExactMatchMap_.find(key) ;
-      if (oldAPI != pm.tmpExactMatchMap_.end()) {
-	retval = -1 ;
-      }
+      rmIter = pm.apiEntryExists(pm.exactMatchMap_,key,dynLib) ;
+      if (rmIter != pm.exactMatchMap_.end()) retval = -1 ;
+    } else {
+      rmIter = pm.apiEntryExists(pm.tmpExactMatchMap_,key,dynLib) ;
+      if (rmIter != pm.tmpExactMatchMap_.end()) retval = -1 ;
     }
     if (retval) {
       pm.msgHandler_->message(PLUGMGR_APIREGDUP,pm.msgs_)
 	  << key << CoinMessageEol ;
     } else {
+      RegistrationMap::value_type tmp(key,*params) ;
       if (pm.initialisingPlugin_) {
-	pm.tmpExactMatchMap_[key] = *params ;
+	pm.tmpExactMatchMap_.insert(tmp) ;
       } else {
-	pm.exactMatchMap_[key] = *params ;
+	pm.exactMatchMap_.insert(tmp) ;
       }
     }
   }
@@ -326,6 +367,12 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
   bookkeeping.  Enter the library in the library map. Add the exit function
   to the vector of exit functions, and copy information from the temporary
   wildcard and exact match vectors to the permanent vectors.
+
+  \todo
+  How paranoid do we want to be? Given that we check entries for uniqueness
+  as they're going into tmpExactMatchMap_, and that you can't load the same
+  lib twice, should we check tmpExactMatchMap_ against exactMatchMap_?
+  -- lh, 111013 --
 */
   libPathToIDMap_[fullPath] = dynLib ;
   DynLibInfo &info = dynamicLibraryMap_[dynLib] ;
@@ -616,6 +663,7 @@ ObjectParams *PluginManager::buildObjectParams (const std::string apiStr,
 
 
 void *PluginManager::createObject (const std::string &apiStr,
+				   PluginUniqueID libID,
 				   IObjectAdapter &adapter)
 {
 /*
@@ -631,7 +679,8 @@ void *PluginManager::createObject (const std::string &apiStr,
   to the parameter block and ask for an object. If we're successful, we need
   one last step for a C plugin --- wrap it for C++ use.
 */
-  RegistrationMap::iterator apiIter = exactMatchMap_.find(apiStr) ;
+  RegistrationMap::iterator apiIter = apiEntryExists(exactMatchMap_,
+						     apiStr,libID) ;
   if (apiIter != exactMatchMap_.end()) {        
     RegisterParams &rp = apiIter->second ;
     ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
@@ -647,7 +696,8 @@ void *PluginManager::createObject (const std::string &apiStr,
   }
 /*
   No exact match. Try for a wildcard match. If some plugin volunteers an
-  object, register 
+  object, register it. As with exact match, respect a restriction to a
+  particular plugin library.
 
   Surely we could do better here than just blindly calling create functions?
   Maybe not. It's not really all that different from having a separate `Can
@@ -665,6 +715,7 @@ void *PluginManager::createObject (const std::string &apiStr,
 */
   for (size_t i = 0 ; i < wildCardVec_.size() ; ++i) {
     RegisterParams &rp = wildCardVec_[i] ;
+    if (libID && rp.pluginID_ != libID) continue ;
     ObjectParams *objParms = buildObjectParams(apiStr,rp) ;
     void *object = rp.createFunc_(objParms) ;
     if (object) {
@@ -750,10 +801,12 @@ T *PluginManager::createObject(const std::string & apiStr, IObjectAdapter<T, U> 
   This provides a way to invoke an arbitrary function. The only requirement is
   that the specified object be destroyed as part of the execution.
 */
-int PluginManager::destroyObject (const std::string &apiStr, void *victim)
+int PluginManager::destroyObject (const std::string &apiStr,
+				  PluginUniqueID libID, void *victim)
 {
   int result = 0 ;
-  RegistrationMap::iterator apiIter = exactMatchMap_.find(apiStr) ;
+  RegistrationMap::iterator apiIter = apiEntryExists(exactMatchMap_,
+						     apiStr,libID) ;
   if (apiIter == exactMatchMap_.end()) {
     msgHandler_->message(PLUGMGR_APIDELFAIL,msgs_)
       << apiStr << "no such API" << CoinMessageEol ;
@@ -778,5 +831,4 @@ PlatformServices &PluginManager::getPlatformServices ()
 {
   return (platformServices_) ;
 }
-
 

@@ -363,7 +363,7 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
   Invoke the plugin manager's createObject method.
 */
   DummyAdapter dummy ;
-  obj = static_cast<API *>(pluginMgr_->createObject(apiName,dummy)) ;
+  obj = static_cast<API *>(pluginMgr_->createObject(apiName,libID,dummy)) ;
   if (obj == nullptr) {
     msgHandler_->message(CTRLAPI_CREATEFAIL,msgs_) << apiName ;
     msgHandler_->printing(restricted && libID != 0) << forPrinting ;
@@ -422,7 +422,7 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
 /*
   Invoke the plugin manager's destroyObject.
 */
-  retval = pluginMgr_->destroyObject(apiName,obj) ;
+  retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
   if (retval != 0) {
     msgHandler_->message(CTRLAPI_DESTROYFAIL,msgs_) << apiName ;
     msgHandler_->printing(restricted && libID != 0) << forPrinting ;

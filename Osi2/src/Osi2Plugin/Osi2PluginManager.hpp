@@ -124,19 +124,27 @@ public:
   /*! \name Factory methods
 
     Methods to create and destroy objects supported by plugins.
+
+    To restrict attention to a particular plugin library, specify the
+    \link Osi2::PluginUniqueID unique ID \endlink for that library. A value of
+    0 means no restriction.
   */
   //@{
 
   /*! \brief Invoked by client to create an object
 
-    Plugins register the objects they can create. This method is invoked by the
-    client to request an object. The pointer returned must be cast to the
+    Plugins register the objects they can create. This method is invoked by
+    the client to request an object. The pointer returned must be cast to the
     appropriate type; this is the client's responsibility.
+
+    A nonzero value for \p libID restricts the action to the specified
+    library.
 
     \todo An explanation of adapter is needed somewhere, once I (Lou)
 	  understand it.
   */
-  void *createObject(const std::string &apiStr, IObjectAdapter &adapter) ;
+  void *createObject(const std::string &apiStr, PluginUniqueID libID,
+		     IObjectAdapter &adapter) ;
 
   /*! \brief Invoked by client to destroy an object
 
@@ -146,8 +154,12 @@ public:
     plugin really hands out multiple pointers to the same object and keeps a
     usage count. Directly invoking the object's destructor with `delete'
     would not be good.)
+
+    A nonzero value for \p libID restricts the action to the specified
+    library.
   */
-  int destroyObject(const std::string &apiStr, void *victim) ;
+  int destroyObject(const std::string &apiStr, PluginUniqueID libID,
+		    void *victim) ;
 
   //@}
 
@@ -264,9 +276,18 @@ private:
   DynamicLibraryMap dynamicLibraryMap_ ;
 
   /// Map type for API management
-  typedef std::map<std::string,RegisterParams> RegistrationMap ;
+  typedef std::multimap<std::string,RegisterParams> RegistrationMap ;
   /// Vector type for wildcard management
   typedef std::vector<RegisterParams> RegistrationVec ;
+
+  /*! \brief Check for an existing entry in the API multimaps
+
+    Checks both the key and the plugin unique ID. Returns an iterator for the
+    entry if it exists, null otherwise.
+  */
+  RegistrationMap::iterator apiEntryExists(RegistrationMap &regMap,
+					    const std::string &key,
+					    PluginUniqueID libID) ;
 
   /*! \brief API management information map
 

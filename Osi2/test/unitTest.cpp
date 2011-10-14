@@ -66,14 +66,14 @@ int testPluginManager (const std::string libName)
   */
   DummyAdapter dummy ;
   ProbMgmtAPI *clp =
-    static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt",dummy)) ;
+    static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt",0,dummy)) ;
   if (clp == nullptr) {
     errcnt++ ;
     std::cout
       << "Apparent failure to create a ProbMgmt object." << std::endl ;
   } else {
     clp->readMps("exmip1.mps",true) ;
-    int retval = plugMgr.destroyObject("ProbMgmt",clp) ;
+    int retval = plugMgr.destroyObject("ProbMgmt",0,clp) ;
     if (retval < 0) {
       errcnt++ ;
       std::cout
@@ -86,7 +86,7 @@ int testPluginManager (const std::string libName)
     one.
   */
   ProbMgmtAPI *bogus =
-    static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",dummy)) ;
+    static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",0,dummy)) ;
   if (bogus == nullptr) {
     std::cout
       << "Apparent failure to create a BogusAPI object (expected)."
@@ -100,14 +100,15 @@ int testPluginManager (const std::string libName)
   /*
     Check that we can create an object through the wildcard mechanism.
   */
-  clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",dummy)) ;
+  clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",
+							 0,dummy)) ;
   if (clp == nullptr) {
     errcnt++ ;
     std::cout
       << "Apparent failure to create a WildProbMgmt object." << std::endl ;
   } else {
     clp->readMps("exmip1.mps",true) ;
-    int retval = plugMgr.destroyObject("WildProbMgmt",clp) ;
+    int retval = plugMgr.destroyObject("WildProbMgmt",0,clp) ;
     if (retval < 0) {
       std::cout
 	<< "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
