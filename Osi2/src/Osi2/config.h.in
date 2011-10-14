@@ -18,6 +18,9 @@
 /* Define to 1 if the Netlib package is available */
 #undef COIN_HAS_NETLIB
 
+/* Define to 1 if the C++ compiler supports nullptr */
+#undef COIN_HAS_NULLPTR
+
 /* Define to 1 if the Osi2Plugin package is available */
 #undef COIN_HAS_OSI2PLUGIN
 
