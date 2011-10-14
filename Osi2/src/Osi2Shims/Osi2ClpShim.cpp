@@ -40,7 +40,7 @@ typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
 void *ClpShim::create (const ObjectParams *params)
 {
     std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
-    void *retval = 0 ;
+    void *retval = nullptr ;
 
     std::cout << "Clp create: type " << what << "." << std::endl ;
 
@@ -55,7 +55,7 @@ void *ClpShim::create (const ObjectParams *params)
         if (factory == 0) {
             std::cout << "Apparent failure to find Clp_newModel." << std::endl ;
             std::cout << errStr << std::endl ;
-            return (0) ;
+            return (nullptr) ;
         }
         Clp_Simplex *wrapper = factory() ;
         ClpSimplexFactory underlyingModel =
@@ -64,7 +64,7 @@ void *ClpShim::create (const ObjectParams *params)
         if (underlyingModel == 0) {
             std::cout << "Apparent failure to find Clp_model." << std::endl ;
             std::cout << errStr << std::endl ;
-            return (0) ;
+            return (nullptr) ;
         }
         ClpSimplex *retval = underlyingModel(wrapper) ;
         if (what == "ProbMgmt" || what == "WildProbMgmt") {
@@ -125,7 +125,7 @@ ExitFunc initPlugin (PlatformServices *services)
                 << "Apparent failure opening " << fullPath << "." << std::endl ;
         std::cout
                 << "Error is " << errMsg << "." << std::endl ;
-        return (0) ;
+        return (nullptr) ;
     }
     /*
       Create the plugin library state object, ClpShim.  Arrange to remember the
@@ -160,7 +160,7 @@ ExitFunc initPlugin (PlatformServices *services)
     if (retval < 0) {
         std::cout
                 << "Apparent failure to register ClpSimplex plugin." << std::endl ;
-        return (0) ;
+        return (nullptr) ;
     }
     retval =
         services->registerObject_(
@@ -168,7 +168,7 @@ ExitFunc initPlugin (PlatformServices *services)
     if (retval < 0) {
         std::cout
                 << "Apparent failure to register ProgMgmt plugin." << std::endl ;
-        return (0) ;
+        return (nullptr) ;
     }
     /*
       Register a wildcard object (for testing)
@@ -179,7 +179,7 @@ ExitFunc initPlugin (PlatformServices *services)
     if (retval < 0) {
         std::cout
                 << "Apparent failure to register wildcard plugin." << std::endl ;
-        return (0) ;
+        return (nullptr) ;
     }
 
     return (cleanupPlugin) ;

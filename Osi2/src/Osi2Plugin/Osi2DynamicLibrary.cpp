@@ -72,7 +72,7 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
 {
     if (name.empty()) {
         errorString = "Empty path." ;
-        return (0) ;
+        return (nullptr) ;
     }
 
     void *handle = nullptr ;
@@ -104,7 +104,7 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
 void *DynamicLibrary::getSymbol (const std::string &symbol,
                                  std::string &errorString)
 {
-    if (!handle_) return (0) ;
+    if (!handle_) return (nullptr) ;
 
 #ifdef WIN32
     return (::GetProcAddress((HMODULE)handle_, symbol.c_str())) ;
@@ -121,4 +121,3 @@ void *DynamicLibrary::getSymbol (const std::string &symbol,
 }
 
 }  // end namespace Osi2
-
