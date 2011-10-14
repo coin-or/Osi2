@@ -51,16 +51,17 @@ AC_COIN_PROG_CXX
 
 AC_COIN_CHECK_CXX_CHEADER(stdint)
 
-# See if we have native support for nullptr. Two alternative checks, see if
-# they agree.
+# See if we have native support for nullptr.
 
 AC_MSG_CHECKING([for nullptr support])
+AC_LANG_PUSH(C++)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr
 ;]])],
  [AC_DEFINE(COIN_HAS_NULLPTR,[1],
  	    [Define to 1 if the C++ compiler supports nullptr])
   AC_MSG_RESULT(yes)],
  [AC_MSG_RESULT(no)])
+AC_LANG_POP()
 
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
