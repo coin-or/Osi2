@@ -54,19 +54,13 @@ AC_COIN_CHECK_CXX_CHEADER(stdint)
 # See if we have native support for nullptr. Two alternative checks, see if
 # they agree.
 
-AC_MSG_CHECKING([for native nullptr with custom check])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[struct TestClass *ptr ; ptr = nullptr
+AC_MSG_CHECKING([for nullptr support])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr
 ;]])],
  [AC_DEFINE(COIN_HAS_NULLPTR,[1],
  	    [Define to 1 if the C++ compiler supports nullptr])
   AC_MSG_RESULT(yes)],
  [AC_MSG_RESULT(no)])
-AC_MSG_CHECKING([for native nullptr with generic type check])
-AC_CHECK_TYPE([nullptr],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
-
-# if test x"$GXX" = xyes ; then
-#   CXXFLAGS="$CXXFLAGS -std=c++98"
-# fi
 
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
