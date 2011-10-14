@@ -33,7 +33,7 @@ struct IObjectAdapter ;
   API. If the registration string is exactly "*", the registration is classed
   as a wildcard and entered in the #wildCardVec_. Otherwise, it will be
   entered in the #exactMatchMap_ using the character string as the key.
-  
+
   Clients request an object supporting a specific API by specifying a
   character string.  If an exact match for the API requested by the client
   is not found in #exactMatchMap_, the #wildCardVec_ is scanned. For each
@@ -46,290 +46,298 @@ struct IObjectAdapter ;
 	is shut down the plugin manager, unloading all plugin libraries. For
 	that matter, what about deregistering an API?
 */
-  
-class PluginManager
-{
+
+class PluginManager {
 
 public:
 
-  /*! \brief Get a reference to the plugin manager
+    /*! \brief Get a reference to the plugin manager
 
-    Returns a reference to the single instance of the plugin manager.
-  */
-  static PluginManager &getInstance() ;
+      Returns a reference to the single instance of the plugin manager.
+    */
+    static PluginManager &getInstance() ;
 
-  /*! \name Public plugin library management methods
+    /*! \name Public plugin library management methods
 
-    Methods to load and unload plugin libraries.
-  */
-  //@{
+      Methods to load and unload plugin libraries.
+    */
+    //@{
 
-  /// Get the default plugin directory
-  inline std::string getDfltPluginDir() const { return (dfltPluginDir_) ; }
+    /// Get the default plugin directory
+    inline std::string getDfltPluginDir() const {
+        return (dfltPluginDir_) ;
+    }
 
-  /// Set the default plugin directory
-  inline void setDfltPluginDir(std::string dfltDir)
-  { dfltPluginDir_ = dfltDir ; }
+    /// Set the default plugin directory
+    inline void setDfltPluginDir(std::string dfltDir) {
+        dfltPluginDir_ = dfltDir ;
+    }
 
-  /// Get the services provided by the plugin manager
-  PlatformServices &getPlatformServices() ;
+    /// Get the services provided by the plugin manager
+    PlatformServices &getPlatformServices() ;
 
-  /*! \brief Load and initialise the specified plugin library.
+    /*! \brief Load and initialise the specified plugin library.
 
-    Load the specified library \c dir/lib. If \p dir is not specified,
-    #dfltPluginDir_ is used.
+      Load the specified library \c dir/lib. If \p dir is not specified,
+      #dfltPluginDir_ is used.
 
-    The PluginUniqueID assigned to the library will be returned in \p uniqueID
-    if a parameter is supplied.
+      The PluginUniqueID assigned to the library will be returned in \p uniqueID
+      if a parameter is supplied.
 
-    \return
-    - -3: initialisation function failed
-    - -2: failed to find the initialisation function
-    - -1: library failed to load
-    -  0: library loaded and initialised without error
-    -  1: library is already loaded
+      \return
+      - -3: initialisation function failed
+      - -2: failed to find the initialisation function
+      - -1: library failed to load
+      -  0: library loaded and initialised without error
+      -  1: library is already loaded
 
-    \todo Should deal with things like symbolic links but that functionality
-	  is currently disabled pending file system support.
-  */
-  int loadOneLib(const std::string &lib, const std::string *dir = 0,
-		 PluginUniqueID *uniqueID = 0) ;
+      \todo Should deal with things like symbolic links but that functionality
+      is currently disabled pending file system support.
+    */
+    int loadOneLib(const std::string &lib, const std::string *dir = 0,
+                   PluginUniqueID *uniqueID = 0) ;
 
-  /*! \brief Load and initialise all plugin libraries in the directory.
+    /*! \brief Load and initialise all plugin libraries in the directory.
 
-    \todo
-    Currently unimplemented until we can create platform-independent file
-    system support. For that matter, it's questionable whether we want this
-    functionality.
-  */
-  int loadAllLibs(const std::string &pluginDirectory,
-		  const InvokeServiceFunc func = NULL) ;
+      \todo
+      Currently unimplemented until we can create platform-independent file
+      system support. For that matter, it's questionable whether we want this
+      functionality.
+    */
+    int loadAllLibs(const std::string &pluginDirectory,
+                    const InvokeServiceFunc func = NULL) ;
 
-  /*! \brief unload the specified plugin library
+    /*! \brief unload the specified plugin library
 
-    Removes all APIs registered by the specified plugin library, invokes the
-    library's exit function, and unloads the library.
-  */
-  int unloadOneLib(const std::string &lib, const std::string *dir = 0) ;
+      Removes all APIs registered by the specified plugin library, invokes the
+      library's exit function, and unloads the library.
+    */
+    int unloadOneLib(const std::string &lib, const std::string *dir = 0) ;
 
-  /*! \brief Shut down the plugin manager
+    /*! \brief Shut down the plugin manager
 
-    Will invoke the exit method for all plugins, unload all libraries, and
-    shut down the plugin manager.
-  */
-  int shutdown() ;
+      Will invoke the exit method for all plugins, unload all libraries, and
+      shut down the plugin manager.
+    */
+    int shutdown() ;
 
-  //@}
+    //@}
 
-  /*! \name Factory methods
+    /*! \name Factory methods
 
-    Methods to create and destroy objects supported by plugins.
+      Methods to create and destroy objects supported by plugins.
 
-    To restrict attention to a particular plugin library, specify the
-    \link Osi2::PluginUniqueID unique ID \endlink for that library. A value of
-    0 means no restriction.
-  */
-  //@{
+      To restrict attention to a particular plugin library, specify the
+      \link Osi2::PluginUniqueID unique ID \endlink for that library. A value of
+      0 means no restriction.
+    */
+    //@{
 
-  /*! \brief Invoked by client to create an object
+    /*! \brief Invoked by client to create an object
 
-    Plugins register the objects they can create. This method is invoked by
-    the client to request an object. The pointer returned must be cast to the
-    appropriate type; this is the client's responsibility.
+      Plugins register the objects they can create. This method is invoked by
+      the client to request an object. The pointer returned must be cast to the
+      appropriate type; this is the client's responsibility.
 
-    A nonzero value for \p libID restricts the action to the specified
-    library.
+      A nonzero value for \p libID restricts the action to the specified
+      library.
 
-    \todo An explanation of adapter is needed somewhere, once I (Lou)
-	  understand it.
-  */
-  void *createObject(const std::string &apiStr, PluginUniqueID libID,
-		     IObjectAdapter &adapter) ;
+      \todo An explanation of adapter is needed somewhere, once I (Lou)
+      understand it.
+    */
+    void *createObject(const std::string &apiStr, PluginUniqueID libID,
+                       IObjectAdapter &adapter) ;
 
-  /*! \brief Invoked by client to destroy an object
+    /*! \brief Invoked by client to destroy an object
 
-    This method should be invoked by the client to destroy an object. This
-    allows the plugin to specify an arbitrary function which will not
-    necessarily be equivalent to a standard C++ destructor. (Suppose the
-    plugin really hands out multiple pointers to the same object and keeps a
-    usage count. Directly invoking the object's destructor with `delete'
-    would not be good.)
+      This method should be invoked by the client to destroy an object. This
+      allows the plugin to specify an arbitrary function which will not
+      necessarily be equivalent to a standard C++ destructor. (Suppose the
+      plugin really hands out multiple pointers to the same object and keeps a
+      usage count. Directly invoking the object's destructor with `delete'
+      would not be good.)
 
-    A nonzero value for \p libID restricts the action to the specified
-    library.
-  */
-  int destroyObject(const std::string &apiStr, PluginUniqueID libID,
-		    void *victim) ;
+      A nonzero value for \p libID restricts the action to the specified
+      library.
+    */
+    int destroyObject(const std::string &apiStr, PluginUniqueID libID,
+                      void *victim) ;
 
-  //@}
+    //@}
 
-  /*! \name Plugin manager control methods
+    /*! \name Plugin manager control methods
 
-    Miscellaneous methods that control the behaviour of the plugin manager.
-  */
-  //@{
+      Miscellaneous methods that control the behaviour of the plugin manager.
+    */
+    //@{
 
-  /// Set the log (verbosity) level
-  inline void setLogLvl(int logLvl) {
-    logLvl_ = logLvl ; msgHandler_->setLogLevel(logLvl_) ;
-  }
+    /// Set the log (verbosity) level
+    inline void setLogLvl(int logLvl) {
+        logLvl_ = logLvl ;
+        msgHandler_->setLogLevel(logLvl_) ;
+    }
 
-  /// Get the log (verbosity) level
-  inline int getLogLvl() const { return (logLvl_) ; }
+    /// Get the log (verbosity) level
+    inline int getLogLvl() const {
+        return (logLvl_) ;
+    }
 
-  /*! \brief Set the message handler
+    /*! \brief Set the message handler
 
-    Replaces the current message handler. If newHandler is null, the existing
-    handler is replaced with a default handler. It is the responsibility of
-    the client to destroy any handler it supplies. The plugin manager takes
-    responsibility for a default handler.
-  */
-  void setMsgHandler(CoinMessageHandler *newHandler) ;
+      Replaces the current message handler. If newHandler is null, the existing
+      handler is replaced with a default handler. It is the responsibility of
+      the client to destroy any handler it supplies. The plugin manager takes
+      responsibility for a default handler.
+    */
+    void setMsgHandler(CoinMessageHandler *newHandler) ;
 
-  /// Get the message handler
-  inline CoinMessageHandler *getMsgHandler() const { return (msgHandler_) ; }
+    /// Get the message handler
+    inline CoinMessageHandler *getMsgHandler() const {
+        return (msgHandler_) ;
+    }
 
-  /// Report owner of message handler (false if owned by client).
-  inline bool dfltHandler () const { return (dfltHandler_) ; }
+    /// Report owner of message handler (false if owned by client).
+    inline bool dfltHandler () const {
+        return (dfltHandler_) ;
+    }
 
-  //@}
+    //@}
 
 private:
-  /*! \brief Register an object type with the plugin manager
+    /*! \brief Register an object type with the plugin manager
 
-    Invoked by plugins to register the objects they can create.
-  */
-  static int32_t registerObject(const CharString *nodeType,
-                                const RegisterParams *params) ;
+      Invoked by plugins to register the objects they can create.
+    */
+    static int32_t registerObject(const CharString *nodeType,
+                                  const RegisterParams *params) ;
 
-  /*! \name Constructors and Destructors
+    /*! \name Constructors and Destructors
 
-    Private because the plugin manager should be a single static instance.
-  */
-  //@{
-  /// Default constructor
-  PluginManager() ;
-  /// Copy constructor
-  PluginManager(const PluginManager &pm) ;
-  /// Destructor
-  ~PluginManager() ;
-  //@}
+      Private because the plugin manager should be a single static instance.
+    */
+    //@{
+    /// Default constructor
+    PluginManager() ;
+    /// Copy constructor
+    PluginManager(const PluginManager &pm) ;
+    /// Destructor
+    ~PluginManager() ;
+    //@}
 
-  /*! \name Utility methods */
-  //@{
-  /*! \brief Validate registration parameters
+    /*! \name Utility methods */
+    //@{
+    /*! \brief Validate registration parameters
 
-    Check the validity of a registration parameter block supplied by
-    a plugin to register an API.
+      Check the validity of a registration parameter block supplied by
+      a plugin to register an API.
 
-    \returns A reference to the dynamic library object for the plugin
-    	     library attempting the registration, or null on error.
-  */
-  DynamicLibrary *validateRegParams(const CharString *apiStr,
-		    const RegisterParams *params) const ;
-  /*! \brief Construct an ObjectParams block
+      \returns A reference to the dynamic library object for the plugin
+      	     library attempting the registration, or null on error.
+    */
+    DynamicLibrary *validateRegParams(const CharString *apiStr,
+                                      const RegisterParams *params) const ;
+    /*! \brief Construct an ObjectParams block
 
-    Constructs the parameter block passed to the plugin for object creation
-    or destruction.
-  */
-  ObjectParams *buildObjectParams(const std::string apiStr,
-				  const RegisterParams &rp) ;
-  //@}
+      Constructs the parameter block passed to the plugin for object creation
+      or destruction.
+    */
+    ObjectParams *buildObjectParams(const std::string apiStr,
+                                    const RegisterParams &rp) ;
+    //@}
 
-  /// Partially filled-in platform services record
-  PlatformServices platformServices_ ;
+    /// Partially filled-in platform services record
+    PlatformServices platformServices_ ;
 
-  /*! \brief Plugin library management information
+    /*! \brief Plugin library management information
 
-    This struct holds the information needed to manage a plugin library.
-  */
-  struct DynLibInfo
-  {
+      This struct holds the information needed to manage a plugin library.
+    */
+    struct DynLibInfo {
 
-    /// The dynamic library
-    DynamicLibrary *dynLib_ ;
-    /// Plugin library state object supplied by plugin (opaque pointer)
-    PluginState *ctrlObj_ ;
-    /// Exit (cleanup) function for the library; called prior to unload
-    ExitFunc exitFunc_ ;
+        /// The dynamic library
+        DynamicLibrary *dynLib_ ;
+        /// Plugin library state object supplied by plugin (opaque pointer)
+        PluginState *ctrlObj_ ;
+        /// Exit (cleanup) function for the library; called prior to unload
+        ExitFunc exitFunc_ ;
 
-  } ;
+    } ;
 
-  /// Map type to map library path strings to PluginUniqueID
-  typedef std::map<std::string,PluginUniqueID> LibPathToIDMap ;
+    /// Map type to map library path strings to PluginUniqueID
+    typedef std::map<std::string, PluginUniqueID> LibPathToIDMap ;
 
-  /*! \brief Plugin library path to ID map
+    /*! \brief Plugin library path to ID map
 
-    So that we don't have to work with strings internally, map the full
-    path to a more tractable ID.
-  */
-  LibPathToIDMap libPathToIDMap_ ;
+      So that we don't have to work with strings internally, map the full
+      path to a more tractable ID.
+    */
+    LibPathToIDMap libPathToIDMap_ ;
 
-  /// Map type for plugin library management
-  typedef std::map<PluginUniqueID,DynLibInfo> DynamicLibraryMap ;
+    /// Map type for plugin library management
+    typedef std::map<PluginUniqueID, DynLibInfo> DynamicLibraryMap ;
 
-  /*! \brief Plugin library management map
+    /*! \brief Plugin library management map
 
-    Maps the unique ID assigned to the plugin library to a block of
-    information (#DynLibInfo) used to manage the library.
-  */
-  DynamicLibraryMap dynamicLibraryMap_ ;
+      Maps the unique ID assigned to the plugin library to a block of
+      information (#DynLibInfo) used to manage the library.
+    */
+    DynamicLibraryMap dynamicLibraryMap_ ;
 
-  /// Map type for API management
-  typedef std::multimap<std::string,RegisterParams> RegistrationMap ;
-  /// Vector type for wildcard management
-  typedef std::vector<RegisterParams> RegistrationVec ;
+    /// Map type for API management
+    typedef std::multimap<std::string, RegisterParams> RegistrationMap ;
+    /// Vector type for wildcard management
+    typedef std::vector<RegisterParams> RegistrationVec ;
 
-  /*! \brief Check for an existing entry in the API multimaps
+    /*! \brief Check for an existing entry in the API multimaps
 
-    Checks both the key and the plugin unique ID. Returns an iterator for the
-    entry if it exists, null otherwise.
-  */
-  RegistrationMap::iterator apiEntryExists(RegistrationMap &regMap,
-					    const std::string &key,
-					    PluginUniqueID libID) ;
+      Checks both the key and the plugin unique ID. Returns an iterator for the
+      entry if it exists, null otherwise.
+    */
+    RegistrationMap::iterator apiEntryExists(RegistrationMap &regMap,
+            const std::string &key,
+            PluginUniqueID libID) ;
 
-  /*! \brief API management information map
+    /*! \brief API management information map
 
-    Maps specific APIs registered by plugin libraries to a block of
-    information (#APIInfo) used to manage the API.
-  */
-  RegistrationMap exactMatchMap_ ;
-  /*! \brief Wildcard management information
+      Maps specific APIs registered by plugin libraries to a block of
+      information (#APIInfo) used to manage the API.
+    */
+    RegistrationMap exactMatchMap_ ;
+    /*! \brief Wildcard management information
 
-    Records management information for wildcard registrations by plugin
-    libraries.
-  */
-  RegistrationVec wildCardVec_ ;
+      Records management information for wildcard registrations by plugin
+      libraries.
+    */
+    RegistrationVec wildCardVec_ ;
 
-  /*! \brief Initialising a plugin?
+    /*! \brief Initialising a plugin?
 
-    True during initialisation of a plugin library. Used to determine if plugin
-    activity (API registration, etc) should go to temporary structures.
-  */
-  bool initialisingPlugin_ ;
-  /*! \brief The library we're initialising;
+      True during initialisation of a plugin library. Used to determine if plugin
+      activity (API registration, etc) should go to temporary structures.
+    */
+    bool initialisingPlugin_ ;
+    /*! \brief The library we're initialising;
 
-    Valid exactly when #initialisingPlugin_ is true.
-  */
-  DynamicLibrary *libInInit_ ;
+      Valid exactly when #initialisingPlugin_ is true.
+    */
+    DynamicLibrary *libInInit_ ;
 
-  /// Temporary API map used during plugin library initialisation
-  RegistrationMap tmpExactMatchMap_ ;
-  /// Temporary wildcard vector used during plugin library initialisation
-  RegistrationVec tmpWildCardVec_ ;     // wild card ('*') object types
+    /// Temporary API map used during plugin library initialisation
+    RegistrationMap tmpExactMatchMap_ ;
+    /// Temporary wildcard vector used during plugin library initialisation
+    RegistrationVec tmpWildCardVec_ ;     // wild card ('*') object types
 
-  /// Default plugin directory
-  std::string dfltPluginDir_ ;
+    /// Default plugin directory
+    std::string dfltPluginDir_ ;
 
-  /// Indicator; false if the message handler belongs to the client
-  bool dfltHandler_ ;
-  /// Message handler
-  CoinMessageHandler *msgHandler_ ;
-  /// Messages
-  CoinMessages msgs_ ;
-  /// Log (verbosity) level
-  int logLvl_ ;
+    /// Indicator; false if the message handler belongs to the client
+    bool dfltHandler_ ;
+    /// Message handler
+    CoinMessageHandler *msgHandler_ ;
+    /// Messages
+    CoinMessages msgs_ ;
+    /// Log (verbosity) level
+    int logLvl_ ;
 
 } ;
 

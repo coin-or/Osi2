@@ -10,10 +10,9 @@ namespace Osi2 {
 
   It must be passed to the PluginManager::createObject() function.
 */
-struct IObjectAdapter
-{
-  virtual ~IObjectAdapter() {}
-  virtual void *adapt(void *object, DestroyFunc df) = 0 ;
+struct IObjectAdapter {
+    virtual ~IObjectAdapter() {}
+    virtual void *adapt(void *object, DestroyFunc df) = 0 ;
 } ;
 
 /*! \brief This template should be used if the object model implements the
@@ -23,20 +22,16 @@ struct IObjectAdapter
   IObjectAdapter
 */
 template <typename T, typename U>
-struct ObjectAdapter : public IObjectAdapter
-{
-  virtual void *adapt (void *object, DestroyFunc df)
-  {
-    return new T((U *)object, df);
-  }
+struct ObjectAdapter : public IObjectAdapter {
+    virtual void *adapt (void *object, DestroyFunc df) {
+        return new T((U *)object, df);
+    }
 } ;
 
-struct DummyAdapter : public IObjectAdapter
-{
-  virtual void *adapt(void *object, DestroyFunc df)
-  {
-    return (static_cast<void*>(0)) ;
-  }
+struct DummyAdapter : public IObjectAdapter {
+    virtual void *adapt(void *object, DestroyFunc df) {
+        return (static_cast<void*>(0)) ;
+    }
 } ;
 
 }  // end namespace Osi2

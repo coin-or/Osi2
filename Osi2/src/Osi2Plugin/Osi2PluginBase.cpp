@@ -4,10 +4,9 @@
 #include <cstring>
 #include "Osi2PluginBase.hpp"
 
-namespace base
+namespace base {
+std::string getErrorMessage()
 {
-  std::string getErrorMessage()
-  {
     /*
     char buff[1024];
     apr_status_t st = apr_get_os_error();
@@ -15,7 +14,7 @@ namespace base
     return std::string(buff);
     */
     return std::string(strerror(errno)) ;
-  }
+}
 }
 
 

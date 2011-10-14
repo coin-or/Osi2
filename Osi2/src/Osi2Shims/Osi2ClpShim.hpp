@@ -17,54 +17,66 @@ namespace Osi2 {
 
 class ClpShim {
 
-  public:
+public:
 
-  /// Default constructor
-  ClpShim() ;
+    /// Default constructor
+    ClpShim() ;
 
-  /*! \brief Object factory
+    /*! \brief Object factory
 
-    Create clp-specific objects to satisfy the Osi2 API specified as the
-    \p objectType member of of \p params.
-  */
-  static void *create (const ObjectParams *params) ;
+      Create clp-specific objects to satisfy the Osi2 API specified as the
+      \p objectType member of of \p params.
+    */
+    static void *create (const ObjectParams *params) ;
 
-  /*! \brief Object destructor
+    /*! \brief Object destructor
 
-    Destroys objects created by this shim.
-  */
-  static int32_t destroy (void *victim, const ObjectParams *params) ;
+      Destroys objects created by this shim.
+    */
+    static int32_t destroy (void *victim, const ObjectParams *params) ;
 
-  /// Set our unique ID (supplied by the plugin manager)
-  inline void setPluginID (PluginUniqueID id) { ourID_ = id ; }
-  /// Get our unique ID
-  inline PluginUniqueID getPluginID () const { return (ourID_) ; }
-  /// Set libClp handle
-  inline void setLibClp (DynamicLibrary *libClp) { libClp_ = libClp ; }
-  /// Get libClp handle
-  inline DynamicLibrary *getLibClp () const { return (libClp_) ; }
-  /// Set verbosity
-  inline void setVerbosity (int verbosity) { verbosity_ = verbosity ; }
-  /// Get verbosity
-  inline int getVerbosity () const { return (verbosity_) ; }
+    /// Set our unique ID (supplied by the plugin manager)
+    inline void setPluginID (PluginUniqueID id) {
+        ourID_ = id ;
+    }
+    /// Get our unique ID
+    inline PluginUniqueID getPluginID () const {
+        return (ourID_) ;
+    }
+    /// Set libClp handle
+    inline void setLibClp (DynamicLibrary *libClp) {
+        libClp_ = libClp ;
+    }
+    /// Get libClp handle
+    inline DynamicLibrary *getLibClp () const {
+        return (libClp_) ;
+    }
+    /// Set verbosity
+    inline void setVerbosity (int verbosity) {
+        verbosity_ = verbosity ;
+    }
+    /// Get verbosity
+    inline int getVerbosity () const {
+        return (verbosity_) ;
+    }
 
-  private:
+private:
 
-  /*! \brief Plugin manager services structure
+    /*! \brief Plugin manager services structure
 
-    Structure passed in at plugin initialisation specifying services available
-    from the plugin manager.
-  */
-  const PlatformServices *services_ ;
+      Structure passed in at plugin initialisation specifying services available
+      from the plugin manager.
+    */
+    const PlatformServices *services_ ;
 
-  /// The handle for libClp
-  DynamicLibrary *libClp_ ;
+    /// The handle for libClp
+    DynamicLibrary *libClp_ ;
 
-  /// Our registration ID from the plugin manager
-  PluginUniqueID ourID_ ;
+    /// Our registration ID from the plugin manager
+    PluginUniqueID ourID_ ;
 
-  /// Verbosity level for information messages
-  int verbosity_ ;
+    /// Verbosity level for information messages
+    int verbosity_ ;
 
 } ;
 

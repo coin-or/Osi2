@@ -30,7 +30,7 @@ namespace Osi2 {
 
 class API {
 
-  public:
+public:
 
     /// Virtual destructor, should be overridden in any derived class
     virtual ~API () {}

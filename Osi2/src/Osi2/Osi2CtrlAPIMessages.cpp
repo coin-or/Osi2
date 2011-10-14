@@ -21,7 +21,7 @@ typedef struct {
     int extID_ ;
 
     /*! Message log level
-    
+
       Message will print if log level is less than or equal to the current
       log level.
     */
@@ -43,36 +43,46 @@ typedef struct {
 */
 static OneCtrlAPIMessage us_english[] = {
 
-  // Information: 0 -- 2999
+    // Information: 0 -- 2999
 
-  { CTRLAPI_INIT, 0000, 7, "Control API constructor (%s)." },
-  { CTRLAPI_LIBLDOK, 0001, 7, "Plugin library \"%s\" (\"%s\") loaded." },
-  { CTRLAPI_LIBCLOSEOK, 0002, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
-  { CTRLAPI_CREATEOK, 0003, 7, "API \"%s\"%?, library \"%s\"%? created." },
-  { CTRLAPI_DESTROYOK, 0004, 7, "API \"%s\"%?, library \"%s\"%? destroyed." },
+    { CTRLAPI_INIT, 0000, 7, "Control API constructor (%s)." },
+    { CTRLAPI_LIBLDOK, 0001, 7, "Plugin library \"%s\" (\"%s\") loaded." },
+    { CTRLAPI_LIBCLOSEOK, 0002, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
+    { CTRLAPI_CREATEOK, 0003, 7, "API \"%s\"%?, library \"%s\"%? created." },
+    { CTRLAPI_DESTROYOK, 0004, 7, "API \"%s\"%?, library \"%s\"%? destroyed." },
 
-  // Warning: 3000 -- 5999
+    // Warning: 3000 -- 5999
 
-  { CTRLAPI_LIBUNREG, 3000, 4, "Library \"%s\" is not registered." },
-  { CTRLAPI_UNREG, 3001, 4,
-    "%?PluginManager says \"%s\" already loaded but %?\"%s\" is not registered." },
+    { CTRLAPI_LIBUNREG, 3000, 4, "Library \"%s\" is not registered." },
+    {
+        CTRLAPI_UNREG, 3001, 4,
+        "%?PluginManager says \"%s\" already loaded but %?\"%s\" is not registered."
+    },
 
-  // Nonfatal Error: 6000 -- 8999
+    // Nonfatal Error: 6000 -- 8999
 
-  { CTRLAPI_LIBLDFAIL, 6000, 2,
-    "Load failed for plugin library \"%s\" (\"%s\")." },
-  { CTRLAPI_LIBCLOSEFAIL, 6001, 2,
-    "Load failed for plugin library \"%s\" (\"%s\")." },
-  { CTRLAPI_CREATEFAIL, 6002, 2,
-    "Create failed for API \"%s\"%?, library \"%s\"%?." },
-  { CTRLAPI_DESTROYFAIL, 6003, 2,
-    "Destroy failed for API \"%s\"%?, library \"%s\"%?." },
+    {
+        CTRLAPI_LIBLDFAIL, 6000, 2,
+        "Load failed for plugin library \"%s\" (\"%s\")."
+    },
+    {
+        CTRLAPI_LIBCLOSEFAIL, 6001, 2,
+        "Load failed for plugin library \"%s\" (\"%s\")."
+    },
+    {
+        CTRLAPI_CREATEFAIL, 6002, 2,
+        "Create failed for API \"%s\"%?, library \"%s\"%?."
+    },
+    {
+        CTRLAPI_DESTROYFAIL, 6003, 2,
+        "Destroy failed for API \"%s\"%?, library \"%s\"%?."
+    },
 
-  // Fatal Error: 9000 -- 9999
+    // Fatal Error: 9000 -- 9999
 
-  { CTRLAPI_NOPLUGMGR, 9000, 1, "Cannot find plugin manager!" },
+    { CTRLAPI_NOPLUGMGR, 9000, 1, "Cannot find plugin manager!" },
 
-  { CTRLAPI_DUMMY_END, 9999, 0, "" }
+    { CTRLAPI_DUMMY_END, 9999, 0, "" }
 } ;
 
 /*
@@ -86,23 +96,23 @@ static OneCtrlAPIMessage us_english[] = {
   null).
 */
 CtrlAPIMessages::CtrlAPIMessages (Language language)
-  : CoinMessages(sizeof(us_english)/sizeof(OneCtrlAPIMessage))
+    : CoinMessages(sizeof(us_english) / sizeof(OneCtrlAPIMessage))
 {
-  language_ = language ;
-  std::strcpy(source_, "OSI2") ;
-  class_ = 2 ;
+    language_ = language ;
+    std::strcpy(source_, "OSI2") ;
+    class_ = 2 ;
 
-  OneCtrlAPIMessage *msg = &us_english[0] ;
-  while (msg->intID_ != CTRLAPI_DUMMY_END) {
-    CoinOneMessage tmpMsg(msg->extID_,msg->logLvl_,msg->text_) ;
-    addMessage(msg->intID_,tmpMsg) ;
-    msg++ ;
-  }
-  /*
-    If we want to allow language-specific overrides of individual messages,
-    code to do that should go here, prior to compacting the messages.
-  */
-  toCompact() ;
+    OneCtrlAPIMessage *msg = &us_english[0] ;
+    while (msg->intID_ != CTRLAPI_DUMMY_END) {
+        CoinOneMessage tmpMsg(msg->extID_, msg->logLvl_, msg->text_) ;
+        addMessage(msg->intID_, tmpMsg) ;
+        msg++ ;
+    }
+    /*
+      If we want to allow language-specific overrides of individual messages,
+      code to do that should go here, prior to compacting the messages.
+    */
+    toCompact() ;
 }
 
 }  // end namespace Osi2

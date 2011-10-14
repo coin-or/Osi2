@@ -22,101 +22,101 @@ namespace Osi2 {
 */
 class ControlAPI : public API {
 
-  public:
+public:
 
-  /// \name Constructors and Destructors
-  //@{
-  /// Virtual constructor
-  virtual ControlAPI *create() = 0 ;
-  /// Virtual copy constructor
-  virtual ControlAPI *clone() = 0 ;
-  /// Virtual destructor
-  virtual ~ControlAPI() {}
-  //@}
+    /// \name Constructors and Destructors
+    //@{
+    /// Virtual constructor
+    virtual ControlAPI *create() = 0 ;
+    /// Virtual copy constructor
+    virtual ControlAPI *clone() = 0 ;
+    /// Virtual destructor
+    virtual ~ControlAPI() {}
+    //@}
 
-  /*! \name Library Management
-      \brief Methods to load and unload plugin libraries
+    /*! \name Library Management
+        \brief Methods to load and unload plugin libraries
 
-    Given only a short name xxx the method will look for libOsi2XxxShim.so in
-    the default plugin library directory. The other load methods allow for an
-    arbitrary mapping between the short name and the plugin library.
-  */
-  //@{
+      Given only a short name xxx the method will look for libOsi2XxxShim.so in
+      the default plugin library directory. The other load methods allow for an
+      arbitrary mapping between the short name and the plugin library.
+    */
+    //@{
 
-  /*! \brief Load the specified plugin library
+    /*! \brief Load the specified plugin library
 
-    Given \p shortName 'xxx', attempt to load libOsi2XxxShim.so from the
-    default plugin library directory. Associate the plugin library with
-    \p shortName.
-  */
-  virtual int load(const std::string &shortName) = 0 ;
+      Given \p shortName 'xxx', attempt to load libOsi2XxxShim.so from the
+      default plugin library directory. Associate the plugin library with
+      \p shortName.
+    */
+    virtual int load(const std::string &shortName) = 0 ;
 
-  /*! \brief Load the specified plugin library
+    /*! \brief Load the specified plugin library
 
-    Attempt to load library \p libName from the default plugin library
-    directory. Associate the plugin library with \p shortName.
-  */
-  virtual int load(const std::string &shortName,
-  		   const std::string &libName) = 0 ;
+      Attempt to load library \p libName from the default plugin library
+      directory. Associate the plugin library with \p shortName.
+    */
+    virtual int load(const std::string &shortName,
+                     const std::string &libName) = 0 ;
 
-  /*! \brief Load the specified plugin library
+    /*! \brief Load the specified plugin library
 
-    Attempt to load library \p libName from directory \p dirName. Associate
-    the plugin library with \p shortName.
-  */
-  virtual int load(const std::string &shortName,
-  		   const std::string &libName, const std::string *dirName) = 0 ;
+      Attempt to load library \p libName from directory \p dirName. Associate
+      the plugin library with \p shortName.
+    */
+    virtual int load(const std::string &shortName,
+                     const std::string &libName, const std::string *dirName) = 0 ;
 
-  /*! \brief Unload the specified library.
+    /*! \brief Unload the specified library.
 
-    Unloads the specified library. The return value will be 0 if all went
-    smoothly, non-zero on error.
-  */
-  virtual int unload(const std::string &shortName) = 0 ;
+      Unloads the specified library. The return value will be 0 if all went
+      smoothly, non-zero on error.
+    */
+    virtual int unload(const std::string &shortName) = 0 ;
 
-  //@}
+    //@}
 
-  /*! \name API (Object) Management
-      \brief Methods to create and destroy API objects.
-  */
-  //@{
+    /*! \name API (Object) Management
+        \brief Methods to create and destroy API objects.
+    */
+    //@{
 
-  /*! \brief Create an object of the specified API
+    /*! \brief Create an object of the specified API
 
-    The parameter \p apiName should contain a string specifying the API. This
-    string must be known to some plugin library. (In general, the APIs
-    supported by a plugin will be documented with the plugin.)
+      The parameter \p apiName should contain a string specifying the API. This
+      string must be known to some plugin library. (In general, the APIs
+      supported by a plugin will be documented with the plugin.)
 
-    If \p shortName is specified, only the specified plugin library will be
-    considered. If \p shortName is not specified, an arbitrary choice will be
-    made from plugin libraries capable of supplying an object supporting the
-    API.
+      If \p shortName is specified, only the specified plugin library will be
+      considered. If \p shortName is not specified, an arbitrary choice will be
+      made from plugin libraries capable of supplying an object supporting the
+      API.
 
-    If the call executes without error, \p obj will contain a reference to an
-    object supporting the requested API, otherwise it will be set to null.
+      If the call executes without error, \p obj will contain a reference to an
+      object supporting the requested API, otherwise it will be set to null.
 
-    \returns:
-      -1: error
-       0: the object was successfully created.
+      \returns:
+        -1: error
+         0: the object was successfully created.
 
-  */
-  virtual int createObject(API *&obj, const std::string &apiName,
-			   const std::string *shortName = 0) = 0 ;
+    */
+    virtual int createObject(API *&obj, const std::string &apiName,
+                             const std::string *shortName = 0) = 0 ;
 
-  /*! \brief Destroy the specified object
+    /*! \brief Destroy the specified object
 
-    In general, invoking delete on the object will work just fine. This method
-    is necessary only if the plugin providing the object needs to know about
-    its demise.
-    
-    Note that all parameters are mandatory. The result of requesting that an
-    object be destroyed by a plugin library other than the one that created
-    it is undefined.
-  */
-  virtual int destroyObject(API *&obj, const std::string &apiName,
-			    const std::string *shortName) = 0 ;
+      In general, invoking delete on the object will work just fine. This method
+      is necessary only if the plugin providing the object needs to know about
+      its demise.
 
-  //@}
+      Note that all parameters are mandatory. The result of requesting that an
+      object be destroyed by a plugin library other than the one that created
+      it is undefined.
+    */
+    virtual int destroyObject(API *&obj, const std::string &apiName,
+                              const std::string *shortName) = 0 ;
+
+    //@}
 
 } ;
 

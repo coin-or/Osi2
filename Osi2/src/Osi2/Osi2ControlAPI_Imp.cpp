@@ -31,39 +31,39 @@ namespace Osi2 {
   Nothing to do so far.
 */
 ControlAPI_Imp::ControlAPI_Imp ()
-  : pluginMgr_(0),
-    logLvl_(7)
+    : pluginMgr_(0),
+      logLvl_(7)
 {
-  knownLibMap_.clear() ;
-  msgHandler_ = new CoinMessageHandler() ;
-  msgs_ = CtrlAPIMessages() ;
-  msgHandler_->setLogLevel(logLvl_) ;
-  msgHandler_->message(CTRLAPI_INIT,msgs_) << "default" << CoinMessageEol ;
+    knownLibMap_.clear() ;
+    msgHandler_ = new CoinMessageHandler() ;
+    msgs_ = CtrlAPIMessages() ;
+    msgHandler_->setLogLevel(logLvl_) ;
+    msgHandler_->message(CTRLAPI_INIT, msgs_) << "default" << CoinMessageEol ;
 }
 
 /*
   Copy constructor
 */
 ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
-  : pluginMgr_(rhs.pluginMgr_),
-    knownLibMap_(rhs.knownLibMap_),
-    dfltPluginDir_(rhs.dfltPluginDir_),
-    dfltHandler_(rhs.dfltHandler_),
-    logLvl_(rhs.logLvl_)
+    : pluginMgr_(rhs.pluginMgr_),
+      knownLibMap_(rhs.knownLibMap_),
+      dfltPluginDir_(rhs.dfltPluginDir_),
+      dfltHandler_(rhs.dfltHandler_),
+      logLvl_(rhs.logLvl_)
 {
-/*
-  If this is our handler, make an independent copy. If it's the client's
-  handler, we can't make an independent copy because the client won't know
-  about it and won't delete it.
-*/
-  if (dfltHandler_) {
-    msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
-  } else {
-    msgHandler_ = rhs.msgHandler_ ;
-  }
-  msgs_ = rhs.msgs_ ;
-  msgHandler_->setLogLevel(logLvl_) ;
-  msgHandler_->message(CTRLAPI_INIT,msgs_) << "copy" << CoinMessageEol ;
+    /*
+      If this is our handler, make an independent copy. If it's the client's
+      handler, we can't make an independent copy because the client won't know
+      about it and won't delete it.
+    */
+    if (dfltHandler_) {
+        msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
+    } else {
+        msgHandler_ = rhs.msgHandler_ ;
+    }
+    msgs_ = rhs.msgs_ ;
+    msgHandler_->setLogLevel(logLvl_) ;
+    msgHandler_->message(CTRLAPI_INIT, msgs_) << "copy" << CoinMessageEol ;
 }
 
 /*
@@ -71,35 +71,35 @@ ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
 */
 ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 {
-/*
-  Self-assignment requires no work.
-*/
-  if (this == &rhs) return (*this) ;
-/*
-  Otherwise, get to it.
-*/
-  pluginMgr_ = rhs.pluginMgr_ ;
-  knownLibMap_ = rhs.knownLibMap_ ;
-  dfltPluginDir_ = rhs.dfltPluginDir_ ;
-/*
-  If it's our handler, we need to delete the old and replace with the new.
-  If it's the user's handler, it's the user's problem. We just assign the
-  pointer.
-*/
-  if (dfltHandler_) {
-    delete msgHandler_ ;
-    msgHandler_ = nullptr ;
-  }
-  dfltHandler_ = rhs.dfltHandler_ ;
-  if (dfltHandler_) {
-    msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
-  } else {
-    msgHandler_ = rhs.msgHandler_ ;
-  }
-  msgs_ = rhs.msgs_ ;
-  msgHandler_->setLogLevel(logLvl_) ;
+    /*
+      Self-assignment requires no work.
+    */
+    if (this == &rhs) return (*this) ;
+    /*
+      Otherwise, get to it.
+    */
+    pluginMgr_ = rhs.pluginMgr_ ;
+    knownLibMap_ = rhs.knownLibMap_ ;
+    dfltPluginDir_ = rhs.dfltPluginDir_ ;
+    /*
+      If it's our handler, we need to delete the old and replace with the new.
+      If it's the user's handler, it's the user's problem. We just assign the
+      pointer.
+    */
+    if (dfltHandler_) {
+        delete msgHandler_ ;
+        msgHandler_ = nullptr ;
+    }
+    dfltHandler_ = rhs.dfltHandler_ ;
+    if (dfltHandler_) {
+        msgHandler_ = new CoinMessageHandler(*rhs.msgHandler_) ;
+    } else {
+        msgHandler_ = rhs.msgHandler_ ;
+    }
+    msgs_ = rhs.msgs_ ;
+    msgHandler_->setLogLevel(logLvl_) ;
 
-  return (*this) ;
+    return (*this) ;
 }
 
 
@@ -108,15 +108,15 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
 */
 ControlAPI_Imp::~ControlAPI_Imp ()
 {
-  knownLibMap_.clear() ;
-/*
-  If this is our handler, delete it. Otherwise it's the client's
-  responsibility.
-*/
-  if (dfltHandler_) {
-    delete msgHandler_ ;
-    msgHandler_ = nullptr ;
-  }
+    knownLibMap_.clear() ;
+    /*
+      If this is our handler, delete it. Otherwise it's the client's
+      responsibility.
+    */
+    if (dfltHandler_) {
+        delete msgHandler_ ;
+        msgHandler_ = nullptr ;
+    }
 }
 
 /*
@@ -124,8 +124,8 @@ ControlAPI_Imp::~ControlAPI_Imp ()
 */
 ControlAPI *ControlAPI_Imp::create ()
 {
-  ControlAPI *api = new ControlAPI_Imp() ;
-  return (api) ;
+    ControlAPI *api = new ControlAPI_Imp() ;
+    return (api) ;
 }
 
 /*
@@ -133,8 +133,8 @@ ControlAPI *ControlAPI_Imp::create ()
 */
 ControlAPI *ControlAPI_Imp::clone ()
 {
-  ControlAPI *api = new ControlAPI_Imp(*this) ;
-  return (api) ;
+    ControlAPI *api = new ControlAPI_Imp(*this) ;
+    return (api) ;
 }
 
 /*
@@ -166,51 +166,51 @@ ControlAPI *ControlAPI_Imp::clone ()
 */
 
 int ControlAPI_Imp::load (const std::string &shortName,
-			  const std::string &libName,
-			  const std::string *dirName)
+                          const std::string &libName,
+                          const std::string *dirName)
 {
-  int retval = -1 ;
-/*
-  Already loaded?
-*/
-  LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
-  if (knownIter != knownLibMap_.end()) return (1) ;
-/*
-  Not already loaded. Find the plugin manager.
-*/
-  if (findPluginMgr() == nullptr) {
-    retval = -4 ;
+    int retval = -1 ;
+    /*
+      Already loaded?
+    */
+    LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
+    if (knownIter != knownLibMap_.end()) return (1) ;
+    /*
+      Not already loaded. Find the plugin manager.
+    */
+    if (findPluginMgr() == nullptr) {
+        retval = -4 ;
+        return (retval) ;
+    }
+    /*
+      Construct a full path and ask the plugin manager to load the solver. If
+      we're successful, enter it into the known libraries map.
+    */
+    std::string fullPath = libName ;
+    PluginUniqueID uniqueID ;
+    if (dirName != nullptr && (*dirName) != "") {
+        char dirSep = CoinFindDirSeparator() ;
+        fullPath = (*dirName) + dirSep + fullPath ;
+        retval = pluginMgr_->loadOneLib(libName, dirName, &uniqueID) ;
+    } else {
+        retval = pluginMgr_->loadOneLib(libName, 0, &uniqueID) ;
+    }
+    if (retval < 0) {
+        msgHandler_->message(CTRLAPI_LIBLDFAIL, msgs_)
+                << shortName << fullPath << CoinMessageEol ;
+        return (retval) ;
+    }
+    if (retval == 1) {
+        msgHandler_->message(CTRLAPI_UNREG, msgs_)
+                << fullPath << shortName << CoinMessageEol ;
+    }
+    DynLibInfo &info = knownLibMap_[shortName] ;
+    info.fullPath = fullPath ;
+    info.uniqueID = uniqueID ;
+    msgHandler_->message(CTRLAPI_LIBLDOK, msgs_)
+            << shortName << fullPath << CoinMessageEol ;
+
     return (retval) ;
-  }
-/*
-  Construct a full path and ask the plugin manager to load the solver. If
-  we're successful, enter it into the known libraries map.
-*/
-  std::string fullPath = libName ;
-  PluginUniqueID uniqueID ;
-  if (dirName != nullptr && (*dirName) != "") {
-    char dirSep = CoinFindDirSeparator() ;
-    fullPath = (*dirName)+dirSep+fullPath ;
-    retval = pluginMgr_->loadOneLib(libName,dirName,&uniqueID) ;
-  } else {
-    retval = pluginMgr_->loadOneLib(libName,0,&uniqueID) ;
-  }
-  if (retval < 0) {
-    msgHandler_->message(CTRLAPI_LIBLDFAIL,msgs_)
-      << shortName << fullPath << CoinMessageEol ;
-    return (retval) ;
-  }
-  if (retval == 1) {
-    msgHandler_->message(CTRLAPI_UNREG,msgs_)
-      << fullPath << shortName << CoinMessageEol ;
-  }
-  DynLibInfo &info = knownLibMap_[shortName] ;
-  info.fullPath = fullPath ;
-  info.uniqueID = uniqueID ;
-  msgHandler_->message(CTRLAPI_LIBLDOK,msgs_)
-    << shortName << fullPath << CoinMessageEol ;
-  
-  return (retval) ;
 }
 
 /*
@@ -221,24 +221,24 @@ int ControlAPI_Imp::load (const std::string &shortName,
   be multiple ControlAPI objects.)
 */
 int ControlAPI_Imp::load (const std::string &shortName,
-			  const std::string &libName)
+                          const std::string &libName)
 {
-  int retval = -1 ;
-/*
-  Try to find a default plugin directory. First our own, then consult the
-  plugin manager. Both can come up empty.
-*/
-  std::string dirName = getDfltPluginDir() ;
-  if (dirName == "") {
-    if (findPluginMgr() == nullptr) {
-      retval = -4 ;
-      return (retval) ;
+    int retval = -1 ;
+    /*
+      Try to find a default plugin directory. First our own, then consult the
+      plugin manager. Both can come up empty.
+    */
+    std::string dirName = getDfltPluginDir() ;
+    if (dirName == "") {
+        if (findPluginMgr() == nullptr) {
+            retval = -4 ;
+            return (retval) ;
+        }
+        dirName = pluginMgr_->getDfltPluginDir() ;
     }
-    dirName = pluginMgr_->getDfltPluginDir() ;
-  }
-  retval = load(shortName,libName,&dirName) ;
+    retval = load(shortName, libName, &dirName) ;
 
-  return (retval) ;
+    return (retval) ;
 }
 
 /*
@@ -247,15 +247,15 @@ int ControlAPI_Imp::load (const std::string &shortName,
 */
 int ControlAPI_Imp::load (const std::string &shortName)
 {
-  int retval = -1 ;
+    int retval = -1 ;
 
-  std::string libName = "libOsi2" ;
-  std::string::const_iterator firstChar = shortName.begin() ;
-  const char ucChar = static_cast<char>(toupper(*firstChar)) ;
-  libName += ucChar+shortName.substr(1,std::string::npos)+
-  	     "Shim.so" ;
-  retval = load(shortName,libName) ;
-  return (retval) ;
+    std::string libName = "libOsi2" ;
+    std::string::const_iterator firstChar = shortName.begin() ;
+    const char ucChar = static_cast<char>(toupper(*firstChar)) ;
+    libName += ucChar + shortName.substr(1, std::string::npos) +
+               "Shim.so" ;
+    retval = load(shortName, libName) ;
+    return (retval) ;
 }
 
 /*
@@ -270,50 +270,50 @@ int ControlAPI_Imp::load (const std::string &shortName)
 */
 int ControlAPI_Imp::unload (const std::string &shortName)
 {
-  int retval = -1 ;
-/*
-  Look for the map entry in known libraries. Return if we don't find it.
-*/
-  LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
-  if (knownIter == knownLibMap_.end()) {
-    msgHandler_->message(CTRLAPI_UNREG,msgs_) ;
-    msgHandler_->printing(false) << "" ;
-    msgHandler_->printing(true) << shortName << CoinMessageEol ;
-    retval = 2 ;
-    return (retval) ;
-  }
-/*
-  Make sure we can find the plugin manager.
-*/
-  if (findPluginMgr() == nullptr) {
-    retval = -2 ;
-    return (retval) ;
-  }
-/*
-  Separate the libName and directory, then call the plugin manager's unload.
-*/
-  std::string fullPath = knownIter->second.fullPath ;
-  char dirSep = CoinFindDirSeparator() ;
-  std::string::size_type dirPos = fullPath.rfind(dirSep) ;
-  std::string libName ;
-  std::string dirName ;
-  if (dirPos != std::string::npos) {
-    libName = fullPath.substr(dirPos+1) ;
-    dirName = fullPath.substr(0,dirPos) ;
-    retval = pluginMgr_->unloadOneLib(libName,&dirName) ;
-  } else {
-    libName = fullPath ;
-    retval = pluginMgr_->unloadOneLib(libName) ;
-  }
-  if (retval == 0) {
-    msgHandler_->message(CTRLAPI_LIBCLOSEOK,msgs_)
-      << shortName << fullPath << CoinMessageEol ;
-  } else {
-    msgHandler_->message(CTRLAPI_LIBCLOSEFAIL,msgs_)
-      << shortName << fullPath << CoinMessageEol ;
-  }
+    int retval = -1 ;
+    /*
+      Look for the map entry in known libraries. Return if we don't find it.
+    */
+    LibMapType::iterator knownIter = knownLibMap_.find(shortName) ;
+    if (knownIter == knownLibMap_.end()) {
+        msgHandler_->message(CTRLAPI_UNREG, msgs_) ;
+        msgHandler_->printing(false) << "" ;
+        msgHandler_->printing(true) << shortName << CoinMessageEol ;
+        retval = 2 ;
+        return (retval) ;
+    }
+    /*
+      Make sure we can find the plugin manager.
+    */
+    if (findPluginMgr() == nullptr) {
+        retval = -2 ;
+        return (retval) ;
+    }
+    /*
+      Separate the libName and directory, then call the plugin manager's unload.
+    */
+    std::string fullPath = knownIter->second.fullPath ;
+    char dirSep = CoinFindDirSeparator() ;
+    std::string::size_type dirPos = fullPath.rfind(dirSep) ;
+    std::string libName ;
+    std::string dirName ;
+    if (dirPos != std::string::npos) {
+        libName = fullPath.substr(dirPos + 1) ;
+        dirName = fullPath.substr(0, dirPos) ;
+        retval = pluginMgr_->unloadOneLib(libName, &dirName) ;
+    } else {
+        libName = fullPath ;
+        retval = pluginMgr_->unloadOneLib(libName) ;
+    }
+    if (retval == 0) {
+        msgHandler_->message(CTRLAPI_LIBCLOSEOK, msgs_)
+                << shortName << fullPath << CoinMessageEol ;
+    } else {
+        msgHandler_->message(CTRLAPI_LIBCLOSEFAIL, msgs_)
+                << shortName << fullPath << CoinMessageEol ;
+    }
 
-  return (retval) ;
+    return (retval) ;
 }
 
 
@@ -329,54 +329,54 @@ int ControlAPI_Imp::unload (const std::string &shortName)
 */
 
 int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
-				  const std::string *shortName)
+                                  const std::string *shortName)
 {
-  int retval = -1 ;
-  obj = nullptr ;
-/*
-  Make sure we can find the plugin manager.
-*/
-  if (findPluginMgr() == nullptr) {
-    retval = -2 ;
-    return (retval) ;
-  }
-/*
-  Did the client specify a plugin library? If so, validate and obtain the
-  plugin's ID. Failure to find the specified library rates a warning but we'll
-  soldier on.
-*/
-  PluginUniqueID libID = 0 ;
-  bool restricted = false ;
-  std::string forPrinting = "bogus!" ;
-  if (shortName != 0 && (*shortName) != "") {
-    restricted = true ;
-    forPrinting = *shortName ;
-    LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
-    if (knownIter == knownLibMap_.end()) {
-      msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
-	<< (*shortName) << CoinMessageEol ;
-    } else {
-      libID = knownIter->second.uniqueID ;
+    int retval = -1 ;
+    obj = nullptr ;
+    /*
+      Make sure we can find the plugin manager.
+    */
+    if (findPluginMgr() == nullptr) {
+        retval = -2 ;
+        return (retval) ;
     }
-  }
-/*
-  Invoke the plugin manager's createObject method.
-*/
-  DummyAdapter dummy ;
-  obj = static_cast<API *>(pluginMgr_->createObject(apiName,libID,dummy)) ;
-  if (obj == nullptr) {
-    msgHandler_->message(CTRLAPI_CREATEFAIL,msgs_) << apiName ;
-    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
-    msgHandler_->printing(true) << CoinMessageEol ;
-    retval = -1 ;
-  } else {
-    msgHandler_->message(CTRLAPI_CREATEOK,msgs_) << apiName ;
-    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
-    msgHandler_->printing(true) << CoinMessageEol ;
-    retval = (restricted && libID == 0)?1:0 ;
-  }
+    /*
+      Did the client specify a plugin library? If so, validate and obtain the
+      plugin's ID. Failure to find the specified library rates a warning but we'll
+      soldier on.
+    */
+    PluginUniqueID libID = 0 ;
+    bool restricted = false ;
+    std::string forPrinting = "bogus!" ;
+    if (shortName != 0 && (*shortName) != "") {
+        restricted = true ;
+        forPrinting = *shortName ;
+        LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
+        if (knownIter == knownLibMap_.end()) {
+            msgHandler_->message(CTRLAPI_LIBUNREG, msgs_)
+                    << (*shortName) << CoinMessageEol ;
+        } else {
+            libID = knownIter->second.uniqueID ;
+        }
+    }
+    /*
+      Invoke the plugin manager's createObject method.
+    */
+    DummyAdapter dummy ;
+    obj = static_cast<API *>(pluginMgr_->createObject(apiName, libID, dummy)) ;
+    if (obj == nullptr) {
+        msgHandler_->message(CTRLAPI_CREATEFAIL, msgs_) << apiName ;
+        msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = -1 ;
+    } else {
+        msgHandler_->message(CTRLAPI_CREATEOK, msgs_) << apiName ;
+        msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = (restricted && libID == 0) ? 1 : 0 ;
+    }
 
-  return (retval) ;
+    return (retval) ;
 }
 
 /*
@@ -389,53 +389,53 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
      1: destruction succeeded but plugin restriction was ignored/invalid
 */
 int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
-				   const std::string *shortName)
+                                   const std::string *shortName)
 {
-  int retval = -1 ;
-  obj = nullptr ;
-/*
-  Make sure we can find the plugin manager.
-*/
-  if (findPluginMgr() == nullptr) {
-    retval = -2 ;
-    return (retval) ;
-  }
-/*
-  Did the client specify a plugin library? If so, validate and obtain the
-  plugin's ID. Failure to find the specified library rates a warning but we'll
-  soldier on.
-*/
-  PluginUniqueID libID = 0 ;
-  bool restricted = false ;
-  std::string forPrinting = "bogus!" ;
-  if (shortName != 0 && (*shortName) != "") {
-    restricted = true ;
-    forPrinting = *shortName ;
-    LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
-    if (knownIter == knownLibMap_.end()) {
-      msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
-	<< (*shortName) << CoinMessageEol ;
-    } else {
-      libID = knownIter->second.uniqueID ;
+    int retval = -1 ;
+    obj = nullptr ;
+    /*
+      Make sure we can find the plugin manager.
+    */
+    if (findPluginMgr() == nullptr) {
+        retval = -2 ;
+        return (retval) ;
     }
-  }
-/*
-  Invoke the plugin manager's destroyObject.
-*/
-  retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
-  if (retval != 0) {
-    msgHandler_->message(CTRLAPI_DESTROYFAIL,msgs_) << apiName ;
-    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
-    msgHandler_->printing(true) << CoinMessageEol ;
-    retval = -1 ;
-  } else {
-    msgHandler_->message(CTRLAPI_DESTROYOK,msgs_) << apiName ;
-    msgHandler_->printing(restricted && libID != 0) << forPrinting ;
-    msgHandler_->printing(true) << CoinMessageEol ;
-    retval = (restricted && libID == 0)?1:0 ;
-  }
+    /*
+      Did the client specify a plugin library? If so, validate and obtain the
+      plugin's ID. Failure to find the specified library rates a warning but we'll
+      soldier on.
+    */
+    PluginUniqueID libID = 0 ;
+    bool restricted = false ;
+    std::string forPrinting = "bogus!" ;
+    if (shortName != 0 && (*shortName) != "") {
+        restricted = true ;
+        forPrinting = *shortName ;
+        LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
+        if (knownIter == knownLibMap_.end()) {
+            msgHandler_->message(CTRLAPI_LIBUNREG, msgs_)
+                    << (*shortName) << CoinMessageEol ;
+        } else {
+            libID = knownIter->second.uniqueID ;
+        }
+    }
+    /*
+      Invoke the plugin manager's destroyObject.
+    */
+    retval = pluginMgr_->destroyObject(apiName, libID, obj) ;
+    if (retval != 0) {
+        msgHandler_->message(CTRLAPI_DESTROYFAIL, msgs_) << apiName ;
+        msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = -1 ;
+    } else {
+        msgHandler_->message(CTRLAPI_DESTROYOK, msgs_) << apiName ;
+        msgHandler_->printing(restricted && libID != 0) << forPrinting ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = (restricted && libID == 0) ? 1 : 0 ;
+    }
 
-  return (retval) ;
+    return (retval) ;
 }
 
 /*
@@ -448,13 +448,13 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
 */
 PluginManager *ControlAPI_Imp::findPluginMgr()
 {
-  if (pluginMgr_ == nullptr)
-    pluginMgr_ = &PluginManager::getInstance() ;
+    if (pluginMgr_ == nullptr)
+        pluginMgr_ = &PluginManager::getInstance() ;
 
-  if (pluginMgr_ == nullptr)
-    msgHandler_->message(CTRLAPI_NOPLUGMGR,msgs_) << CoinMessageEol ;
+    if (pluginMgr_ == nullptr)
+        msgHandler_->message(CTRLAPI_NOPLUGMGR, msgs_) << CoinMessageEol ;
 
-  return (pluginMgr_) ;
+    return (pluginMgr_) ;
 }
 
 } // end namespace Osi2

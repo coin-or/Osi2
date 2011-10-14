@@ -16,9 +16,9 @@
 */
 
 #ifdef WIN32
-  #include <Windows.h>
+#include <Windows.h>
 #else
-  #include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 
 #include "Osi2DynamicLibrary.hpp"
@@ -44,81 +44,80 @@ const int nullptr = 0 ;
 namespace Osi2 {
 
 DynamicLibrary::DynamicLibrary (void *handle)
-  : handle_(handle)
-{ 
-  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
+    : handle_(handle)
+{
+    dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
 }
 
 DynamicLibrary::~DynamicLibrary ()
 {
-  if (handle_)
-  {
+    if (handle_) {
 #   ifdef WIN32
-    ::FreeLibrary((HMODULE)handle_) ;
+        ::FreeLibrary((HMODULE)handle_) ;
 #   else
-    if (::dlclose(handle_)) {
-      std::string errorString ;
-      errorString += "Failed to unload library \"" + fullPath_ + '"' ;
-      const char *zErrorString = ::dlerror() ;
-      if (zErrorString)
-	errorString = errorString + ": " + zErrorString ;
-      std::cerr << errorString << std::endl ;
-    }
+        if (::dlclose(handle_)) {
+            std::string errorString ;
+            errorString += "Failed to unload library \"" + fullPath_ + '"' ;
+            const char *zErrorString = ::dlerror() ;
+            if (zErrorString)
+                errorString = errorString + ": " + zErrorString ;
+            std::cerr << errorString << std::endl ;
+        }
 #   endif
-  }
+    }
 }
 
-DynamicLibrary *DynamicLibrary::load (const std::string &name, 
-				      std::string &errorString)
+DynamicLibrary *DynamicLibrary::load (const std::string &name,
+                                      std::string &errorString)
 {
-  if (name.empty()) {
-    errorString = "Empty path." ;
-    return (0) ;
-  }
-  
-  void *handle = nullptr ;
+    if (name.empty()) {
+        errorString = "Empty path." ;
+        return (0) ;
+    }
+
+    void *handle = nullptr ;
 
 # ifdef WIN32
-  handle = ::LoadLibraryA(name.c_str()) ;
-  if (handle == nullptr) {
-    DWORD errorCode = ::GetLastError() ;
-    std::stringstream ss ;
-    ss << "LoadLibrary(" << name << ") Failed. errorCode: " << errorCode ; 
-    errorString = ss.str() ;
-  }
+    handle = ::LoadLibraryA(name.c_str()) ;
+    if (handle == nullptr) {
+        DWORD errorCode = ::GetLastError() ;
+        std::stringstream ss ;
+        ss << "LoadLibrary(" << name << ") Failed. errorCode: " << errorCode ;
+        errorString = ss.str() ;
+    }
 # else
-  handle = ::dlopen(name.c_str(),RTLD_NOW) ;
-  if (!handle) {
-    errorString += "Failed to load library \"" + name + '"' ;
-    const char *zErrorString = ::dlerror() ;
-    if (zErrorString)
-      errorString = errorString + ": " + zErrorString ;
-    return (nullptr) ;
-  }
+    handle = ::dlopen(name.c_str(), RTLD_NOW) ;
+    if (!handle) {
+        errorString += "Failed to load library \"" + name + '"' ;
+        const char *zErrorString = ::dlerror() ;
+        if (zErrorString)
+            errorString = errorString + ": " + zErrorString ;
+        return (nullptr) ;
+    }
 # endif
 
-  DynamicLibrary *dynLib = new DynamicLibrary(handle) ;
-  dynLib->fullPath_ = name ;
-  return (dynLib) ;
+    DynamicLibrary *dynLib = new DynamicLibrary(handle) ;
+    dynLib->fullPath_ = name ;
+    return (dynLib) ;
 }
 
 void *DynamicLibrary::getSymbol (const std::string &symbol,
-				 std::string &errorString)
+                                 std::string &errorString)
 {
-  if (!handle_) return (0) ;
-  
-  #ifdef WIN32
-  return (::GetProcAddress((HMODULE)handle_,symbol.c_str())) ;
-  #else
-  void *sym = ::dlsym(handle_,symbol.c_str()) ;
-  if (sym == nullptr) {
-    errorString += "Failed to load symbol \"" + symbol + '"' ;
-    const char *zErrorString = ::dlerror() ;
-    if (zErrorString)
-      errorString = errorString + ": " + zErrorString ;
-  }
-  return (sym) ;
-  #endif
+    if (!handle_) return (0) ;
+
+#ifdef WIN32
+    return (::GetProcAddress((HMODULE)handle_, symbol.c_str())) ;
+#else
+    void *sym = ::dlsym(handle_, symbol.c_str()) ;
+    if (sym == nullptr) {
+        errorString += "Failed to load symbol \"" + symbol + '"' ;
+        const char *zErrorString = ::dlerror() ;
+        if (zErrorString)
+            errorString = errorString + ": " + zErrorString ;
+    }
+    return (sym) ;
+#endif
 }
 
 }  // end namespace Osi2
