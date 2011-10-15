@@ -4,6 +4,7 @@
 */
 
 #include <cstring>
+
 #include "Osi2PlugMgrMessages.hpp"
 
 namespace Osi2 {

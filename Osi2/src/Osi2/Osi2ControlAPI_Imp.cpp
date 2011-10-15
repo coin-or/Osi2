@@ -10,6 +10,8 @@
 
 #include "CoinHelperFunctions.hpp"
 
+#include "Osi2Config.h"
+
 #include "Osi2API.hpp"
 #include "Osi2ControlAPI.hpp"
 #include "Osi2ControlAPI_Imp.hpp"

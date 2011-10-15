@@ -1,4 +1,3 @@
-
 /*
   Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)

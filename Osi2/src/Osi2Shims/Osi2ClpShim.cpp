@@ -15,6 +15,8 @@
 #include "Osi2DynamicLibrary.hpp"
 
 #include "ClpSimplex.hpp"
+
+#include "Osi2Config.h"
 #include "Osi2ProbMgmtAPI_Clp.hpp"
 
 using namespace Osi2 ;

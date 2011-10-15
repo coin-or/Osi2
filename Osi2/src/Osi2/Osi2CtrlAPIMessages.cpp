@@ -4,6 +4,9 @@
 */
 
 #include <cstring>
+
+#include "Osi2Config.h"
+
 #include "Osi2CtrlAPIMessages.hpp"
 
 namespace Osi2 {

@@ -7,10 +7,11 @@
 */
 
 
-#include "Osi2ClpShim.hpp"
-#include "Clp_C_Interface.h"
 #include "ClpConfig.h"
+#include "Clp_C_Interface.h"
 
+#include "Osi2Config.h"
+#include "Osi2ClpShim.hpp"
 #include "Osi2API.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 #include "Osi2ProbMgmtAPI_Clp.hpp"

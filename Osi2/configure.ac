@@ -55,12 +55,14 @@ AC_COIN_CHECK_CXX_CHEADER(stdint)
 
 AC_MSG_CHECKING([for nullptr support])
 AC_LANG_PUSH(C++)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr
-;]])],
+AC_COMPILE_IFELSE(
+ [AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr ;]])],
  [AC_DEFINE(COIN_HAS_NULLPTR,[1],
  	    [Define to 1 if the C++ compiler supports nullptr])
+  ac_cv_type_nullptr=yes
   AC_MSG_RESULT(yes)],
- [AC_MSG_RESULT(no)])
+ [ ac_cv_type_nullptr=no
+   AC_MSG_RESULT(no)])
 AC_LANG_POP()
 
 # Initialize automake and libtool
@@ -101,6 +103,10 @@ else
   OSI2CLPSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
 fi
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
+
+if test "x$ac_cv_type_nullptr" = xyes ; then
+  OSI2PLUGIN_CFLAGS="$OSI2PLUGIN_CFLAGS -DCOIN_HAS_NULLPTR"
+fi
 
 AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
 AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
