@@ -10,6 +10,7 @@
   #include "Osi2Directory.hpp"
   #include "Osi2Path.hpp"
 */
+#include "Osi2nullptr.hpp"
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
@@ -27,10 +28,6 @@ static std::string dynamicLibraryExtension("so") ;
 #elif defined(OSI2PLATFORM_WINDOWS)
 static std::string dynamicLibraryExtension("dll") ;
 #endif
-
-// Protection against C++0x
-const int nullptr = 0 ;
-
 
 using namespace Osi2 ;
 
@@ -53,7 +50,7 @@ PluginManager::PluginManager()
     platformServices_.dfltPluginDir_ =
         reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
     // can be populated during loadAll()
-    platformServices_.invokeService_ = (nullptr) ;
+    platformServices_.invokeService_ = nullptr ;
     platformServices_.registerObject_ = registerObject ;
 }
 
@@ -96,13 +93,13 @@ DynamicLibrary *PluginManager::validateRegParams (const CharString *apiStr,
     DynamicLibrary *dynLib = nullptr ;
 
     // The API to be registered must have a name
-    if (!apiStr || !(*apiStr)) {
+    if (apiStr == nullptr || !(*apiStr)) {
         errStr += "; bad API ID string" ;
         retval = false ;
     }
 
     // If we're missing the parameter block, nothing more to say.
-    if (!params) {
+    if (params == nullptr) {
         errStr += "; no registration parameter block" ;
         retval = false ;
     } else {
@@ -132,12 +129,12 @@ DynamicLibrary *PluginManager::validateRegParams (const CharString *apiStr,
             }
         }
         // There must be a constructor
-        if (!params->createFunc_) {
+        if (params->createFunc_ == nullptr) {
             errStr += "; missing constructor" ;
             retval = false ;
         }
         // There must be a destructor
-        if (!params->destroyFunc_) {
+        if (params->destroyFunc_ == nullptr) {
             errStr += "; missing destructor" ;
             retval = false ;
         }
@@ -320,7 +317,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
     */
     std::string errStr ;
     DynamicLibrary *dynLib = DynamicLibrary::load(fullPath, errStr) ;
-    if (!dynLib) {
+    if (dynLib == nullptr) {
         msgHandler_->message(PLUGMGR_LIBLDFAIL, msgs_)
                 << fullPath << errStr << CoinMessageEol ;
         return (-1) ;
@@ -330,7 +327,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
       from the library, we're in trouble.
     */
     InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin", errStr)) ;
-    if (!initFunc) {
+    if (initFunc == nullptr) {
         msgHandler_->message(PLUGMGR_SYMLDFAIL, msgs_)
                 << "function" << "initPlugin" << fullPath << errStr << CoinMessageEol ;
         return (-2) ;
@@ -352,7 +349,7 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
         reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
     platformServices_.pluginID_ = dynLib ;
     ExitFunc exitFunc = initFunc(&platformServices_) ;
-    if (!exitFunc) {
+    if (exitFunc == nullptr) {
         msgHandler_->message(PLUGMGR_LIBINITFAIL, msgs_)
                 << fullPath << CoinMessageEol ;
         delete dynLib ;

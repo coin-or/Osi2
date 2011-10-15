@@ -9,9 +9,6 @@
 #ifndef Osi2API_HPP
 # define Osi2API_HPP
 
-/// Hedge against C++0x
-const int nullptr = 0 ;
-
 /*! \brief Identification namespace for OSI2.
 
   All APIs and their implementations should be defined within the Osi2

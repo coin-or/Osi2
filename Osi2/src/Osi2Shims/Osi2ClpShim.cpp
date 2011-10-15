@@ -11,6 +11,7 @@
 #include "Clp_C_Interface.h"
 #include "ClpConfig.h"
 
+#include "Osi2nullptr.hpp"
 #include "Osi2DynamicLibrary.hpp"
 
 #include "ClpSimplex.hpp"

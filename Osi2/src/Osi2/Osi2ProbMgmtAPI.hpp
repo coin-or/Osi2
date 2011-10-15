@@ -5,8 +5,8 @@
   $Id$
 */
 
-#ifndef Osi2ProbMgmtAPI_H
-#define Osi2ProbMgmtAPI_H
+#ifndef Osi2ProbMgmtAPI_HPP
+#define Osi2ProbMgmtAPI_HPP
 
 #include "Osi2API.hpp"
 

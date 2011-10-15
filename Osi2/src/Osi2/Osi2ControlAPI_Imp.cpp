@@ -14,6 +14,7 @@
 #include "Osi2ControlAPI.hpp"
 #include "Osi2ControlAPI_Imp.hpp"
 
+#include "Osi2nullptr.hpp"
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"

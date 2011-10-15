@@ -21,15 +21,10 @@
 #include <dlfcn.h>
 #endif
 
+#include "Osi2nullptr.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include <sstream>
 #include <iostream>
-
-/*
-  Hedge against C++0x. Will cause problems in VC2010, gcc 4.6 and up. Autoconf
-  test necessary.
-*/
-const int nullptr = 0 ;
 
 /*
   Default for OSI2PLUGINDIR is $(libdir) (library installation directory).
@@ -86,8 +81,8 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
         errorString = ss.str() ;
     }
 # else
-    handle = ::dlopen(name.c_str(), RTLD_NOW) ;
-    if (!handle) {
+    handle = ::dlopen(name.c_str(),RTLD_NOW) ;
+    if (handle == nullptr) {
         errorString += "Failed to load library \"" + name + '"' ;
         const char *zErrorString = ::dlerror() ;
         if (zErrorString)
@@ -104,12 +99,12 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
 void *DynamicLibrary::getSymbol (const std::string &symbol,
                                  std::string &errorString)
 {
-    if (!handle_) return (nullptr) ;
+    if (handle_ == nullptr) return (nullptr) ;
 
 #ifdef WIN32
     return (::GetProcAddress((HMODULE)handle_, symbol.c_str())) ;
 #else
-    void *sym = ::dlsym(handle_, symbol.c_str()) ;
+    void *sym = ::dlsym(handle_,symbol.c_str()) ;
     if (sym == nullptr) {
         errorString += "Failed to load symbol \"" + symbol + '"' ;
         const char *zErrorString = ::dlerror() ;
