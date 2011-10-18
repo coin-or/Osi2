@@ -37,7 +37,6 @@ ProbMgmtAPI_Clp::ProbMgmtAPI_Clp (DynamicLibrary *libClp,
 
 ProbMgmtAPI_Clp::~ProbMgmtAPI_Clp ()
 {
-  std::cout << "ProbMgmtAPI_Clp destructor invoked." << std::endl ;
   typedef void (*ClpDeleteModelFunc)(Clp_Simplex *clp) ;
   std::string errStr ;
   ClpDeleteModelFunc deleteModel =
@@ -47,10 +46,8 @@ ProbMgmtAPI_Clp::~ProbMgmtAPI_Clp ()
     std::cout << "Apparent failure to find Clp_deleteModel." << std::endl ;
     std::cout << errStr << std::endl ;
   } else {
-    std::cout << "Destroying Clp_Simplex object." << std::endl ;
     deleteModel(clpSimplex_) ;
     clpSimplex_ = nullptr ;
-    std::cout << "Clp_Simplex object destroyed." << std::endl ;
   }
   std::cout << "ProbMgmtAPI_Clp object destroyed." << std::endl ;
 }

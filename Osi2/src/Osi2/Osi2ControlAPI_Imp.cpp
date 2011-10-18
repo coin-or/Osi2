@@ -395,7 +395,6 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
                                    const std::string *shortName)
 {
     int retval = -1 ;
-    obj = nullptr ;
     /*
       Make sure we can find the plugin manager.
     */
