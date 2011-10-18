@@ -29,7 +29,8 @@ libOsi2_la_LDFLAGS = $(LT_LDFLAGS)
 libOsi2_la_LIBADD =
 
 # Here list all include flags.
-AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../Osi2Plugin` $(OSI2PLUGIN_CFLAGS)
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../Osi2Plugin` \
+	      $(OSI2PLUGIN_CFLAGS) $(OSI2LIB_CFLAGS)
 	      
 
 # This line is necessary to allow VPATH compilation.

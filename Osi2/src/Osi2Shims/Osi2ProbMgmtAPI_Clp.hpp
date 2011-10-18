@@ -56,7 +56,7 @@ private:
     ClpReadMpsFunc readMps_ ;
     typedef  int (*ClpInitialSolveFunc)(Clp_Simplex*) ;
     ClpInitialSolveFunc initialSolve_ ;
-  //@{
+  //@}
 
 } ;
 

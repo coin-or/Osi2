@@ -10,12 +10,11 @@
 
 #include "ClpConfig.h"
 #include "Clp_C_Interface.h"
+#include "Osi2ClpShim.hpp"
 
 #include "Osi2Config.h"
-
 #include "Osi2nullptr.hpp"
 
-#include "Osi2ClpShim.hpp"
 #include "Osi2API.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 #include "Osi2ProbMgmtAPI_Clp.hpp"
@@ -86,7 +85,7 @@ int ProbMgmtAPI_Clp::readMps (const char *filename, bool keepNames,
 }
 
 /*
-  Read a problem file in mps format.
+  Solve a problem
 */
 int ProbMgmtAPI_Clp::initialSolve ()
 {

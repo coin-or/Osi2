@@ -7,16 +7,14 @@
 
 #include <iostream>
 
+#include "ClpConfig.h"
 #include "Osi2ClpShim.hpp"
 #include "Clp_C_Interface.h"
-#include "ClpConfig.h"
 
+#include "Osi2Config.h"
 #include "Osi2nullptr.hpp"
 #include "Osi2DynamicLibrary.hpp"
 
-#include "ClpSimplex.hpp"
-
-#include "Osi2Config.h"
 #include "Osi2ProbMgmtAPI_Clp.hpp"
 
 using namespace Osi2 ;
@@ -30,9 +28,6 @@ ClpShim::ClpShim ()
       verbosity_(1)
 { }
 
-typedef Clp_Simplex *(*ClpFactory)() ;
-typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
-
 /*! \brief Object factory
 
   Create clp-specific objects to satisfy the Osi2 API specified as the
@@ -42,6 +37,10 @@ typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
 */
 void *ClpShim::create (const ObjectParams *params)
 {
+    class ClpSimplex ;
+    typedef Clp_Simplex *(*ClpFactory)() ;
+    typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
+
     std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
     void *retval = nullptr ;
 

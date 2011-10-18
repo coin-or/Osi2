@@ -65,6 +65,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+libOsi2ClpHeavyShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libOsi2ClpHeavyShim_la_OBJECTS = Osi2ClpHeavyShim.lo \
+	Osi2ProbMgmtAPI_ClpHeavy.lo
+libOsi2ClpHeavyShim_la_OBJECTS = $(am_libOsi2ClpHeavyShim_la_OBJECTS)
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libOsi2ClpShim_la_OBJECTS = Osi2ClpShim.lo Osi2ProbMgmtAPI_Clp.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
@@ -86,8 +90,10 @@ LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libOsi2ClpShim_la_SOURCES)
-DIST_SOURCES = $(libOsi2ClpShim_la_SOURCES)
+SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
+	$(libOsi2ClpShim_la_SOURCES)
+DIST_SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
+	$(libOsi2ClpShim_la_SOURCES)
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
@@ -210,6 +216,13 @@ NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
+OSI2CLPHEAVYSHIM_CFLAGS = @OSI2CLPHEAVYSHIM_CFLAGS@
+OSI2CLPHEAVYSHIM_CFLAGS_INSTALLED = @OSI2CLPHEAVYSHIM_CFLAGS_INSTALLED@
+OSI2CLPHEAVYSHIM_DEPENDENCIES = @OSI2CLPHEAVYSHIM_DEPENDENCIES@
+OSI2CLPHEAVYSHIM_LIBS = @OSI2CLPHEAVYSHIM_LIBS@
+OSI2CLPHEAVYSHIM_LIBS_INSTALLED = @OSI2CLPHEAVYSHIM_LIBS_INSTALLED@
+OSI2CLPHEAVYSHIM_PCLIBS = @OSI2CLPHEAVYSHIM_PCLIBS@
+OSI2CLPHEAVYSHIM_PCREQUIRES = @OSI2CLPHEAVYSHIM_PCREQUIRES@
 OSI2CLPSHIM_CFLAGS = @OSI2CLPSHIM_CFLAGS@
 OSI2CLPSHIM_CFLAGS_INSTALLED = @OSI2CLPSHIM_CFLAGS_INSTALLED@
 OSI2CLPSHIM_DEPENDENCIES = @OSI2CLPSHIM_DEPENDENCIES@
@@ -326,24 +339,30 @@ target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
 
 ########################################################################
-#                               libOsi2                                 #
+#                      libOsi2ClpShim, ClpHeavyShim                    #
 ########################################################################
 
-# Name of the library compiled in this directory.  We don't want it
+# Name of the libraries compiled in this directory.  We don't want it
 # installed just yet.
-lib_LTLIBRARIES = libOsi2ClpShim.la
+lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la
 
 # List all source files for this library, including headers
 libOsi2ClpShim_la_SOURCES = \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp
 
+libOsi2ClpHeavyShim_la_SOURCES = \
+	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp \
+	Osi2ProbMgmtAPI_ClpHeavy.cpp Osi2ProbMgmtAPI_ClpHeavy.hpp
+
 
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
+libOsi2ClpHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 
 # Make sure the dynamic library includes the necessary dependencies
 libOsi2ClpShim_la_LIBADD = $(OSI2CLPSHIM_LIBS)
+libOsi2ClpHeavyShim_la_LIBADD = $(OSI2CLPHEAVYSHIM_LIBS)
 
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) $(OSI2CLPSHIM_CFLAGS)
@@ -422,6 +441,8 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libOsi2ClpHeavyShim.la: $(libOsi2ClpHeavyShim_la_OBJECTS) $(libOsi2ClpHeavyShim_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(libdir) $(libOsi2ClpHeavyShim_la_LDFLAGS) $(libOsi2ClpHeavyShim_la_OBJECTS) $(libOsi2ClpHeavyShim_la_LIBADD) $(LIBS)
 libOsi2ClpShim.la: $(libOsi2ClpShim_la_OBJECTS) $(libOsi2ClpShim_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(libdir) $(libOsi2ClpShim_la_LDFLAGS) $(libOsi2ClpShim_la_OBJECTS) $(libOsi2ClpShim_la_LIBADD) $(LIBS)
 
@@ -431,8 +452,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpHeavyShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_Clp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_ClpHeavy.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

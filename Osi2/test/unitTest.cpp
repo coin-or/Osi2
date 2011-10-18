@@ -153,7 +153,7 @@ int testControlAPI (const std::string &shortName,
     ControlAPI_Imp ctrlAPI ;
     std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
     /*
-      Load a shim. No sense proceeding if the load fails.
+      Load shims. No sense proceeding if the load fails.
     */
     retval = ctrlAPI.load(shortName) ;
     if (retval != 0) {
@@ -164,8 +164,19 @@ int testControlAPI (const std::string &shortName,
                 << "Error code is " << retval << "." << std::endl ;
         return (errcnt) ;
     }
+    std::string heavyName = shortName+"Heavy" ;
+    retval = ctrlAPI.load(heavyName) ;
+    if (retval != 0) {
+        errcnt++ ;
+        std::cout
+	    << "Apparent failure to load " << heavyName << "." << std::endl ;
+        std::cout
+	    << "Error code is " << retval << "." << std::endl ;
+        return (errcnt) ;
+    }
     /*
-      Create a ProbMgmt object, invoke a nontrivial method, and destroy the object.
+      Create a ProbMgmt object, invoke a nontrivial method, and destroy the
+      object.
     */
     API *apiObj = nullptr ;
     retval = ctrlAPI.createObject(apiObj, "ProbMgmt") ;
@@ -183,6 +194,28 @@ int testControlAPI (const std::string &shortName,
             errcnt++ ;
             std::cout
                     << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+        }
+    }
+    /*
+      Create a ProbMgmt object from ClpHeavy, invoke a nontrivial method,
+      and destroy the object.
+    */
+    apiObj = nullptr ;
+    retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &heavyName) ;
+    if (retval != 0) {
+        errcnt++ ;
+        std::cout
+	    << "Apparent failure to create a ProbMgmt (heavy) object." << std::endl ;
+    } else {
+        ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
+	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
+        clp->readMps(exmip1Path.c_str(), true) ;
+	clp->initialSolve() ;
+        int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
+        if (retval < 0) {
+            errcnt++ ;
+            std::cout
+                    << "Apparent failure to destroy a ProbMgmt (heavy) object." << std::endl ;
         }
     }
     /*
@@ -208,13 +241,21 @@ int testControlAPI (const std::string &shortName,
         }
     }
     /*
-      Unload the shim.
+      Unload the shims.
     */
     retval = ctrlAPI.unload(shortName) ;
     if (retval != 0) {
         errcnt++ ;
         std::cout
                 << "Apparent failure to unload " << shortName << "." << std::endl ;
+        std::cout
+                << "Error code is " << retval << "." << std::endl ;
+    }
+    retval = ctrlAPI.unload(heavyName) ;
+    if (retval != 0) {
+        errcnt++ ;
+        std::cout
+                << "Apparent failure to unload " << heavyName << "." << std::endl ;
         std::cout
                 << "Error code is " << retval << "." << std::endl ;
     }

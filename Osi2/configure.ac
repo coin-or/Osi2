@@ -72,11 +72,16 @@ AC_COIN_INIT_AUTO_TOOLS
 #                              COIN-OR components                           #
 #############################################################################
 
-AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2Lib Osi2Plugin])
+AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils],
+    [Osi2Lib Osi2Plugin Osi2ClpHeavyShim])
 if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
-AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2ClpShim])
+
+# One can build ClpShim without libClp, but ClpHeavyShim must be linked with
+# libClp and dependencies.
+
+AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2ClpHeavyShim])
 if test $coin_has_clp != yes ; then
   AC_MSG_ERROR([Required package Clp not available.])
 fi
@@ -90,7 +95,8 @@ fi
 
 if test -f osi2plugin.pc ; then
   echo "Found osi2plugin.pc; invoking pkg-config."
-  AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin], [Osi2ClpShim])
+  AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin],
+      [Osi2ClpShim Osi2ClpHeavyShim])
   if test $coin_has_osi2plugin != yes ; then
     AC_MSG_ERROR([Required package Osi2Plugin not available.])
   fi
@@ -101,8 +107,13 @@ else
   AC_SUBST(OSI2CLPSHIM_CFLAGS)
   OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
   OSI2CLPSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
+  AC_SUBST(OSI2CLPHEAVYSHIM_LIBS)
+  AC_SUBST(OSI2CLPHEAVYSHIM_CFLAGS)
+  OSI2CLPHEAVYSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
+  OSI2CLPHEAVYSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
 fi
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
+OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
 
 if test "x$ac_cv_type_nullptr" = xyes ; then
   OSI2PLUGIN_CFLAGS="$OSI2PLUGIN_CFLAGS -DCOIN_HAS_NULLPTR"
