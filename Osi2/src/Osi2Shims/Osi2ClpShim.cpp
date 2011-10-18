@@ -55,7 +55,7 @@ void *ClpShim::create (const ObjectParams *params)
         std::string errStr ;
         ClpFactory factory =
             reinterpret_cast<ClpFactory>(libClp->getSymbol("Clp_newModel", errStr)) ;
-        if (factory == 0) {
+        if (factory == nullptr) {
             std::cout << "Apparent failure to find Clp_newModel." << std::endl ;
             std::cout << errStr << std::endl ;
             return (nullptr) ;
@@ -64,7 +64,7 @@ void *ClpShim::create (const ObjectParams *params)
         ClpSimplexFactory underlyingModel =
             reinterpret_cast<ClpSimplexFactory>
             (libClp->getSymbol("Clp_model", errStr)) ;
-        if (underlyingModel == 0) {
+        if (underlyingModel == nullptr) {
             std::cout << "Apparent failure to find Clp_model." << std::endl ;
             std::cout << errStr << std::endl ;
             return (nullptr) ;
@@ -123,7 +123,7 @@ ExitFunc initPlugin (PlatformServices *services)
     std::string errMsg ;
     std::string fullPath = libPath + "/" + libClpName ;
     DynamicLibrary *libClp = DynamicLibrary::load(fullPath, errMsg) ;
-    if (libClp == 0) {
+    if (libClp == nullptr) {
         std::cout
                 << "Apparent failure opening " << fullPath << "." << std::endl ;
         std::cout

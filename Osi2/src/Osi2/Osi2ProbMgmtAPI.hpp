@@ -20,13 +20,16 @@ class ProbMgmtAPI : public API {
 
 public:
 
-/// Virtual destructor
-    virtual ~ProbMgmtAPI() {}
+  /// Virtual destructor
+  virtual ~ProbMgmtAPI() {}
 
-/// Read an mps file from the given filename
-    virtual
-    int readMps(const char *filename, bool keepNames = false,
-                bool ignoreErrors = false) = 0 ;
+  /// Read an mps file from the given filename
+  virtual
+  int readMps(const char *filename, bool keepNames = false,
+              bool ignoreErrors = false) = 0 ;
+
+  /// Solve an lp
+  virtual int initialSolve() = 0 ;
 
 } ;
 

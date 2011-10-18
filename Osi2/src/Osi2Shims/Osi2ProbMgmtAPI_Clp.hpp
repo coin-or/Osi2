@@ -4,7 +4,6 @@
 
   $Id$
 */
-
 #ifndef Osi2ProbMgmtAPI_Clp_HPP
 #define Osi2ProbMgmtAPI_Clp_HPP
 
@@ -12,7 +11,6 @@
 
 #include "Osi2API.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
-#include "ClpSimplex.hpp"
 
 /*! \brief Proof of concept API.
 
@@ -33,9 +31,32 @@ public:
     int readMps(const char *filename, bool keepNames = false,
                 bool ignoreErrors = false) ;
 
+    /*! \ Solve an lp
+
+      See ClpModel::status() for the meaning of the return value.
+    */
+    int initialSolve() ;
+
 private:
+  /*! \name Dynamic object management information */
+  //@{
+    /// Dynamic library handle
     DynamicLibrary *libClp_ ;
+    /// Clp object
     Clp_Simplex *clpSimplex_ ;
+  //@}
+
+  /*! \name Lazy symbol load
+
+    Methods in the Clp C Interface are looked up as needed and cached. In
+    general, there's a typedef and field for each method.
+  */
+  //@{
+    typedef  int (*ClpReadMpsFunc)(Clp_Simplex*, const char*, int, int) ;
+    ClpReadMpsFunc readMps_ ;
+    typedef  int (*ClpInitialSolveFunc)(Clp_Simplex*) ;
+    ClpInitialSolveFunc initialSolve_ ;
+  //@{
 
 } ;
 

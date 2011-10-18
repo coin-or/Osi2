@@ -143,7 +143,8 @@ int testPluginManager (const std::string libName)
     return (errcnt) ;
 }
 
-int testControlAPI (std::string shortName)
+int testControlAPI (const std::string &shortName,
+		    const std::string &dfltSampleDir)
 {
     int retval = 0 ;
     int errcnt = 0 ;
@@ -174,7 +175,9 @@ int testControlAPI (std::string shortName)
                 << "Apparent failure to create a ProbMgmt object." << std::endl ;
     } else {
         ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-        clp->readMps("exmip1.mps", true) ;
+	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
+        clp->readMps(exmip1Path.c_str(), true) ;
+	clp->initialSolve() ;
         int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
         if (retval < 0) {
             errcnt++ ;
@@ -226,6 +229,8 @@ int main(int argC, char* argV[])
 {
 
     std::cout << "START UNIT TEST" << std::endl ;
+
+    std::string dfltSampleDir = "../../Data/Sample" ;
     /*
       Test the bare PluginManager. There's no sense proceeding to the API tests if
       the PluginManager isn't working.
@@ -243,7 +248,7 @@ int main(int argC, char* argV[])
       Now let's try the Osi2 control API.
     */
     std::cout << "Testing ControlAPI." << std::endl ;
-    retval = testControlAPI("clp") ;
+    retval = testControlAPI("clp",dfltSampleDir) ;
     std::cout
             << "End test of ControlAPI, " << retval << " errors."
             << std::endl << std::endl ;

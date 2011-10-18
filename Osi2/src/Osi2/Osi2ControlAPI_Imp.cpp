@@ -404,9 +404,9 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
         return (retval) ;
     }
     /*
-      Did the client specify a plugin library? If so, validate and obtain the
-      plugin's ID. Failure to find the specified library rates a warning but we'll
-      soldier on.
+      Did the client specify a plugin library? If so, validate and obtain
+      the plugin's ID. Failure to find the specified library rates a warning
+      but we'll soldier on.
     */
     PluginUniqueID libID = 0 ;
     bool restricted = false ;
@@ -416,7 +416,7 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
         forPrinting = *shortName ;
         LibMapType::iterator knownIter = knownLibMap_.find((*shortName)) ;
         if (knownIter == knownLibMap_.end()) {
-            msgHandler_->message(CTRLAPI_LIBUNREG, msgs_)
+            msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
                     << (*shortName) << CoinMessageEol ;
         } else {
             libID = knownIter->second.uniqueID ;
@@ -425,7 +425,7 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
     /*
       Invoke the plugin manager's destroyObject.
     */
-    retval = pluginMgr_->destroyObject(apiName, libID, obj) ;
+    retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
     if (retval != 0) {
         msgHandler_->message(CTRLAPI_DESTROYFAIL, msgs_) << apiName ;
         msgHandler_->printing(restricted && libID != 0) << forPrinting ;
