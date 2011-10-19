@@ -63,7 +63,7 @@ void *ClpShim::create (const ObjectParams *params)
         ClpSimplexFactory underlyingModel =
             reinterpret_cast<ClpSimplexFactory>
             (libClp->getSymbol("Clp_model", errStr)) ;
-        if (underlyingModel == nullptr) {
+        if (underlyingModel == 0) {
             std::cout << "Apparent failure to find Clp_model." << std::endl ;
             std::cout << errStr << std::endl ;
             return (nullptr) ;
