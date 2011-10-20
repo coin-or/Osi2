@@ -50,5 +50,6 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
-	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp
+	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp
 

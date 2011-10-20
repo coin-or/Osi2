@@ -10,6 +10,7 @@
 #include "CoinHelperFunctions.hpp"
 
 
+#include "Osi2Config.h"
 #include "Osi2nullptr.hpp"
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"

@@ -22,20 +22,11 @@ unitTest_SOURCES = unitTest.cpp
 
 # Add the necessary libraries
 
-# unitTest_LDADD = \
-#   ../src/Osi2/libOsi2.la \
-#   ../src/Osi2Plugin/libOsi2Plugin.la $(OSI2PLUGIN_LIBS)
-
-unitTest_LDADD = ../src/Osi2/libOsi2.la $(OSI2LIB_LIBS) $(OSI2PLUGIN_LIBS)
+unitTest_LDADD = $(UNITTESTDEPS_LIBS)
 
 # Now add the include paths for compilation
-# Here list all include flags, relative to this "srcdir" directory.  This
-# "cygpath" stuff is necessary to compile with native compilers on Windows
-AM_CPPFLAGS =\
-	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2Plugin` \
-	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
-	$(CLP_CFLAGS) \
-	$(COINUTILS_CFLAGS)
+
+AM_CPPFLAGS = $(UNITTESTDEPS_CFLAGS)
 
 # This line is necessary to allow VPATH compilation with MS compilers
 # on Cygwin

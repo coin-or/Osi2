@@ -64,6 +64,10 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/Makefile.in $(srcdir)/osi2-uninstalled.pc.in \
 	$(srcdir)/osi2-unittests-uninstalled.pc.in \
 	$(srcdir)/osi2-unittests.pc.in $(srcdir)/osi2.pc.in \
+	$(srcdir)/osi2clpheavyshim-uninstalled.pc.in \
+	$(srcdir)/osi2clpheavyshim.pc.in \
+	$(srcdir)/osi2clpshim-uninstalled.pc.in \
+	$(srcdir)/osi2clpshim.pc.in \
 	$(srcdir)/osi2plugin-uninstalled.pc.in \
 	$(srcdir)/osi2plugin.pc.in $(top_srcdir)/configure \
 	$(top_srcdir)/doxydoc/doxygen.conf.in AUTHORS INSTALL
@@ -81,7 +85,9 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/Osi2/config.h \
 	$(top_builddir)/src/Osi2/config_osi2.h
 CONFIG_CLEAN_FILES = osi2.pc osi2-uninstalled.pc osi2plugin.pc \
-	osi2plugin-uninstalled.pc osi2-unittests.pc \
+	osi2plugin-uninstalled.pc osi2clpshim.pc \
+	osi2clpshim-uninstalled.pc osi2clpheavyshim.pc \
+	osi2clpheavyshim-uninstalled.pc osi2-unittests.pc \
 	osi2-unittests-uninstalled.pc doxydoc/doxygen.conf
 SOURCES =
 DIST_SOURCES =
@@ -164,12 +170,16 @@ COIN_HAS_MSK_FALSE = @COIN_HAS_MSK_FALSE@
 COIN_HAS_MSK_TRUE = @COIN_HAS_MSK_TRUE@
 COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
 COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
+COIN_HAS_OSI2PLUGININT_FALSE = @COIN_HAS_OSI2PLUGININT_FALSE@
+COIN_HAS_OSI2PLUGININT_TRUE = @COIN_HAS_OSI2PLUGININT_TRUE@
 COIN_HAS_OSI2PLUGIN_FALSE = @COIN_HAS_OSI2PLUGIN_FALSE@
 COIN_HAS_OSI2PLUGIN_TRUE = @COIN_HAS_OSI2PLUGIN_TRUE@
 COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
 COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
 COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
 COIN_HAS_SAMPLE_TRUE = @COIN_HAS_SAMPLE_TRUE@
+COIN_HAS_UNITTESTDEPS_FALSE = @COIN_HAS_UNITTESTDEPS_FALSE@
+COIN_HAS_UNITTESTDEPS_TRUE = @COIN_HAS_UNITTESTDEPS_TRUE@
 COIN_HAS_XPR_FALSE = @COIN_HAS_XPR_FALSE@
 COIN_HAS_XPR_TRUE = @COIN_HAS_XPR_TRUE@
 COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
@@ -245,26 +255,31 @@ OSI2CLPSHIM_LIBS = @OSI2CLPSHIM_LIBS@
 OSI2CLPSHIM_LIBS_INSTALLED = @OSI2CLPSHIM_LIBS_INSTALLED@
 OSI2CLPSHIM_PCLIBS = @OSI2CLPSHIM_PCLIBS@
 OSI2CLPSHIM_PCREQUIRES = @OSI2CLPSHIM_PCREQUIRES@
-OSI2LIB_CFLAGS = @OSI2LIB_CFLAGS@
-OSI2LIB_CFLAGS_INSTALLED = @OSI2LIB_CFLAGS_INSTALLED@
-OSI2LIB_DEPENDENCIES = @OSI2LIB_DEPENDENCIES@
-OSI2LIB_LIBS = @OSI2LIB_LIBS@
-OSI2LIB_LIBS_INSTALLED = @OSI2LIB_LIBS_INSTALLED@
-OSI2LIB_PCLIBS = @OSI2LIB_PCLIBS@
-OSI2LIB_PCREQUIRES = @OSI2LIB_PCREQUIRES@
+OSI2PLUGININT_CFLAGS = @OSI2PLUGININT_CFLAGS@
+OSI2PLUGININT_CFLAGS_INSTALLED = @OSI2PLUGININT_CFLAGS_INSTALLED@
+OSI2PLUGININT_DATA = @OSI2PLUGININT_DATA@
+OSI2PLUGININT_DATA_INSTALLED = @OSI2PLUGININT_DATA_INSTALLED@
+OSI2PLUGININT_DEPENDENCIES = @OSI2PLUGININT_DEPENDENCIES@
+OSI2PLUGININT_LIBS = @OSI2PLUGININT_LIBS@
+OSI2PLUGININT_LIBS_INSTALLED = @OSI2PLUGININT_LIBS_INSTALLED@
 OSI2PLUGIN_CFLAGS = @OSI2PLUGIN_CFLAGS@
 OSI2PLUGIN_CFLAGS_INSTALLED = @OSI2PLUGIN_CFLAGS_INSTALLED@
-OSI2PLUGIN_DATA = @OSI2PLUGIN_DATA@
-OSI2PLUGIN_DATA_INSTALLED = @OSI2PLUGIN_DATA_INSTALLED@
 OSI2PLUGIN_DEPENDENCIES = @OSI2PLUGIN_DEPENDENCIES@
 OSI2PLUGIN_LIBS = @OSI2PLUGIN_LIBS@
 OSI2PLUGIN_LIBS_INSTALLED = @OSI2PLUGIN_LIBS_INSTALLED@
 OSI2PLUGIN_PCLIBS = @OSI2PLUGIN_PCLIBS@
 OSI2PLUGIN_PCREQUIRES = @OSI2PLUGIN_PCREQUIRES@
+OSI2_CFLAGS = @OSI2_CFLAGS@
+OSI2_CFLAGS_INSTALLED = @OSI2_CFLAGS_INSTALLED@
+OSI2_DEPENDENCIES = @OSI2_DEPENDENCIES@
 OSI2_EXAMPLES_SOLVER_CFLAGS = @OSI2_EXAMPLES_SOLVER_CFLAGS@
 OSI2_EXAMPLES_SOLVER_LIBS = @OSI2_EXAMPLES_SOLVER_LIBS@
 OSI2_EXAMPLES_SOLVER_NAME = @OSI2_EXAMPLES_SOLVER_NAME@
 OSI2_EXAMPLES_SOLVER_PCNAME = @OSI2_EXAMPLES_SOLVER_PCNAME@
+OSI2_LIBS = @OSI2_LIBS@
+OSI2_LIBS_INSTALLED = @OSI2_LIBS_INSTALLED@
+OSI2_PCLIBS = @OSI2_PCLIBS@
+OSI2_PCREQUIRES = @OSI2_PCREQUIRES@
 OSI2_SVN_REV = @OSI2_SVN_REV@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -286,6 +301,13 @@ SAMPLE_LIBS_INSTALLED = @SAMPLE_LIBS_INSTALLED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+UNITTESTDEPS_CFLAGS = @UNITTESTDEPS_CFLAGS@
+UNITTESTDEPS_CFLAGS_INSTALLED = @UNITTESTDEPS_CFLAGS_INSTALLED@
+UNITTESTDEPS_DATA = @UNITTESTDEPS_DATA@
+UNITTESTDEPS_DATA_INSTALLED = @UNITTESTDEPS_DATA_INSTALLED@
+UNITTESTDEPS_DEPENDENCIES = @UNITTESTDEPS_DEPENDENCIES@
+UNITTESTDEPS_LIBS = @UNITTESTDEPS_LIBS@
+UNITTESTDEPS_LIBS_INSTALLED = @UNITTESTDEPS_LIBS_INSTALLED@
 VERSION = @VERSION@
 VPATH_DISTCLEANFILES = @VPATH_DISTCLEANFILES@
 XPRINCDIR = @XPRINCDIR@
@@ -357,7 +379,12 @@ AUTOMAKE_OPTIONS = foreign
 #            Subdirectories and installation of .pc files              #
 ########################################################################
 pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = osi2.pc osi2-unittests.pc
+
+# Order is important! osi2plugin.pc is referenced by .pc files later in the
+# list.
+pkgconfiglib_DATA = osi2plugin.pc osi2.pc osi2-unittests.pc \
+		    osi2clpshim.pc osi2clpheavyshim.pc
+
 SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims $(am__append_1)
 
 ########################################################################
@@ -424,6 +451,14 @@ osi2-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/osi2-uninstalled.pc
 osi2plugin.pc: $(top_builddir)/config.status $(srcdir)/osi2plugin.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 osi2plugin-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/osi2plugin-uninstalled.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+osi2clpshim.pc: $(top_builddir)/config.status $(srcdir)/osi2clpshim.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+osi2clpshim-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/osi2clpshim-uninstalled.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+osi2clpheavyshim.pc: $(top_builddir)/config.status $(srcdir)/osi2clpheavyshim.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+osi2clpheavyshim-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/osi2clpheavyshim-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 osi2-unittests.pc: $(top_builddir)/config.status $(srcdir)/osi2-unittests.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

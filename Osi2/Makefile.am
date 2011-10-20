@@ -13,7 +13,12 @@ AUTOMAKE_OPTIONS = foreign
 ########################################################################
 
 pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = osi2.pc osi2-unittests.pc
+
+# Order is important! osi2plugin.pc is referenced by .pc files later in the
+# list.
+
+pkgconfiglib_DATA = osi2plugin.pc osi2.pc osi2-unittests.pc \
+		    osi2clpshim.pc osi2clpheavyshim.pc
 
 SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims
 

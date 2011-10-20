@@ -7,6 +7,6 @@ Name: Osi2
 Description: COIN-OR Open Solver Interface Version 2
 URL: https://projects.coin-or.org/Osi2
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lOsi2 @OSI2LIB_PCLIBS@
+Libs: -L${libdir} -lOsi2 @OSI2_PCLIBS@
 Cflags: -I${includedir}
-Requires: @OSI2LIB_PCREQUIRES@
+Requires: @OSI2_PCREQUIRES@

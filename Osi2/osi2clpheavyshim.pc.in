@@ -3,10 +3,11 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@/coin
 
-Name: Osi2Plugin
-Description: COIN-OR Osi2 Plugin management
+Name: Osi2 Clp Shim
+Description: Clp solver shim for Osi2
 URL: https://projects.coin-or.org/Osi2
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lOsi2Plugin @OSI2PLUGIN_PCLIBS@
+Libs: -L${libdir} -losi2clpshim @OSI2CLPHEAVYSHIM_PCLIBS@
 Cflags: -I${includedir}
-Requires: @OSI2PLUGIN_PCREQUIRES@
+Requires: osi2plugin @OSI2CLPHEAVYSHIM_PCREQUIRES@
+

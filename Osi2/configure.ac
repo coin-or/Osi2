@@ -72,8 +72,7 @@ AC_COIN_INIT_AUTO_TOOLS
 #                              COIN-OR components                           #
 #############################################################################
 
-AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils],
-    [Osi2Lib Osi2Plugin Osi2ClpHeavyShim])
+AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2 Osi2Plugin])
 if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
@@ -86,34 +85,72 @@ if test $coin_has_clp != yes ; then
   AC_MSG_ERROR([Required package Clp not available.])
 fi
 
-# The problem: On the first pass through configuration, none of the .pc
-# files exist. But the shim needs osi2plugin.pc to find headers. Fake it by
-# manually building up the necessary variables. This won't be a problem when
-# (if) the clp shim moves over to the Clp project directory. It's just that
-# all the .pc files are created at the end of this script and we need to
-# get through the first call.
+# It sure would be handy to use the pkgconfig machinery to build up
+# dependencies. Problem: On the first configure pass, none of the .pc files
+# exist.  So, on the first pass, fake it by manually building up the necessary
+# variables.  (The alternative is to build them up in the makefiles. This way
+# the makefiles look like normal usage.)  Because the light shim (Osi2ClpShim)
+# has no prior dependencies, the variables OSI2CLPSHIM_XXX don't exist yet
+# (because there's been no reference to Osi2ClpShim in a package check)
+# and must be created. Similarly UNITTESTDEPS_XXX. We need to be careful
+# to delay expansion of variables that won't have a value until the final
+# Makefile is generated.
+
+# The reason for Osi2PluginInt is that using the name Osi2Plugin will result
+# in OSI2PLUGIN_PCREQUIRES = osi2plugin, which we do not want. (This can't be
+# fixed in coin.m4 because it's a feature when constructing a .pc file
+# for a synthetic package.) But we would like to have pkg-config collect the
+# dependencies of osi2plugin and augment the dependency info for the listed
+# packages. Variables OSI2PLUGININT_XXX are never used.
+
+# UNITTESTDEPS serves a different purpose. It exists so that we have
+# convenient variables UNITTESTDEPS_LIBS and UNITTESTDEPS_CFLAGS to use in
+# test/Makefile.am.
+
+# It's necessary to add osi2plugin to OSI2CLPSHIM_PCREQUIRES and
+# OSI2_PCREQUIRES so that we end up with properly-formed Requires specs in the
+# .pc files.
 
 if test -f osi2plugin.pc ; then
-  echo "Found osi2plugin.pc; invoking pkg-config."
-  AC_COIN_CHECK_PACKAGE(Osi2Plugin, [osi2plugin],
-      [Osi2ClpShim Osi2ClpHeavyShim])
-  if test $coin_has_osi2plugin != yes ; then
-    AC_MSG_ERROR([Required package Osi2Plugin not available.])
-  fi
+  AC_MSG_NOTICE([Found .pc files; invoking pkg-config.])
+  AC_COIN_CHECK_PACKAGE(Osi2PluginInt, [osi2plugin],
+      [Osi2 Osi2ClpShim Osi2ClpHeavyShim])
+  AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi2])
 else
-  echo "No osi2plugin.pc; faking it."
-  AM_CONDITIONAL(COIN_HAS_OSI2PLUGIN,true)
+  AC_MSG_NOTICE([No .pc files; faking it.])
+  # Create variables
+  AM_CONDITIONAL(COIN_HAS_OSI2PLUGININT,true)
+  AM_CONDITIONAL(COIN_HAS_UNITTESTDEPS,true)
   AC_SUBST(OSI2CLPSHIM_LIBS)
   AC_SUBST(OSI2CLPSHIM_CFLAGS)
-  OSI2CLPSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
-  OSI2CLPSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
-  AC_SUBST(OSI2CLPHEAVYSHIM_LIBS)
-  AC_SUBST(OSI2CLPHEAVYSHIM_CFLAGS)
-  OSI2CLPHEAVYSHIM_LIBS=../Osi2Plugin/libOsi2Plugin.la
-  OSI2CLPHEAVYSHIM_CFLAGS=-I$abs_source_dir/src/Osi2Plugin
+  AC_SUBST(OSI2CLPSHIM_PCREQUIRES, [osi2plugin])
+  OSI2CLPSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la"
+  OSI2CLPSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin"
+  OSI2CLPHEAVYSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2CLPHEAVYSHIM_LIBS"
+  OSI2CLPHEAVYSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2CLPHEAVYSHIM_CFLAGS"
+  OSI2CLPHEAVYSHIM_PCREQUIRES="osi2plugin $OSI2CLPHEAVYSHIM_PCREQUIRES"
+  OSI2_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2_CFLAGS"
+  OSI2_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2_LIBS"
+  OSI2_PCREQUIRES="osi2plugin $OSI2_PCREQUIRES"
+  AC_SUBST(UNITTESTDEPS_LIBS)
+  AC_SUBST(UNITTESTDEPS_CFLAGS)
+  UNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
+  UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
 fi
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
-OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I$abs_source_dir/src/Osi2"
+
+# So we can use OSI2PLUGIN in makefiles instead of OSI2PLUGININT. Not clear
+# it's necessary at present.
+
+AM_CONDITIONAL(COIN_HAS_OSI2PLUGIN,true)
+
+# We need only the Osi2*API include files. Add these directly so as not to
+# drag in the library.
+
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
+OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
+
+# Avoid pulling Osi2Config.h and dependencies into the build for libOsi2Plugin
+# just for COIN_HAS_NULLPTR. Eventually nullptr should move to CoinUtils.
 
 if test "x$ac_cv_type_nullptr" = xyes ; then
   OSI2PLUGIN_CFLAGS="$OSI2PLUGIN_CFLAGS -DCOIN_HAS_NULLPTR"
@@ -200,6 +237,8 @@ AC_CONFIG_FILES([Makefile
 		 src/Osi2Shims/Makefile
                  osi2.pc osi2-uninstalled.pc
                  osi2plugin.pc osi2plugin-uninstalled.pc
+                 osi2clpshim.pc osi2clpshim-uninstalled.pc
+                 osi2clpheavyshim.pc osi2clpheavyshim-uninstalled.pc
                  osi2-unittests.pc osi2-unittests-uninstalled.pc])
 
 AC_CONFIG_FILES([doxydoc/doxygen.conf])

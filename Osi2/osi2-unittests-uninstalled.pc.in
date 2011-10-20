@@ -5,6 +5,6 @@ Name: Osi2UnitTests
 Description: COIN-OR Open Solver Interface Version 2 Common Unit Tests
 URL: https://projects.coin-or.org/Osi2
 Version: @PACKAGE_VERSION@
-Libs: ${libdir}/libOsi2CommonTests.la
+Libs: ${libdir}/libOsi2CommonTests.la @OSI2COMMONTESTS_PCLIBS@
 Cflags: -I@abs_source_dir@/src/Osi2CommonTest
-Requires: osi2
+Requires: osi2 @OSI2COMMONTESTS_PCREQUIRES@

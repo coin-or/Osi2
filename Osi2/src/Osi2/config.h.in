@@ -21,11 +21,14 @@
 /* Define to 1 if the C++ compiler supports nullptr */
 #undef COIN_HAS_NULLPTR
 
-/* Define to 1 if the Osi2Plugin package is available */
-#undef COIN_HAS_OSI2PLUGIN
+/* Define to 1 if the Osi2PluginInt package is available */
+#undef COIN_HAS_OSI2PLUGININT
 
 /* Define to 1 if the Sample package is available */
 #undef COIN_HAS_SAMPLE
+
+/* Define to 1 if the UnitTestDeps package is available */
+#undef COIN_HAS_UNITTESTDEPS
 
 /* Define to 1 if the Xpress package is available */
 #undef COIN_HAS_XPR
