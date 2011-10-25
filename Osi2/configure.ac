@@ -78,11 +78,11 @@ if test $coin_has_coinutils != yes ; then
 fi
 
 # One can build ClpShim without libClp, but ClpHeavyShim must be linked with
-# libClp and dependencies.
+# libOsiClp and dependencies. But see below for separate additions to CFLAGS.
 
-AC_COIN_CHECK_PACKAGE(Clp, [clp], [Osi2ClpHeavyShim])
-if test $coin_has_clp != yes ; then
-  AC_MSG_ERROR([Required package Clp not available.])
+AC_COIN_CHECK_PACKAGE(OsiClp, [osi-clp], [Osi2ClpHeavyShim])
+if test $coin_has_osiclp != yes ; then
+  AC_MSG_ERROR([Required package OsiClp not available.])
 fi
 
 # It sure would be handy to use the pkgconfig machinery to build up
@@ -115,7 +115,7 @@ if test -f osi2plugin.pc ; then
   AC_MSG_NOTICE([Found .pc files; invoking pkg-config.])
   AC_COIN_CHECK_PACKAGE(Osi2PluginInt, [osi2plugin],
       [Osi2 Osi2ClpShim Osi2ClpHeavyShim])
-  AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi2])
+  AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi osi2])
 else
   AC_MSG_NOTICE([No .pc files; faking it.])
   # Create variables
@@ -136,6 +136,7 @@ else
   AC_SUBST(UNITTESTDEPS_CFLAGS)
   UNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
   UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
+  UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../Osi/src/Osi $UNITTESTDEPS_CFLAGS"
 fi
 
 # So we can use OSI2PLUGIN in makefiles instead of OSI2PLUGININT. Not clear
@@ -143,11 +144,18 @@ fi
 
 AM_CONDITIONAL(COIN_HAS_OSI2PLUGIN,true)
 
-# We need only the Osi2*API include files. Add these directly so as not to
-# drag in the library.
+# Augment OSI2CLPSHIM_CFLAGS (used when building both the light and heavy
+# shims) so we can find all necessary include files. Do this explicitly to
+# avoid dragging in libs we don't need. I should figure out how to
+# use separate CFLAGS variables in Makefile.am. -- lh, 111021 --
 
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Clp/src"
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Clp/src/OsiClp"
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Clp/src"
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Osi/src/Osi"
+OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Osi/src/Osi"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
-OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
+# OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
 
 # Avoid pulling Osi2Config.h and dependencies into the build for libOsi2Plugin
 # just for COIN_HAS_NULLPTR. Eventually nullptr should move to CoinUtils.

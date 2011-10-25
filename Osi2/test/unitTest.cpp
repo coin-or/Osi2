@@ -18,6 +18,7 @@
 
 #include "Osi2ControlAPI_Imp.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
+#include "Osi2Osi1API.hpp"
 
 using namespace Osi2 ;
 
@@ -195,6 +196,28 @@ int testControlAPI (const std::string &shortName,
             errcnt++ ;
             std::cout
                     << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+        }
+    }
+    /*
+      Create an Osi1 object, invoke a nontrivial method, and destroy the
+      object.
+    */
+    apiObj = nullptr ;
+    retval = ctrlAPI.createObject(apiObj, "Osi1") ;
+    if (retval != 0) {
+        errcnt++ ;
+        std::cout
+                << "Apparent failure to create an Osi1 object." << std::endl ;
+    } else {
+        Osi1API *osi = dynamic_cast<Osi1API *>(apiObj) ;
+	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
+        osi->readMps(exmip1Path.c_str()) ;
+	osi->initialSolve() ;
+        int retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        if (retval < 0) {
+            errcnt++ ;
+            std::cout
+                    << "Apparent failure to destroy an Osi1 object." << std::endl ;
         }
     }
     /*
