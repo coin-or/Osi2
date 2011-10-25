@@ -1,8 +1,5 @@
 /* src/Osi2/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if the Clp package is available */
-#undef COIN_HAS_CLP
-
 /* Define to 1 if the CoinUtils package is available */
 #undef COIN_HAS_COINUTILS
 
@@ -23,6 +20,9 @@
 
 /* Define to 1 if the Osi2PluginInt package is available */
 #undef COIN_HAS_OSI2PLUGININT
+
+/* Define to 1 if the OsiClp package is available */
+#undef COIN_HAS_OSICLP
 
 /* Define to 1 if the Sample package is available */
 #undef COIN_HAS_SAMPLE

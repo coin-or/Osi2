@@ -24,7 +24,8 @@ libOsi2ClpShim_la_SOURCES = \
 
 libOsi2ClpHeavyShim_la_SOURCES = \
 	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp \
-	Osi2ProbMgmtAPI_ClpHeavy.cpp Osi2ProbMgmtAPI_ClpHeavy.hpp
+	Osi2ProbMgmtAPI_ClpHeavy.cpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
+	Osi2Osi1API_ClpHeavy.cpp Osi2Osi1API_ClpHeavy.hpp
 
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -51,5 +52,6 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
 	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp
+	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
+	Osi2Osi1API_ClpHeavy.hpp
 

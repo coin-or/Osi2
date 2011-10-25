@@ -19,6 +19,7 @@
 #include "Osi2DynamicLibrary.hpp"
 
 #include "Osi2ProbMgmtAPI_ClpHeavy.hpp"
+#include "Osi2Osi1API_ClpHeavy.hpp"
 
 using namespace Osi2 ;
 
@@ -47,6 +48,10 @@ void *ClpHeavyShim::create (const ObjectParams *params)
 	  << "Request to create " << what << " recognised." << std::endl ;
       ClpSimplex *clp = new ClpSimplex() ;
       retval = new ProbMgmtAPI_ClpHeavy(clp) ;
+    } else if (what == "Osi1") {
+      std::cout
+	  << "Request to create " << what << " recognised." << std::endl ;
+      retval = new Osi1API_ClpHeavy() ;
     } else {
       std::cout
 	  << "ClpHeavy create: unrecognised type " << what << "." << std::endl ;
