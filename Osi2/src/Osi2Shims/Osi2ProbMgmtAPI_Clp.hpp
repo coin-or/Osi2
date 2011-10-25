@@ -25,7 +25,7 @@ public:
     ProbMgmtAPI_Clp(DynamicLibrary *libClp, Clp_Simplex *clpSimplex) ;
 
     /// Destructor
-    ~ProbMgmtAPI_Clp() ;
+    virtual ~ProbMgmtAPI_Clp() ;
 
     /// Read an mps file from the given filename
     int readMps(const char *filename, bool keepNames = false,

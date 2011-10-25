@@ -21,7 +21,7 @@ public:
             (new std::stringstream())) {
     }
 
-    ~StreamingException() throw() {
+    virtual ~StreamingException() throw() {
     }
 
     template <typename T>

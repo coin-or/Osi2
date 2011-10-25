@@ -51,7 +51,7 @@ public:
      */
     ModifyConstraintBounds(OSInstance* _osinstance, int number, std::string* names, double* lowerBounds, double* upperBounds, double* constants);
     ModifyConstraintBounds();
-    ~ModifyConstraintBounds();
+    virtual ~ModifyConstraintBounds();
 
     // other methods
     void record();

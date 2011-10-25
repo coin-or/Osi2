@@ -30,7 +30,7 @@ public:
     /// Virtual copy constructor
     ControlAPI *clone() ;
     /// Destructor
-    ~ControlAPI_Imp() ;
+    virtual ~ControlAPI_Imp() ;
     /// Default constructor; \sa #create
     ControlAPI_Imp() ;
     /// Default copy constructor; \sa #clone

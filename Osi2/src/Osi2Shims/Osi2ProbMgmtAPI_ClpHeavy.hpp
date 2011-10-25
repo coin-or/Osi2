@@ -25,7 +25,7 @@ public:
     ProbMgmtAPI_ClpHeavy(ClpSimplex *clpSimplex) ;
 
     /// Destructor
-    ~ProbMgmtAPI_ClpHeavy() ;
+    virtual ~ProbMgmtAPI_ClpHeavy() ;
 
     /// Read an mps file from the given filename
     int readMps(const char *filename, bool keepNames = false,
