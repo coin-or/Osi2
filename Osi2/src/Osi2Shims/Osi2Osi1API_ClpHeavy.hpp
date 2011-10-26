@@ -24,7 +24,7 @@ public:
   Osi1API_ClpHeavy () ;
 
   /// Destructor
-  ~Osi1API_ClpHeavy () ;
+  virtual ~Osi1API_ClpHeavy () ;
 
   inline void initialSolve() { OsiClpSolverInterface::initialSolve() ; }
 
