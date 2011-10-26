@@ -496,7 +496,7 @@ public:
   			  const double *clbs, const double *cubs,
 			  const double *obj,
 			  const double *rlbs, const double *rubs)
-  { loadProblem(mtx,clbs,cubs,obj,rlbs,rubs) ; }
+  { OsiClpSolverInterface::loadProblem(mtx,clbs,cubs,obj,rlbs,rubs) ; }
 
   inline void assignProblem(CoinPackedMatrix *&mtx,
   			    double *&clbs, double *&cubs,
