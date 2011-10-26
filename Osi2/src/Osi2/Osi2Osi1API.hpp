@@ -37,7 +37,6 @@ class OsiObject;
 
 namespace Osi2 {
 
-//#############################################################################
 
 /*! \brief Original OSI interface virtual base class
 
@@ -48,89 +47,29 @@ class Osi1API : public API  {
 
 public:
 
-  /// Internal class for obtaining status from the applyCuts method 
-  class ApplyCutsReturnCode {
-
-  public:
-    ///@name Constructors and destructors
-    //@{
-      /// Default constructor
-      ApplyCutsReturnCode():
-	 intInconsistent_(0),
-	 extInconsistent_(0),
-	 infeasible_(0),
-	 ineffective_(0),
-	 applied_(0) {} 
-      /// Copy constructor
-      ApplyCutsReturnCode(const ApplyCutsReturnCode & rhs):
-	 intInconsistent_(rhs.intInconsistent_),
-	 extInconsistent_(rhs.extInconsistent_),
-	 infeasible_(rhs.infeasible_),
-	 ineffective_(rhs.ineffective_),
-	 applied_(rhs.applied_) {}
-      /// Assignment operator
-      ApplyCutsReturnCode & operator=(const ApplyCutsReturnCode& rhs)
-      { 
-	if (this != &rhs) { 
-	  intInconsistent_ = rhs.intInconsistent_;
-	  extInconsistent_ = rhs.extInconsistent_;
-	  infeasible_      = rhs.infeasible_;
-	  ineffective_     = rhs.ineffective_;
-	  applied_         = rhs.applied_;
-	}
-	return *this;
-      }
-      /// Destructor
-      ~ApplyCutsReturnCode(){}
-    //@}
-
-    /**@name Accessing return code attributes */
-    //@{
-      /// Number of logically inconsistent cuts
-      inline int getNumInconsistent(){return intInconsistent_;}
-      /// Number of cuts inconsistent with the current model
-      inline int getNumInconsistentWrtIntegerModel(){return extInconsistent_;}
-      /// Number of cuts that cause obvious infeasibility
-      inline int getNumInfeasible(){return infeasible_;}
-      /// Number of redundant or ineffective cuts
-      inline int getNumIneffective(){return ineffective_;}
-      /// Number of cuts applied
-      inline int getNumApplied(){return applied_;}
-    //@}
-
-  private: 
-    /**@name Private methods */
-    //@{
-      /// Increment logically inconsistent cut counter 
-      inline void incrementInternallyInconsistent(){intInconsistent_++;}
-      /// Increment model-inconsistent counter
-      inline void incrementExternallyInconsistent(){extInconsistent_++;}
-      /// Increment infeasible cut counter
-      inline void incrementInfeasible(){infeasible_++;}
-      /// Increment ineffective cut counter
-      inline void incrementIneffective(){ineffective_++;}
-      /// Increment applied cut counter
-      inline void incrementApplied(){applied_++;}
-    //@}
-
-    ///@name Private member data
-    //@{
-      /// Counter for logically inconsistent cuts
-      int intInconsistent_;
-      /// Counter for model-inconsistent cuts
-      int extInconsistent_;
-      /// Counter for infeasible cuts
-      int infeasible_;
-      /// Counter for ineffective cuts
-      int ineffective_;
-      /// Counter for applied cuts
-      int applied_;
-    //@}
-  };
-
-  Osi1API() {} ;
-
   //---------------------------------------------------------------------------
+
+  ///@name Constructors and destructors
+  //@{
+    
+    /** Clone (virtual copy)
+
+      The result of calling clone(false) is defined to be equivalent to
+      calling the default constructor Osi1API().
+    */
+    virtual Osi1API * clone(bool copyData = true) const = 0;
+  
+    /// Virtual Destructor 
+    virtual ~Osi1API () {} ;
+
+    /** Reset the solver interface.
+
+    A call to reset() returns the solver interface to the same state as
+    it would have if it had just been constructed by calling the default
+    constructor Osi1API() (if there were such a thing).
+    */
+    virtual void reset() = 0 ;
+  //@}
 
   ///@name Solve methods 
   //@{
@@ -145,7 +84,6 @@ public:
     virtual void resolve() = 0;
   //@}
 
-  //---------------------------------------------------------------------------
   /**@name Parameter set/get methods
 
      The set methods return true if the parameter was set to the given value,
@@ -276,26 +214,24 @@ public:
     virtual double getIntegerTolerance() const = 0 ;
   //@}
 
-  //---------------------------------------------------------------------------
   ///@name Methods returning info on how the solution process terminated
   //@{
     /// Are there numerical difficulties?
-    virtual bool isAbandoned() const = 0;
+    virtual bool isAbandoned() const = 0 ;
     /// Is optimality proven?
-    virtual bool isProvenOptimal() const = 0;
+    virtual bool isProvenOptimal() const = 0 ;
     /// Is primal infeasibility proven?
-    virtual bool isProvenPrimalInfeasible() const = 0;
+    virtual bool isProvenPrimalInfeasible() const = 0 ;
     /// Is dual infeasibility proven?
-    virtual bool isProvenDualInfeasible() const = 0;
+    virtual bool isProvenDualInfeasible() const = 0 ;
     /// Is the given primal objective limit reached?
     virtual bool isPrimalObjectiveLimitReached() const = 0 ;
     /// Is the given dual objective limit reached?
-    virtual bool isDualObjectiveLimitReached() const;
+    virtual bool isDualObjectiveLimitReached() const = 0 ;
     /// Iteration limit reached?
-    virtual bool isIterationLimitReached() const = 0;
+    virtual bool isIterationLimitReached() const = 0 ;
   //@}
 
-  //---------------------------------------------------------------------------
   /** \name Warm start methods
 
     Note that the warm start methods return a generic CoinWarmStart object.
@@ -343,7 +279,6 @@ public:
     virtual bool setWarmStart(const CoinWarmStart* warmstart) = 0 ;
   //@}
 
-  //---------------------------------------------------------------------------
   /**@name Hot start methods
   
      Primarily used in strong branching. The user can create a hot start
@@ -372,7 +307,6 @@ public:
     virtual void unmarkHotStart() = 0 ;
   //@}
 
-  //---------------------------------------------------------------------------
   /**@name Problem query methods
 
    Querying a problem that has no data associated with it will result in
@@ -511,7 +445,7 @@ public:
     /// Get the solver's value for infinity
     virtual double getInfinity() const = 0;
   //@}
-    
+
   /**@name Solution query methods */
   //@{
     /// Get a pointer to an array[getNumCols()] of primal variable values
@@ -590,7 +524,6 @@ public:
     virtual OsiVectorInt getFractionalIndices(const double etol=1.e-05) const = 0 ;
   //@}
 
-  //-------------------------------------------------------------------------
   /**@name Methods to modify the objective, bounds, and solution
 
      For functions which take a set of indices as parameters
@@ -746,8 +679,7 @@ public:
     */
     virtual int reducedCostFix(double gap, bool justInteger=true) = 0 ;
   //@}
-
-  //-------------------------------------------------------------------------
+    
   /**@name Methods to set variable type */
   //@{
     /** Set the index-th variable to be a continuous variable */
@@ -761,9 +693,6 @@ public:
 	integer variables */
     virtual void setInteger(const int* indices, int len) = 0 ;
   //@}
-  //-------------------------------------------------------------------------
-
-  //-------------------------------------------------------------------------
 
     /*! \brief Data type for name vectors. */
     typedef std::vector<std::string> OsiNameVec ;
@@ -922,9 +851,7 @@ public:
     virtual void setRowColNames(CoinLpIO &mod) = 0 ;
 
   //@}
-  //-------------------------------------------------------------------------
-    
-  //-------------------------------------------------------------------------
+
   /**@name Methods to modify the constraint system.
 
      Note that new columns are added as continuous variables.
@@ -1158,8 +1085,6 @@ public:
     virtual void deleteBranchingInfo(int numberDeleted, const int * which) = 0 ;
 
   //@}
-
-  //---------------------------------------------------------------------------
 
   /**@name Methods for problem input and output */
   //@{
@@ -1424,8 +1349,6 @@ public:
 
   //@}
 
-  //---------------------------------------------------------------------------
-
   /**@name Setting/Accessing application data */
   //@{
     /** Set application data.
@@ -1449,7 +1372,6 @@ public:
     /// Get pointer to auxiliary info object
     virtual OsiAuxInfo * getAuxiliaryInfo() const = 0 ;
   //@}
-  //---------------------------------------------------------------------------
 
   /**@name Message handling
   
@@ -1476,7 +1398,7 @@ public:
   /// Return true if default handler
   virtual bool defaultHandler() const = 0 ;
   //@}
-  //---------------------------------------------------------------------------
+
   /**@name Methods for dealing with discontinuities other than integers.
   
      Osi should be able to know about SOS and other types.  This is an optional
@@ -1535,7 +1457,6 @@ public:
     */
     virtual double forceFeasible() = 0 ;
   //@}
-  //---------------------------------------------------------------------------
 
   /*! @name Methods related to testing generated cuts
   
@@ -1588,7 +1509,7 @@ public:
     */
     virtual OsiRowCutDebugger * getRowCutDebuggerAlways() const = 0 ;
   //@} 
-  
+
   /*! \name OsiSimplexInterface
       \brief Simplex Interface
 
@@ -1741,6 +1662,7 @@ public:
 
   ///Undo whatever setting changes the above method had to make
   virtual void disableSimplexInterface() = 0 ;
+
   /** Perform a pivot by substituting a colIn for colOut in the basis. 
      The status of the leaving variable is given in outStatus. Where
      1 is to upper bound, -1 to lower bound
@@ -1775,34 +1697,8 @@ public:
 			      int colOut, int outStatus, 
 			      double& t, CoinPackedVector* dx) = 0 ;
   //@}
-   
-  //---------------------------------------------------------------------------
-
-  ///@name Constructors and destructors
-  //@{
-    
-    /** Clone (virtual copy)
-
-      The result of calling clone(false) is defined to be equivalent to
-      calling the default constructor Osi1API().
-    virtual Osi1API * clone(bool copyData = true) const = 0;
-    */
-  
-    /// Virtual Destructor 
-    virtual ~Osi1API () = 0 ;
-
-    /** Reset the solver interface.
-
-    A call to reset() returns the solver interface to the same state as
-    it would have if it had just been constructed by calling the default
-    constructor Osi1API() (if there were such a thing).
-    */
-    virtual void reset() = 0 ;
-  //@}
 
 };
-
-//#############################################################################
 
 }  // end namespace Osi2
 

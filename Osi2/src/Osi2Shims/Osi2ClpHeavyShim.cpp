@@ -118,11 +118,18 @@ ExitFunc initPlugin (PlatformServices *services)
     reginfo.createFunc_ = ClpHeavyShim::create ;
     reginfo.destroyFunc_ = ClpHeavyShim::destroy ;
     int retval =
-        services->registerObject_(
-            reinterpret_cast<const unsigned char*>("ProbMgmt"), &reginfo) ;
+	services->registerObject_(
+	    reinterpret_cast<const unsigned char*>("ProbMgmt"), &reginfo) ;
     if (retval < 0) {
         std::cout
                 << "Apparent failure to register ProbMgmt plugin." << std::endl ;
+        return (nullptr) ;
+    }
+    retval = services->registerObject_(
+		reinterpret_cast<const unsigned char*>("Osi1"), &reginfo) ;
+    if (retval < 0) {
+        std::cout
+                << "Apparent failure to register Osi1 plugin." << std::endl ;
         return (nullptr) ;
     }
 

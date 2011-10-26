@@ -23,13 +23,26 @@ public:
   /// Constructor
   Osi1API_ClpHeavy () ;
 
+  /// Copy constructor
+  Osi1API_ClpHeavy (const Osi1API_ClpHeavy &rhs) ;
+
   /// Destructor
   virtual ~Osi1API_ClpHeavy () ;
 
-  inline void initialSolve() { OsiClpSolverInterface::initialSolve() ; }
+  /// Clone
+  inline Osi1API_ClpHeavy *clone(bool copyData = true) const
+  { return (new Osi1API_ClpHeavy(*this)) ; }
+
+  inline void reset()
+  { OsiClpSolverInterface::reset() ; }
+
+  /*=====*/
 
   inline void resolve() { OsiClpSolverInterface::resolve() ; }
 
+  inline void initialSolve() { OsiClpSolverInterface::initialSolve() ; }
+
+  /*=====*/
 
   inline bool setIntParam(OsiIntParam key, int value)
   { return (OsiClpSolverInterface::setIntParam(key,value)) ; }
@@ -69,23 +82,33 @@ public:
   { OsiSolverInterface &osi = dynamic_cast<OsiSolverInterface &>(rhs) ;
     OsiClpSolverInterface::copyParameters(osi) ; }
 
-
   inline double getIntegerTolerance() const
   { return (OsiClpSolverInterface::getIntegerTolerance()) ; }
 
+  /*=====*/
+
   inline bool isAbandoned() const
   { return (OsiClpSolverInterface::isAbandoned()) ; }
+
   inline bool isProvenOptimal() const
   { return (OsiClpSolverInterface::isProvenOptimal()) ; }
+
   inline bool isProvenPrimalInfeasible() const
   { return (OsiClpSolverInterface::isProvenPrimalInfeasible()) ; }
+
   inline bool isProvenDualInfeasible() const
   { return (OsiClpSolverInterface::isProvenDualInfeasible()) ; }
+
   inline bool isPrimalObjectiveLimitReached() const
   { return (OsiClpSolverInterface::isPrimalObjectiveLimitReached()) ; }
+
+  inline bool isDualObjectiveLimitReached() const
+  { return (OsiClpSolverInterface::isDualObjectiveLimitReached()) ; }
+
   inline bool isIterationLimitReached() const
   { return (OsiClpSolverInterface::isIterationLimitReached()) ; }
 
+  /*=====*/
 
   inline CoinWarmStart* getEmptyWarmStart() const
   { return (OsiClpSolverInterface::getEmptyWarmStart()) ; }
@@ -99,6 +122,7 @@ public:
   inline bool setWarmStart(const CoinWarmStart *warmstart)
   { return (OsiClpSolverInterface::setWarmStart(warmstart)) ; }
 
+  /*=====*/
 
   inline void markHotStart()
   { OsiClpSolverInterface::markHotStart() ; }
@@ -109,9 +133,10 @@ public:
   inline void unmarkHotStart()
   { OsiClpSolverInterface::unmarkHotStart() ; }
 
-
   inline int getNumCols() const
   { return (OsiClpSolverInterface::getNumCols()) ; }
+
+  /*=====*/
 
   inline int getNumRows() const
   { return (OsiClpSolverInterface::getNumRows()) ; }
@@ -149,6 +174,7 @@ public:
   inline double getObjSense() const
   { return (OsiClpSolverInterface::getObjSense()) ; }
 
+  /*=====*/
 
   inline bool isContinuous(int ndx) const
   { return (OsiClpSolverInterface::isContinuous(ndx)) ; }
@@ -183,6 +209,8 @@ public:
   inline double getInfinity() const
   { return (OsiClpSolverInterface::getInfinity()) ; }
 
+  /*=====*/
+
   inline const double* getColSolution() const
   { return (OsiClpSolverInterface::getColSolution()) ; }
 
@@ -212,6 +240,8 @@ public:
 
   inline OsiVectorInt getFractionalIndices(double tol) const
   { return (OsiClpSolverInterface::getFractionalIndices(tol)) ; }
+
+  /*=====*/
 
   inline void setObjCoeff(int ndx, double val)
   { OsiClpSolverInterface::setObjCoeff(ndx,val) ; }
@@ -276,6 +306,8 @@ public:
   inline int reducedCostFix(double gap, bool justInteger=true)
   { return (OsiClpSolverInterface::reducedCostFix(gap,justInteger)) ; }
 
+  /*=====*/
+
   inline void setContinuous(int ndx)
   { OsiClpSolverInterface::setContinuous(ndx) ; }
   inline void setInteger(int ndx)
@@ -284,6 +316,8 @@ public:
   { OsiClpSolverInterface::setContinuous(ndxVec,len) ; }
   inline void setInteger(const int *ndxVec, int len)
   { OsiClpSolverInterface::setInteger(ndxVec,len) ; }
+
+  /*=====*/
 
   inline std::string dfltRowColName(char rc, int ndx,
   				    unsigned digits = 7) const
@@ -342,6 +376,7 @@ public:
   inline void setRowColNames(CoinLpIO &mod)
   { OsiClpSolverInterface::setRowColNames(mod) ; }
   
+  /*=====*/
 
   inline void addCol(const CoinPackedVectorBase &aj,
   		     double lj, double uj, double cj)
@@ -455,6 +490,7 @@ public:
   inline void deleteBranchingInfo(int num, const int *colIndices)
   { OsiClpSolverInterface::deleteBranchingInfo(num,colIndices) ; }
 
+  /*=====*/
 
   inline void loadProblem(const CoinPackedMatrix &mtx,
   			  const double *clbs, const double *cubs,
@@ -562,6 +598,7 @@ public:
   inline int readLp(FILE *fp, double eps = 1e-5)
   { return (OsiSolverInterface::readLp(fp,eps)) ; }
 
+  /*=====*/
 
   inline void setApplicationData(void *info)
   { OsiClpSolverInterface::setApplicationData(info) ; }
@@ -575,6 +612,7 @@ public:
   inline OsiAuxInfo* getAuxiliaryInfo() const
   { return (OsiClpSolverInterface::getAuxiliaryInfo()) ; }
 
+  /*=====*/
 
   inline void passInMessageHandler(CoinMessageHandler *hdl)
   { OsiClpSolverInterface::passInMessageHandler(hdl) ; }
@@ -594,6 +632,7 @@ public:
   inline bool defaultHandler() const
   { return (OsiClpSolverInterface::defaultHandler()) ; }
 
+  /*=====*/
 
   inline void findIntegers(bool justCount)
   { OsiClpSolverInterface::findIntegers(justCount) ; }
@@ -625,6 +664,7 @@ public:
   inline double forceFeasible()
   { return (OsiClpSolverInterface::forceFeasible()) ; }
 
+  /*=====*/
 
   inline void activateRowCutDebugger(const char *modelName)
   { OsiClpSolverInterface::activateRowCutDebugger(modelName) ; }
@@ -639,7 +679,7 @@ public:
   inline OsiRowCutDebugger* getRowCutDebuggerAlways() const
   { return (OsiClpSolverInterface::getRowCutDebuggerAlways()) ; }
 
-
+  /*=====*/
 
   inline int canDoSimplexInterface() const
   { return (OsiClpSolverInterface::canDoSimplexInterface()) ; }
@@ -678,6 +718,8 @@ public:
   inline void getBasics(int *indices) const
   { OsiClpSolverInterface::getBasics(indices) ; }
 
+  /*=====*/
+
   inline void enableSimplexInterface(bool doingPrimal)
   { OsiClpSolverInterface::enableSimplexInterface(doingPrimal) ; }
 
@@ -697,16 +739,7 @@ public:
   { return (OsiClpSolverInterface::dualPivotResult(colIn,sign,colOut,
   						   outStatus,t,dx)) ; }
 
-/*
-  Another covariant return type error.
-
-  inline Osi2::Osi1API* clone(bool copyData = true) const
-  { return (OsiClpSolverInterface::clone(copyData)) ; }
-*/
-
-  inline void reset()
-  { OsiClpSolverInterface::reset() ; }
-
+  /*=====*/
 
 } ;
 

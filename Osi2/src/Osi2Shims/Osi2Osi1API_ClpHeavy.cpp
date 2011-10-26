@@ -30,6 +30,15 @@ Osi1API_ClpHeavy::Osi1API_ClpHeavy ()
   std::cout << "Osi1API_Clp object constructed." << std::endl ;
 }
 
+/*
+  Copy constructor
+*/
+Osi1API_ClpHeavy::Osi1API_ClpHeavy (const Osi1API_ClpHeavy &rhs)
+    : Osi1API(rhs),
+      OsiClpSolverInterface(rhs)
+  {
+  }
+
 Osi1API_ClpHeavy::~Osi1API_ClpHeavy ()
 {
   std::cout << "Osi1API_Clp object destroyed." << std::endl ;

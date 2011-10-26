@@ -212,8 +212,18 @@ int testControlAPI (const std::string &shortName,
         Osi1API *osi = dynamic_cast<Osi1API *>(apiObj) ;
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
         osi->readMps(exmip1Path.c_str()) ;
-	osi->initialSolve() ;
+	std::cout << "cloning ... " << std::endl ;
+	Osi1API *o2 = osi->clone() ;
+	std::cout << "destroying ... " << std::endl ;
         int retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        if (retval < 0) {
+            errcnt++ ;
+            std::cout
+                    << "Apparent failure to destroy an Osi1 object." << std::endl ;
+        }
+	o2->initialSolve() ;
+	apiObj = o2 ;
+        retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
