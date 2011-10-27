@@ -47,6 +47,95 @@ class Osi1API : public API  {
 
 public:
 
+  /// Internal class for obtaining status from the applyCuts method 
+  class ApplyCutsReturnCode {
+
+  public:
+    ///@name Constructors and destructors
+    //@{
+      /// Default constructor
+      ApplyCutsReturnCode():
+	 intInconsistent_(0),
+	 extInconsistent_(0),
+	 infeasible_(0),
+	 ineffective_(0),
+	 applied_(0) {} 
+      /// Constructor with values
+      ApplyCutsReturnCode(int intIn, int extIn,
+      			  int infeas, int ineff, int applied)
+       : intInconsistent_(intIn),
+	 extInconsistent_(extIn),
+	 infeasible_(infeas),
+	 ineffective_(ineff),
+	 applied_(applied) {} 
+      /// Copy constructor
+      ApplyCutsReturnCode(const ApplyCutsReturnCode & rhs):
+	 intInconsistent_(rhs.intInconsistent_),
+	 extInconsistent_(rhs.extInconsistent_),
+	 infeasible_(rhs.infeasible_),
+	 ineffective_(rhs.ineffective_),
+	 applied_(rhs.applied_) {}
+      /// Assignment operator
+      ApplyCutsReturnCode & operator=(const ApplyCutsReturnCode& rhs)
+      { 
+	if (this != &rhs) { 
+	  intInconsistent_ = rhs.intInconsistent_;
+	  extInconsistent_ = rhs.extInconsistent_;
+	  infeasible_      = rhs.infeasible_;
+	  ineffective_     = rhs.ineffective_;
+	  applied_         = rhs.applied_;
+	}
+	return *this;
+      }
+      /// Destructor
+      virtual ~ApplyCutsReturnCode(){}
+    //@}
+
+    /**@name Accessing return code attributes */
+    //@{
+      /// Number of logically inconsistent cuts
+      inline int getNumInconsistent(){return intInconsistent_;}
+      /// Number of cuts inconsistent with the current model
+      inline int getNumInconsistentWrtIntegerModel(){return extInconsistent_;}
+      /// Number of cuts that cause obvious infeasibility
+      inline int getNumInfeasible(){return infeasible_;}
+      /// Number of redundant or ineffective cuts
+      inline int getNumIneffective(){return ineffective_;}
+      /// Number of cuts applied
+      inline int getNumApplied(){return applied_;}
+    //@}
+
+  private: 
+    /**@name Private methods */
+    //@{
+      /// Increment logically inconsistent cut counter 
+      inline void incrementInternallyInconsistent(){intInconsistent_++;}
+      /// Increment model-inconsistent counter
+      inline void incrementExternallyInconsistent(){extInconsistent_++;}
+      /// Increment infeasible cut counter
+      inline void incrementInfeasible(){infeasible_++;}
+      /// Increment ineffective cut counter
+      inline void incrementIneffective(){ineffective_++;}
+      /// Increment applied cut counter
+      inline void incrementApplied(){applied_++;}
+    //@}
+
+    ///@name Private member data
+    //@{
+      /// Counter for logically inconsistent cuts
+      int intInconsistent_;
+      /// Counter for model-inconsistent cuts
+      int extInconsistent_;
+      /// Counter for infeasible cuts
+      int infeasible_;
+      /// Counter for ineffective cuts
+      int ineffective_;
+      /// Counter for applied cuts
+      int applied_;
+    //@}
+  };
+
+
   //---------------------------------------------------------------------------
 
   ///@name Constructors and destructors
@@ -1065,10 +1154,14 @@ public:
 			    getNuminfeasible() +
 			    getNumApplied()
 	</ul>
-    
-    virtual ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
-					  double effectivenessLb = 0.0) = 0 ;
     */
+    virtual ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
+					  double effectivenessLb = 0.0)
+    { ApplyCutsReturnCode *tmp = applyCutsPrivate(cs,effectivenessLb) ;
+      ApplyCutsReturnCode retval = *tmp ;
+      delete tmp ;
+      return (retval) ;
+    }
 
     /** Apply a collection of row cuts which are all effective.
 	applyCuts seems to do one at a time which seems inefficient.
@@ -1698,6 +1791,11 @@ public:
 			      double& t, CoinPackedVector* dx) = 0 ;
   //@}
 
+  protected:
+
+  /*! \brief We need this for covariant return */
+  virtual ApplyCutsReturnCode *applyCutsPrivate(const OsiCuts & cs,
+					  double effectivenessLb = 0.0) = 0 ;
 };
 
 }  // end namespace Osi2

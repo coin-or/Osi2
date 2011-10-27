@@ -16,9 +16,20 @@
 
 namespace Osi2 {
 
-class Osi1API_ClpHeavy : public Osi1API, OsiClpSolverInterface {
+class Osi1API_ClpHeavy : public Osi1API, public OsiClpSolverInterface {
 
 public:
+
+  /// Bridging class for ApplyCutsReturnCode.
+
+  class ApplyCutsReturnCode : public Osi1API::ApplyCutsReturnCode {
+
+    public:
+    /// Constructor from OsiSolverInterface::ApplyCutsReturnCode
+    ApplyCutsReturnCode(const OsiSolverInterface::ApplyCutsReturnCode &acrc) ;
+
+    virtual ~ApplyCutsReturnCode() ;
+  } ;
 
   /// Constructor
   Osi1API_ClpHeavy () ;
@@ -469,17 +480,15 @@ public:
   { OsiClpSolverInterface::restoreBaseModel(numRows) ; }
 
 /*
-  This is going to be a problem. The declaration nets an
-  `invalid covariant return type' error.
-
-  inline Osi1API::ApplyCutsReturnCode applyCuts(const OsiCuts &cuts,
+  Covariant return works only for pointers and references. Unfortunately,
+  applyCuts returns the full object. Hence this workaround.
+*/
+  inline ApplyCutsReturnCode *applyCutsPrivate(const OsiCuts &cuts,
   						double eff = 0.0)
   { const OsiSolverInterface::ApplyCutsReturnCode &tmp =
   	OsiClpSolverInterface::applyCuts(cuts,eff) ;
-    Osi1API::ApplyCutsReturnCode retval ;
-    retval.intInconsistent_ = tmp.intInconsistent_ ;
+    ApplyCutsReturnCode *retval = new ApplyCutsReturnCode(tmp) ;
     return (retval) ; }
-*/
 
   inline void applyRowCuts(int numCuts, const OsiRowCut *cuts)
   { OsiClpSolverInterface::applyRowCuts(numCuts,cuts) ; }
