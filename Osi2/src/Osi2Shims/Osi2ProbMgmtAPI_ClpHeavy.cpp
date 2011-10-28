@@ -1,9 +1,15 @@
-
 /*
-  Method definitions for ProbMgmtAPI_Clp, an implementation of the problem
-  management API using Clp as the underlying solver.
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
+*/
+/*! \file Osi2ProbMgmtAPI_ClpHeavy.cpp
+    \brief Method definitions for Osi2ProbMgmtAPI_ClpHeavy
+
+  Method definitions for ProbMgmtAPI_ClpHeavy, an implementation of the
+  problem management API using the `heavy' clp shim that's linked with the clp
+  libraries and allows direct access to clp objects.
 */
 
 #include <iostream>

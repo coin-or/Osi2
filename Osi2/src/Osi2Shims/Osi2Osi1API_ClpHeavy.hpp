@@ -4,6 +4,9 @@
 
   $Id$
 */
+/*! \file Osi2Osi1API_ClpHeavy.hpp
+    \brief Declarations for ClpHeavy implementation of the Osi2::Osi1API.
+*/
 #ifndef Osi2Osi1API_Clp_HPP
 #define Osi2Osi1API_Clp_HPP
 
@@ -15,46 +18,67 @@
 #include "OsiClpSolverInterface.hpp"
 
 namespace Osi2 {
+/*! \brief Implementation class for Osi1API.
 
+  Comments here relate to details of the implementation. Look at the
+  documentation for Osi1API for general documentation.
+
+  This class uses the multiple inheritance shim paradigm. LibOsiClp and other
+  support libraries must be linked with the shim. Since the Osi2::Osi1API is
+  intended to be an exact match for the original OsiSolverInterface definition,
+  the implementation (with a few exceptions) consists of defining the virtual
+  methods of Osi2::Osi1API as calls to the appropriate OsiClpSolverInterface
+  methods.
+*/
 class Osi1API_ClpHeavy : public Osi1API, public OsiClpSolverInterface {
 
 public:
 
-  /// Bridging class for ApplyCutsReturnCode.
+  /*! \brief Bridging class between Osi1API::ApplyCutsReturnCode and
+  	     OsiSolverInterface::ApplyCutsReturnCode.
 
+    The problem is that OsiSolverInterface::applyCuts is defined to return an
+    ApplyCutsReturnCode object by value, hence we cannot use covariant return
+    in the usual direct manner.  This class gives a place for code to convert
+    from OsiSolverInterface::ApplyCutsReturnCode to
+    Osi1API::ApplyCutsReturnCode, plus a route for covariant return.
+  */
   class ApplyCutsReturnCode : public Osi1API::ApplyCutsReturnCode {
 
     public:
     /// Constructor from OsiSolverInterface::ApplyCutsReturnCode
     ApplyCutsReturnCode(const OsiSolverInterface::ApplyCutsReturnCode &acrc) ;
-
+    /// Destructor
     virtual ~ApplyCutsReturnCode() ;
   } ;
 
-  /// Constructor
+
+  /// \name Constructors and destructors
+  //@{
   Osi1API_ClpHeavy () ;
 
-  /// Copy constructor
   Osi1API_ClpHeavy (const Osi1API_ClpHeavy &rhs) ;
 
-  /// Destructor
   virtual ~Osi1API_ClpHeavy () ;
 
-  /// Clone
   inline Osi1API_ClpHeavy *clone(bool copyData = true) const
   { return (new Osi1API_ClpHeavy(*this)) ; }
 
   inline void reset()
   { OsiClpSolverInterface::reset() ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Solve methods
+  //@{
   inline void resolve() { OsiClpSolverInterface::resolve() ; }
 
   inline void initialSolve() { OsiClpSolverInterface::initialSolve() ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Parameter set/get methods
+  //@{
   inline bool setIntParam(OsiIntParam key, int value)
   { return (OsiClpSolverInterface::setIntParam(key,value)) ; }
 
@@ -95,9 +119,11 @@ public:
 
   inline double getIntegerTolerance() const
   { return (OsiClpSolverInterface::getIntegerTolerance()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods returning info on how the solution process terminated
+  //@{
   inline bool isAbandoned() const
   { return (OsiClpSolverInterface::isAbandoned()) ; }
 
@@ -118,9 +144,11 @@ public:
 
   inline bool isIterationLimitReached() const
   { return (OsiClpSolverInterface::isIterationLimitReached()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Warm start methods
+  //@{
   inline CoinWarmStart* getEmptyWarmStart() const
   { return (OsiClpSolverInterface::getEmptyWarmStart()) ; }
 
@@ -132,9 +160,11 @@ public:
 
   inline bool setWarmStart(const CoinWarmStart *warmstart)
   { return (OsiClpSolverInterface::setWarmStart(warmstart)) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Hot start methods
+  //@{
   inline void markHotStart()
   { OsiClpSolverInterface::markHotStart() ; }
 
@@ -146,9 +176,11 @@ public:
 
   inline int getNumCols() const
   { return (OsiClpSolverInterface::getNumCols()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Problem query methods
+  //@{
   inline int getNumRows() const
   { return (OsiClpSolverInterface::getNumRows()) ; }
 
@@ -184,9 +216,11 @@ public:
 
   inline double getObjSense() const
   { return (OsiClpSolverInterface::getObjSense()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Solution query methods
+  //@{
   inline bool isContinuous(int ndx) const
   { return (OsiClpSolverInterface::isContinuous(ndx)) ; }
 
@@ -219,9 +253,11 @@ public:
 
   inline double getInfinity() const
   { return (OsiClpSolverInterface::getInfinity()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods to modify the objective, bounds, and solution
+  //@{
   inline const double* getColSolution() const
   { return (OsiClpSolverInterface::getColSolution()) ; }
 
@@ -251,9 +287,11 @@ public:
 
   inline OsiVectorInt getFractionalIndices(double tol) const
   { return (OsiClpSolverInterface::getFractionalIndices(tol)) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods to modify the objective, bounds, and solution
+  //@{
   inline void setObjCoeff(int ndx, double val)
   { OsiClpSolverInterface::setObjCoeff(ndx,val) ; }
 
@@ -316,9 +354,11 @@ public:
 
   inline int reducedCostFix(double gap, bool justInteger=true)
   { return (OsiClpSolverInterface::reducedCostFix(gap,justInteger)) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods to set variable type
+  //@{
   inline void setContinuous(int ndx)
   { OsiClpSolverInterface::setContinuous(ndx) ; }
   inline void setInteger(int ndx)
@@ -327,9 +367,11 @@ public:
   { OsiClpSolverInterface::setContinuous(ndxVec,len) ; }
   inline void setInteger(const int *ndxVec, int len)
   { OsiClpSolverInterface::setInteger(ndxVec,len) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods for row and column names
+  //@{
   inline std::string dfltRowColName(char rc, int ndx,
   				    unsigned digits = 7) const
   { return (OsiClpSolverInterface::dfltRowColName(rc,ndx,digits)) ; }
@@ -386,8 +428,11 @@ public:
 
   inline void setRowColNames(CoinLpIO &mod)
   { OsiClpSolverInterface::setRowColNames(mod) ; }
-  
-  /*=====*/
+  //@}
+
+
+  /// \name Methods to modify the constraint system
+  //@{
 
   inline void addCol(const CoinPackedVectorBase &aj,
   		     double lj, double uj, double cj)
@@ -479,9 +524,15 @@ public:
   inline void restoreBaseModel(int numRows)
   { OsiClpSolverInterface::restoreBaseModel(numRows) ; }
 
-/*
+/*! \brief Bridge between OsiSolverInterface::applyCuts and
+	   Osi1API::applyCuts.
+  
   Covariant return works only for pointers and references. Unfortunately,
-  applyCuts returns the full object. Hence this workaround.
+  OsiSolverInterface::applyCuts returns the full object. Hence this
+  workaround, which constructs an Osi1API_ClpHeavy::ApplyCutsReturnCode
+  object from the OsiSolverInterface::ApplyCutsReturnCode object and returns a
+  reference. Note that this object must be deleted!
+
 */
   inline ApplyCutsReturnCode *applyCutsPrivate(const OsiCuts &cuts,
   						double eff = 0.0)
@@ -498,9 +549,11 @@ public:
 
   inline void deleteBranchingInfo(int num, const int *colIndices)
   { OsiClpSolverInterface::deleteBranchingInfo(num,colIndices) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods for problem input and output
+  //@{
   inline void loadProblem(const CoinPackedMatrix &mtx,
   			  const double *clbs, const double *cubs,
 			  const double *obj,
@@ -606,9 +659,11 @@ public:
 
   inline int readLp(FILE *fp, double eps = 1e-5)
   { return (OsiSolverInterface::readLp(fp,eps)) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Setting/Accessing application data
+  //@{
   inline void setApplicationData(void *info)
   { OsiClpSolverInterface::setApplicationData(info) ; }
 
@@ -620,9 +675,11 @@ public:
 
   inline OsiAuxInfo* getAuxiliaryInfo() const
   { return (OsiClpSolverInterface::getAuxiliaryInfo()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Message handling
+  //@{
   inline void passInMessageHandler(CoinMessageHandler *hdl)
   { OsiClpSolverInterface::passInMessageHandler(hdl) ; }
 
@@ -640,9 +697,11 @@ public:
 
   inline bool defaultHandler() const
   { return (OsiClpSolverInterface::defaultHandler()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods for dealing with discontinuities other than integers
+  //@{
   inline void findIntegers(bool justCount)
   { OsiClpSolverInterface::findIntegers(justCount) ; }
 
@@ -672,9 +731,11 @@ public:
 
   inline double forceFeasible()
   { return (OsiClpSolverInterface::forceFeasible()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name Methods related to testing generated cuts
+  //@{
   inline void activateRowCutDebugger(const char *modelName)
   { OsiClpSolverInterface::activateRowCutDebugger(modelName) ; }
 
@@ -687,12 +748,18 @@ public:
 
   inline OsiRowCutDebugger* getRowCutDebuggerAlways() const
   { return (OsiClpSolverInterface::getRowCutDebuggerAlways()) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name OSI Simplex Interface
+  //@{
   inline int canDoSimplexInterface() const
   { return (OsiClpSolverInterface::canDoSimplexInterface()) ; }
+  //@}
 
+
+  /// \name OSI Simplex Interface Group I
+  //@{
   inline void enableFactorization() const
   { OsiClpSolverInterface::enableFactorization() ; }
 
@@ -726,9 +793,11 @@ public:
 
   inline void getBasics(int *indices) const
   { OsiClpSolverInterface::getBasics(indices) ; }
+  //@}
 
-  /*=====*/
 
+  /// \name OSI Simplex Interface Group II
+  //@{
   inline void enableSimplexInterface(bool doingPrimal)
   { OsiClpSolverInterface::enableSimplexInterface(doingPrimal) ; }
 
@@ -747,11 +816,10 @@ public:
   			     double &t, CoinPackedVector *dx)
   { return (OsiClpSolverInterface::dualPivotResult(colIn,sign,colOut,
   						   outStatus,t,dx)) ; }
-
-  /*=====*/
+  //@}
 
 } ;
 
-}
+}    // end namespace Osi2
 
 #endif

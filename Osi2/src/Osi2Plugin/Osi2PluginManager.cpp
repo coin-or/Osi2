@@ -1,3 +1,13 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  Based on and extended from original design and code by Gigi Sayfan published
+  in five parts in Dr. Dobbs, starting November 2007.
+*/
+/*! \file Osi2PluginManager.cpp
+    \brief Definition of methods for Osi2::PluginManager.
+*/
 
 #include <cstring>
 #include <cassert>
@@ -466,7 +476,8 @@ int PluginManager::unloadOneLib (const std::string &lib,
     char dirSep = CoinFindDirSeparator() ;
     fullPath += dirSep + lib ;
     /*
-      Find the entry for the library. Warn the user if the library is not loaded.
+      Find the entry for the library. Warn the user if the library is
+      not loaded.
     */
     LibPathToIDMap::iterator lpiIter = libPathToIDMap_.find(fullPath) ;
     if (lpiIter == libPathToIDMap_.end()) {
@@ -477,10 +488,10 @@ int PluginManager::unloadOneLib (const std::string &lib,
     DynamicLibraryMap::iterator dlmIter =
         dynamicLibraryMap_.find(lpiIter->second) ;
     /*
-      Step through the exact match map and remove any entries that are registered
-      to this library. Regrettably, erase for a map is defined to invalidate the
-      iterator pointing to the element. But not iterators pointing to other
-      elements, so we need to advance prior to erasing.
+      Step through the exact match map and remove any entries that are
+      registered to this library. Regrettably, erase for a map is defined
+      to invalidate the iterator pointing to the element. But not iterators
+      pointing to other elements, so we need to advance prior to erasing.
     */
     DynLibInfo &libInfo = dlmIter->second ;
     DynamicLibrary *dynLib = libInfo.dynLib_ ;

@@ -1,3 +1,16 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  Based on and extended from original design and code by Gigi Sayfan published
+  in five parts in Dr. Dobbs, starting November 2007.
+*/
+/*! \file Osi2PluginManager.hpp
+    \brief Declarations for Osi2::PluginManagera
+
+  A class to manage dynamic libraries and objects. Wraps the low-level methods
+  of DynamicLibrary with convenient bookkeeping.
+*/
 
 #ifndef OSI2PLUGINMANAGER_HPP
 #define OSI2PLUGINMANAGER_HPP
@@ -42,9 +55,8 @@ struct IObjectAdapter ;
   #exactMatchMap_ so that subsequent requests for the same API can be
   satisfied more efficiently.
 
-  \todo What about unloading an individual library? Currently, all we can do
-	is shut down the plugin manager, unloading all plugin libraries. For
-	that matter, what about deregistering an API?
+  Any request for an object supporting a particular API can be qualified with
+  a request that the object be supplied by a particular library.
 */
 
 class PluginManager {
@@ -100,7 +112,7 @@ public:
     /*! \brief Load and initialise all plugin libraries in the directory.
 
       \todo
-      Currently unimplemented until we can create platform-independent file
+      Unimplemented until we can create platform-independent file
       system support. For that matter, it's questionable whether we want this
       functionality.
     */
@@ -110,14 +122,14 @@ public:
     /*! \brief unload the specified plugin library
 
       Removes all APIs registered by the specified plugin library, invokes the
-      library's exit function, and unloads the library.
+      library's Osi2::ExitFunc, and unloads the library.
     */
     int unloadOneLib(const std::string &lib, const std::string *dir = 0) ;
 
     /*! \brief Shut down the plugin manager
 
-      Will invoke the exit method for all plugins, unload all libraries, and
-      shut down the plugin manager.
+      For each loaded plugin library, invoke the library's exit function and
+      unload the library. Then erase the manager's bookkeeping information.
     */
     int shutdown() ;
 
@@ -128,8 +140,8 @@ public:
       Methods to create and destroy objects supported by plugins.
 
       To restrict attention to a particular plugin library, specify the
-      \link Osi2::PluginUniqueID unique ID \endlink for that library. A value of
-      0 means no restriction.
+      \link Osi2::PluginUniqueID unique ID \endlink for that library. A value
+      of 0 means no restriction.
     */
     //@{
 

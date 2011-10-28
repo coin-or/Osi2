@@ -4,6 +4,10 @@
 
   $Id$
 */
+/*! \file Osi2ProbMgmtAPI_ClpHeavy.hpp
+    \brief Declarations for ClpHeavy implementation of Osi2::ProbMgmtAPI
+*/
+    
 #ifndef Osi2ProbMgmtAPI_ClpHeavy_HPP
 #define Osi2ProbMgmtAPI_ClpHeavy_HPP
 
@@ -14,6 +18,7 @@
 
 /*! \brief Proof of concept API.
 
+  Capable of loading and solving a problem. Period.
 */
 
 namespace Osi2 {
@@ -31,7 +36,7 @@ public:
     int readMps(const char *filename, bool keepNames = false,
                 bool ignoreErrors = false) ;
 
-    /*! \ Solve an lp
+    /*! \brief Solve an lp
 
       See ClpModel::status() for the meaning of the return value.
     */

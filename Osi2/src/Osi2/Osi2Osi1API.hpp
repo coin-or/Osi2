@@ -1,6 +1,15 @@
-// Copyright (C) 2000, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  $Id$
+*/
+
+/*! \file Osi2Osi1API.hpp
+
+  This file defines the class Osi2::Osi1API, an API that matches the original
+  OsiSolverInterface API.
+*/
 
 #ifndef Osi2Osi1API_HPP
 #define Osi2Osi1API_HPP
@@ -40,18 +49,21 @@ namespace Osi2 {
 
 /*! \brief Original OSI interface virtual base class
 
-  This API provides the original OSI interface.
+  This API matches the original OsiSolverInterface API.
 */
 
 class Osi1API : public API  {
 
 public:
 
-  /// Internal class for obtaining status from the applyCuts method 
-  class ApplyCutsReturnCode {
+  /*! \brief Nested class for returning status from the applyCuts method.
 
+    Note that it's impossible for an outside entity to change any of the
+    values after construction. The class is const by design.
+  */
+  class ApplyCutsReturnCode {
   public:
-    ///@name Constructors and destructors
+    /// \name Constructors and destructors
     //@{
       /// Default constructor
       ApplyCutsReturnCode():
@@ -60,7 +72,7 @@ public:
 	 infeasible_(0),
 	 ineffective_(0),
 	 applied_(0) {} 
-      /// Constructor with values
+      /// Constructor with initial values
       ApplyCutsReturnCode(int intIn, int extIn,
       			  int infeas, int ineff, int applied)
        : intInconsistent_(intIn),
@@ -91,22 +103,27 @@ public:
       virtual ~ApplyCutsReturnCode(){}
     //@}
 
-    /**@name Accessing return code attributes */
+    /*! \name Accessing return code attributes */
     //@{
       /// Number of logically inconsistent cuts
-      inline int getNumInconsistent(){return intInconsistent_;}
+      inline int getNumInconsistent() const
+      {return intInconsistent_;}
       /// Number of cuts inconsistent with the current model
-      inline int getNumInconsistentWrtIntegerModel(){return extInconsistent_;}
+      inline int getNumInconsistentWrtIntegerModel() const
+      {return extInconsistent_;}
       /// Number of cuts that cause obvious infeasibility
-      inline int getNumInfeasible(){return infeasible_;}
+      inline int getNumInfeasible() const
+      {return infeasible_;}
       /// Number of redundant or ineffective cuts
-      inline int getNumIneffective(){return ineffective_;}
+      inline int getNumIneffective() const
+      {return ineffective_;}
       /// Number of cuts applied
-      inline int getNumApplied(){return applied_;}
+      inline int getNumApplied() const
+      {return applied_;}
     //@}
 
   private: 
-    /**@name Private methods */
+    /*! \name Private methods */
     //@{
       /// Increment logically inconsistent cut counter 
       inline void incrementInternallyInconsistent(){intInconsistent_++;}
@@ -120,7 +137,7 @@ public:
       inline void incrementApplied(){applied_++;}
     //@}
 
-    ///@name Private member data
+    /// \name Private member data
     //@{
       /// Counter for logically inconsistent cuts
       int intInconsistent_;
@@ -138,7 +155,7 @@ public:
 
   //---------------------------------------------------------------------------
 
-  ///@name Constructors and destructors
+  /// \name Constructors and destructors
   //@{
     
     /** Clone (virtual copy)
@@ -160,7 +177,7 @@ public:
     virtual void reset() = 0 ;
   //@}
 
-  ///@name Solve methods 
+  /// \name Solve methods 
   //@{
     /// Solve initial LP relaxation 
     virtual void initialSolve() = 0; 
@@ -173,7 +190,7 @@ public:
     virtual void resolve() = 0;
   //@}
 
-  /**@name Parameter set/get methods
+  /*! \name Parameter set/get methods
 
      The set methods return true if the parameter was set to the given value,
      false otherwise. When a set method returns false, the original value (if
@@ -303,7 +320,7 @@ public:
     virtual double getIntegerTolerance() const = 0 ;
   //@}
 
-  ///@name Methods returning info on how the solution process terminated
+  /// \name Methods returning info on how the solution process terminated
   //@{
     /// Are there numerical difficulties?
     virtual bool isAbandoned() const = 0 ;
@@ -321,7 +338,7 @@ public:
     virtual bool isIterationLimitReached() const = 0 ;
   //@}
 
-  /** \name Warm start methods
+  /*! \name Warm start methods
 
     Note that the warm start methods return a generic CoinWarmStart object.
     The precise characteristics of this object are solver-dependent. Clients
@@ -368,7 +385,7 @@ public:
     virtual bool setWarmStart(const CoinWarmStart* warmstart) = 0 ;
   //@}
 
-  /**@name Hot start methods
+  /*! \name Hot start methods
   
      Primarily used in strong branching. The user can create a hot start
      object --- a snapshot of the optimization process --- then reoptimize
@@ -396,7 +413,7 @@ public:
     virtual void unmarkHotStart() = 0 ;
   //@}
 
-  /**@name Problem query methods
+  /*! \name Problem query methods
 
    Querying a problem that has no data associated with it will result in
    zeros for the number of rows and columns, and null pointers from the
@@ -535,7 +552,7 @@ public:
     virtual double getInfinity() const = 0;
   //@}
 
-  /**@name Solution query methods */
+  /*! \name Solution query methods */
   //@{
     /// Get a pointer to an array[getNumCols()] of primal variable values
     virtual const double * getColSolution() const = 0;
@@ -613,7 +630,7 @@ public:
     virtual OsiVectorInt getFractionalIndices(const double etol=1.e-05) const = 0 ;
   //@}
 
-  /**@name Methods to modify the objective, bounds, and solution
+  /*! \name Methods to modify the objective, bounds, and solution
 
      For functions which take a set of indices as parameters
      (\c setObjCoeffSet(), \c setColSetBounds(), \c setRowSetBounds(),
@@ -769,7 +786,7 @@ public:
     virtual int reducedCostFix(double gap, bool justInteger=true) = 0 ;
   //@}
     
-  /**@name Methods to set variable type */
+  /*! \name Methods to set variable type */
   //@{
     /** Set the index-th variable to be a continuous variable */
     virtual void setContinuous(int index) = 0;
@@ -803,7 +820,7 @@ public:
     on support by the OsiXXX class to ensure that names are managed
     correctly.  If an OsiXXX class does not support names, it should return
     false for calls to getIntParam() or setIntParam() that reference
-    OsiNameDiscipline.
+    #OsiNameDiscipline.
   */
   //@{
 
@@ -941,7 +958,7 @@ public:
 
   //@}
 
-  /**@name Methods to modify the constraint system.
+  /*! \name Methods to modify the constraint system.
 
      Note that new columns are added as continuous variables.
   */
@@ -1179,7 +1196,7 @@ public:
 
   //@}
 
-  /**@name Methods for problem input and output */
+  /*! \name Methods for problem input and output */
   //@{
     /*! \brief Load in a problem by copying the arguments. The constraints on
 	    the rows are given by lower and upper bounds.
@@ -1442,7 +1459,7 @@ public:
 
   //@}
 
-  /**@name Setting/Accessing application data */
+  /*! \name Setting/Accessing application data */
   //@{
     /** Set application data.
 
@@ -1466,7 +1483,7 @@ public:
     virtual OsiAuxInfo * getAuxiliaryInfo() const = 0 ;
   //@}
 
-  /**@name Message handling
+  /*! \name Message handling
   
     See the COIN library documentation for additional information about
     COIN message facilities.
@@ -1492,7 +1509,7 @@ public:
   virtual bool defaultHandler() const = 0 ;
   //@}
 
-  /**@name Methods for dealing with discontinuities other than integers.
+  /*! \name Methods for dealing with discontinuities other than integers.
   
      Osi should be able to know about SOS and other types.  This is an optional
      section where such information can be stored.
@@ -1551,7 +1568,7 @@ public:
     virtual double forceFeasible() = 0 ;
   //@}
 
-  /*! @name Methods related to testing generated cuts
+  /*! \name Methods related to testing generated cuts
   
     See the documentation for OsiRowCutDebugger for additional details.
   */
@@ -1603,8 +1620,7 @@ public:
     virtual OsiRowCutDebugger * getRowCutDebuggerAlways() const = 0 ;
   //@} 
 
-  /*! \name OsiSimplexInterface
-      \brief Simplex Interface
+  /*! \name OSI simplex interface
 
     Methods for an advanced interface to a simplex solver. The interface
     comprises two groups of methods. Group 1 contains methods for tableau
@@ -1625,7 +1641,7 @@ public:
   virtual int canDoSimplexInterface() const = 0 ;
   //@}
 
-  /*! \name OsiSimplex Group 1
+  /*! \name OSI simplex interface Group 1
       \brief Tableau access methods.
 
       This group of methods provides access to rows and columns of the basis
@@ -1737,7 +1753,7 @@ public:
 
   //@}
 
-  /*! \name OsiSimplex Group 2
+  /*! \name OSI simplex interface Group 2
       \brief Pivoting methods
 
       This group of methods provides for control of individual pivots by a

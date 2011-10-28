@@ -1,24 +1,32 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  $Id$
+*/
+/*! \file Osi2ClpHeavyShim.hpp
+    \brief Declarations for Osi2::ClpHeavyShim.
+
+  This shim is written to work directly with clp objects (ClpSimplex,
+  OsiClpSolverInterface, etc.). As such, it must be linked with the
+  appropriate clp libraries.
+*/
 
 #ifndef Osi2ClpHeavyShim_HPP
 #define Osi2ClpHeavyShim_HPP
 
-/*
-  $Id$
-*/
 
 #include "Osi2Plugin.hpp"
 #include "Osi2DynamicLibrary.hpp"
 
 namespace Osi2 {
-/*!
-  Prototype for an Osi2 heavy solver shim for clp. It may gradually grow
-  into a full shim, or it may be abandoned once we figure out how it ought
-  to work.
 
-  The difference between ClpShim and ClpHeavyShim is that ClpHeavyShim links
-  libClp, hence we can directly use ClpSimplex objects.
+/*! \brief Heavy shim for the clp solver.
+
+  This shim assumes that clp libraries are linked with the shim, hence the
+  shim can make direct use of typical clp objects (ClpSimplex,
+  OsiClpSolverInterface, etc.).
 */
-
 class ClpHeavyShim {
 
 public:

@@ -1,8 +1,15 @@
-
 /*
-  Method definitions for ClpShim.
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
+*/
+/*! \file Osi2ClpShim.cpp
+    \brief Method definitions for ClpShim.
+
+  This shim is written to dynamically load libClp. As such, it doesn't need to
+  be linked with libClp. The tradeoff is that it must work through clp's C
+  interface and dynamically load the methods it wants to use.
 */
 
 #include <iostream>

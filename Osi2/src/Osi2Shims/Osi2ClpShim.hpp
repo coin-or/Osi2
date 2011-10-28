@@ -1,18 +1,29 @@
+/*
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
+
+  $Id$
+*/
+/*! \file Osi2ClpShim.hpp
+    \brief Declarations for Osi2::ClpShim.
+
+  This shim is written to dynamically load libClp. As such, it doesn't need to
+  be linked with libClp. The tradeoff is that it must work through clp's C
+  interface and dynamically load the methods it wants to use.
+*/
 
 #ifndef Osi2ClpShim_H
 #define Osi2ClpShim_H
-
-/*
-  $Id$
-*/
 
 #include "Osi2Plugin.hpp"
 #include "Osi2DynamicLibrary.hpp"
 
 namespace Osi2 {
-/*!
-  Prototype for an Osi2 solver shim for clp. It may gradually grow into a full
-  shim, or it may be abandoned once we figure out how it ought to work.
+/*! \brief Light shim for the clp solver
+
+  This shim is written to dynamically load libClp.  This means that it
+  must work through clp's C interface and dynamically load the methods it
+  wants to use.
 */
 
 class ClpShim {

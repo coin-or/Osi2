@@ -5,6 +5,12 @@
 
   $Id$
 */
+/*! \file Osi2ControlAPI.hpp
+
+  Defines the virtual class Osi2::ControlAPI, an API to manage plugin
+  libraries and objects.
+*/
+
 
 #ifndef Osi2ControlAPI_HPP
 # define Osi2ControlAPI_HPP

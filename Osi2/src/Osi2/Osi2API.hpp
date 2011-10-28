@@ -4,6 +4,10 @@
 
   $Id$
 */
+/*! \file Osi2API.hpp
+
+  Defines the class Osi2::API, the top of the Osi2 API hierarchy.
+*/
 
 #ifndef Osi2API_HPP
 # define Osi2API_HPP

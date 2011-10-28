@@ -19,6 +19,12 @@
   config_*default.h. As a user, you can hope that these will be correct for
   your environment, but you really should check.
 */
+/*! \file Osi2Config.h
+
+  Top level for Osi2 configuration headers. Include this file to access Osi2
+  configuration information and allow it to find the right configuration
+  header files.
+*/
 
 
 #ifndef Osi2Config_H

@@ -1,11 +1,15 @@
-
 /*
-  Method definitions for ClpHeavyShim.
-
-  This shim links in libClp, so we should be able to work directly with a
-  ClpSimplex object.
+  Copyright 2011 Lou Hafer, Matt Saltzman
+  This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
+*/
+/*! \file Osi2ClpHeavyShim.cpp
+    \brief Method definitions for ClpHeavyShim.
+
+  This shim is written to work directly with clp objects (ClpSimplex,
+  OsiClpSolverInterface, etc.). As such, it must be linked with the
+  appropriate clp libraries.
 */
 
 #include <iostream>

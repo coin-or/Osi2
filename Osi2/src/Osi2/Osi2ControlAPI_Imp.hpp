@@ -4,6 +4,12 @@
 
   $Id$
 */
+/*! \file Osi2ControlAPI_Imp.hpp
+
+  Defines an implementation of Osi2::ControlAPI, an API to manage
+  plugin libraries and objects.
+*/
+
 
 #ifndef Osi2ControlAPI_Imp_HPP
 # define Osi2ControlAPI_Imp_HPP
