@@ -1174,10 +1174,8 @@ public:
     */
     virtual ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
 					  double effectivenessLb = 0.0)
-    { ApplyCutsReturnCode *tmp = applyCutsPrivate(cs,effectivenessLb) ;
-      ApplyCutsReturnCode retval = *tmp ;
-      delete tmp ;
-      return (retval) ;
+    { 
+      return (applyCutsPrivate(cs,effectivenessLb)) ;
     }
 
     /** Apply a collection of row cuts which are all effective.
@@ -1810,7 +1808,7 @@ public:
   protected:
 
   /*! \brief We need this for covariant return */
-  virtual ApplyCutsReturnCode *applyCutsPrivate(const OsiCuts & cs,
+  virtual ApplyCutsReturnCode applyCutsPrivate(const OsiCuts & cs,
 					  double effectivenessLb = 0.0) = 0 ;
 };
 

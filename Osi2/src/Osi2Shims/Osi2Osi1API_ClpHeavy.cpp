@@ -28,39 +28,9 @@
 namespace Osi2 {
 
 /*
-  Destructor
-*/
-Osi1API_ClpHeavy::ApplyCutsReturnCode::~ApplyCutsReturnCode ()
-{
-  /*
-  std::cout
-    << "Osi1API_ClpHeavy::ApplyCutsReturnCode destructor." << std::endl ;
-  */
-}
-
-/*
-  Additional constructor that knows about
-  OsiSolverInterface::ApplyCutsReturnCode and can break it out into individual
-  values to feed to the Osi1API::ApplyCutsReturnCode constructor.
-*/
-Osi1API_ClpHeavy::ApplyCutsReturnCode::ApplyCutsReturnCode
-  (const OsiSolverInterface::ApplyCutsReturnCode &acrc)
-  : Osi1API::ApplyCutsReturnCode(acrc.getNumInconsistent(),
-  				 acrc.getNumInconsistentWrtIntegerModel(),
-				 acrc.getNumInfeasible(),
-				 acrc.getNumIneffective(),
-				 acrc.getNumApplied())
-{
-  /*
-  std::cout
-    << "Osi1API_ClpHeavy::ApplyCutsReturnCode constructor from "
-    << "OsiSolverInterface::ApplyCutsReturnCode object." << std::endl ;
-  */
-}
-
-/*
   Constructor. There's nothing to do here; all the work happens in the
-  constructors for the parent classes.
+  constructors for the parent classes. The declarations here are just for
+  convenient debugging.
 */
 Osi1API_ClpHeavy::Osi1API_ClpHeavy ()
 {

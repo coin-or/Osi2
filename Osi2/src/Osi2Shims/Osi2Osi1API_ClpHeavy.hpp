@@ -34,25 +34,6 @@ class Osi1API_ClpHeavy : public Osi1API, public OsiClpSolverInterface {
 
 public:
 
-  /*! \brief Bridging class between Osi1API::ApplyCutsReturnCode and
-  	     OsiSolverInterface::ApplyCutsReturnCode.
-
-    The problem is that OsiSolverInterface::applyCuts is defined to return an
-    ApplyCutsReturnCode object by value, hence we cannot use covariant return
-    in the usual direct manner.  This class gives a place for code to convert
-    from OsiSolverInterface::ApplyCutsReturnCode to
-    Osi1API::ApplyCutsReturnCode, plus a route for covariant return.
-  */
-  class ApplyCutsReturnCode : public Osi1API::ApplyCutsReturnCode {
-
-    public:
-    /// Constructor from OsiSolverInterface::ApplyCutsReturnCode
-    ApplyCutsReturnCode(const OsiSolverInterface::ApplyCutsReturnCode &acrc) ;
-    /// Destructor
-    virtual ~ApplyCutsReturnCode() ;
-  } ;
-
-
   /// \name Constructors and destructors
   //@{
   Osi1API_ClpHeavy () ;
@@ -528,17 +509,23 @@ public:
 	   Osi1API::applyCuts.
   
   Covariant return works only for pointers and references. Unfortunately,
-  OsiSolverInterface::applyCuts returns the full object. Hence this
+  OsiSolverInterface::applyCuts returns the full object, so there's no way to
+  override applyCuts and finesse a covariant return value. Hence this
   workaround, which constructs an Osi1API_ClpHeavy::ApplyCutsReturnCode
-  object from the OsiSolverInterface::ApplyCutsReturnCode object and returns a
-  reference. Note that this object must be deleted!
-
+  object from the OsiSolverInterface::ApplyCutsReturnCode object and returns
+  it.
 */
-  inline ApplyCutsReturnCode *applyCutsPrivate(const OsiCuts &cuts,
+  inline Osi1API::ApplyCutsReturnCode applyCutsPrivate(const OsiCuts &cuts,
   						double eff = 0.0)
-  { const OsiSolverInterface::ApplyCutsReturnCode &tmp =
+  { 
+    const OsiSolverInterface::ApplyCutsReturnCode &tmp =
   	OsiClpSolverInterface::applyCuts(cuts,eff) ;
-    ApplyCutsReturnCode *retval = new ApplyCutsReturnCode(tmp) ;
+    const Osi1API::ApplyCutsReturnCode
+        retval(tmp.getNumInconsistent(),
+	       tmp.getNumInconsistentWrtIntegerModel(),
+	       tmp.getNumInfeasible(),
+	       tmp.getNumIneffective(),
+	       tmp.getNumApplied()) ;
     return (retval) ; }
 
   inline void applyRowCuts(int numCuts, const OsiRowCut *cuts)
