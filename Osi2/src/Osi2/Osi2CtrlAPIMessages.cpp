@@ -80,6 +80,8 @@ static OneCtrlAPIMessage us_english[] = {
         CTRLAPI_DESTROYFAIL, 6003, 2,
         "Destroy failed for API \"%s\"%?, library \"%s\"%?."
     },
+    { CTRLAPI_NOAPIIDENT, 6004, 2,
+        "API object has no identity information!" },
 
     // Fatal Error: 9000 -- 9999
 

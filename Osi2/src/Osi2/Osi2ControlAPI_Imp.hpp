@@ -84,6 +84,11 @@ public:
     */
     virtual int unload(const std::string &shortName) ;
 
+    /// Find the short name for the specified library
+    virtual std::string getShortName(PluginUniqueID libID) ;
+
+    /// Find the full path for the specified library
+    virtual std::string getFullPath(PluginUniqueID libID) ;
     //@}
 
     /*! \name API (Object) Management
@@ -122,20 +127,17 @@ public:
       is necessary only if the plugin providing the object needs to know about
       its demise.
 
-      Note that if the call to #create was restricted to a particular plugin
-      library, the restriction must be repeated here. The result of requesting
-      that an object be destroyed by a plugin library other than the one that
-      created it is undefined.
-
       \p obj will be set to null on return.
 
       \returns:
         -1: an error occurred during destruction
          0: destruction completed without error
     */
+    virtual int destroyObject(API *&obj) ;
+
+    /// Soon to disappear
     virtual int destroyObject(API *&obj, const std::string &apiName,
                               const std::string *shortName) ;
-
     //@}
 
     /*! \name Control API control methods
@@ -201,9 +203,9 @@ private:
     */
     struct DynLibInfo {
         /// Full path for the library
-        std::string fullPath ;
+        std::string fullPath_ ;
         /// Unique ID for the library
-        PluginUniqueID uniqueID ;
+        PluginUniqueID uniqueID_ ;
     } ;
     /// Map type for knownLibMap_
     typedef std::map<std::string, DynLibInfo> LibMapType ;
@@ -222,6 +224,23 @@ private:
     /// Log (verbosity) level
     int logLvl_ ;
 
+    /*! \brief Identity information
+
+      This class defines how API object identity information is structured for
+      this implementation of the control API.
+    */
+    struct APIObjIdentInfo {
+      /// Initialising constructor
+      APIObjIdentInfo(std::string apiName, PluginUniqueID libID)
+        : apiName_(apiName),
+	  libID_(libID)
+      {}
+
+      /// API name
+      const std::string apiName_ ;
+      /// Library unique ID
+      const PluginUniqueID libID_ ;
+    } ;
 
 } ;
 

@@ -68,8 +68,9 @@ int testPluginManager (const std::string libName)
       destroy the object.
     */
     DummyAdapter dummy ;
+    PluginUniqueID libID = 0 ;
     ProbMgmtAPI *clp =
-        static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt", 0, dummy)) ;
+        static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt", libID, dummy)) ;
     if (clp == nullptr) {
         errcnt++ ;
         std::cout
@@ -88,8 +89,9 @@ int testPluginManager (const std::string libName)
       Ask for a nonexistent API and check that we (correctly) fail to provide
       one.
     */
+    libID = 0 ;
     ProbMgmtAPI *bogus =
-        static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI", 0, dummy)) ;
+        static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI", libID, dummy)) ;
     if (bogus == nullptr) {
         std::cout
                 << "Apparent failure to create a BogusAPI object (expected)."
@@ -103,8 +105,9 @@ int testPluginManager (const std::string libName)
     /*
       Check that we can create an object through the wildcard mechanism.
     */
+    libID = 0 ;
     clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",
-                                     0, dummy)) ;
+                                     libID, dummy)) ;
     if (clp == nullptr) {
         errcnt++ ;
         std::cout
@@ -191,7 +194,8 @@ int testControlAPI (const std::string &shortName,
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
         clp->readMps(exmip1Path.c_str(), true) ;
 	clp->initialSolve() ;
-        int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
+        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
+        int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
@@ -215,7 +219,8 @@ int testControlAPI (const std::string &shortName,
 	std::cout << "cloning ... " << std::endl ;
 	Osi1API *o2 = osi->clone() ;
 	std::cout << "destroying ... " << std::endl ;
-        int retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        // int retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
@@ -223,7 +228,8 @@ int testControlAPI (const std::string &shortName,
         }
 	o2->initialSolve() ;
 	apiObj = o2 ;
-        retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        // retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
+        retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
@@ -245,7 +251,8 @@ int testControlAPI (const std::string &shortName,
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
         clp->readMps(exmip1Path.c_str(), true) ;
 	clp->initialSolve() ;
-        int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
+        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
+        int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
@@ -266,7 +273,8 @@ int testControlAPI (const std::string &shortName,
     } else {
         ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
         clp->readMps("exmip1.mps", true) ;
-        int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", &shortName) ;
+        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", &shortName) ;
+        int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout

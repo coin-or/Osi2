@@ -85,6 +85,9 @@ public:
         dfltPluginDir_ = dfltDir ;
     }
 
+    /// Return full path for a library
+    std::string getLibPath(PluginUniqueID libID) ;
+
     /// Get the services provided by the plugin manager
     PlatformServices &getPlatformServices() ;
 
@@ -152,12 +155,13 @@ public:
       appropriate type; this is the client's responsibility.
 
       A nonzero value for \p libID restricts the action to the specified
-      library.
+      library. If \p libID is 0, it will be set on return to the unique ID
+      of the library that satisfied the request.
 
       \todo An explanation of adapter is needed somewhere, once I (Lou)
       understand it.
     */
-    void *createObject(const std::string &apiStr, PluginUniqueID libID,
+    void *createObject(const std::string &apiStr, PluginUniqueID &libID,
                        IObjectAdapter &adapter) ;
 
     /*! \brief Invoked by client to destroy an object

@@ -114,11 +114,10 @@ public:
       In general, invoking delete on the object will work just fine. This method
       is necessary only if the plugin providing the object needs to know about
       its demise.
-
-      Note that all parameters are mandatory. The result of requesting that an
-      object be destroyed by a plugin library other than the one that created
-      it is undefined.
     */
+    virtual int destroyObject(API *&obj) = 0 ;
+
+    /// Soon to disappear
     virtual int destroyObject(API *&obj, const std::string &apiName,
                               const std::string *shortName) = 0 ;
 

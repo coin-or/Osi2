@@ -178,10 +178,10 @@ PluginManager::apiEntryExists (RegistrationMap &regMap,
 {
     typedef RegistrationMap::iterator RMCI ;
     /*
-      See if we find anything. For the case where there's no entry at all for this
-      API, iterPair.first will be regMap.end(). For the case where the libID is a
-      wildCard (0), we're perfectly happy to use the first entry found. In either
-      case, we can simply return iterPair.first.
+      See if we find anything. For the case where there's no entry at all
+      for this API, iterPair.first will be regMap.end(). For the case where
+      the libID is a wildCard (0), we're perfectly happy to use the first
+      entry found. In either case, we can simply return iterPair.first.
     */
     std::pair<RMCI, RMCI> iterPair = regMap.equal_range(key) ;
     if (libID == 0 || iterPair.first == regMap.end()) return (iterPair.first) ;
@@ -302,8 +302,8 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
     /*
       Construct the full path for the library.
 
-      Should this be converted to a standardised absolute path? That'd avoid issues
-      with different ways of specifying the same library.
+      Should this be converted to a standardised absolute path? That'd
+      avoid issues with different ways of specifying the same library.
     */
     std::string fullPath ;
     if (dir == nullptr || (dir->compare("") == 0)) {
@@ -333,8 +333,8 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
         return (-1) ;
     }
     /*
-      Find the initialisation function "initPlugin". If this entry point is missing
-      from the library, we're in trouble.
+      Find the initialisation function "initPlugin". If this entry point
+      is missing from the library, we're in trouble.
     */
     InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin", errStr)) ;
     if (initFunc == nullptr) {
@@ -343,13 +343,13 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
         return (-2) ;
     }
     /*
-      Invoke the initialisation function, which will (in the typical case) trigger
-      the registration of the various APIs implemented in this plugin library. We
-      should get back the exit function for the library.
+      Invoke the initialisation function, which will (in the typical case)
+      trigger the registration of the various APIs implemented in this
+      plugin library. We should get back the exit function for the library.
 
-      Set initialisingPlugin_ to true so that the APIs will be registered into the
-      temporary wildcard and exact match vectors. If initialisation is successful,
-      we'll transfer them to the permanent vectors.
+      Set initialisingPlugin_ to true so that the APIs will be registered
+      into the temporary wildcard and exact match vectors. If initialisation
+      is successful, we'll transfer them to the permanent vectors.
     */
     initialisingPlugin_ = true ;
     libInInit_ = dynLib ;
@@ -664,7 +664,7 @@ ObjectParams *PluginManager::buildObjectParams (const std::string apiStr,
 
 
 void *PluginManager::createObject (const std::string &apiStr,
-                                   PluginUniqueID libID,
+                                   PluginUniqueID &libID,
                                    IObjectAdapter &adapter)
 {
     /*
@@ -690,6 +690,7 @@ void *PluginManager::createObject (const std::string &apiStr,
         if (object) {
             msgHandler_->message(PLUGMGR_APICREATEOK, msgs_)
                     << apiStr << "exact" << CoinMessageEol ;
+	    if (libID == 0) libID = rp.pluginID_ ;
             if (rp.lang_ == Plugin_C)
                 object = adapter.adapt(object, rp.destroyFunc_) ;
             return (object) ;
@@ -722,6 +723,7 @@ void *PluginManager::createObject (const std::string &apiStr,
         if (object) {
             msgHandler_->message(PLUGMGR_APICREATEOK, msgs_)
                     << apiStr << "wildcard" << CoinMessageEol ;
+	    if (libID == 0) libID = rp.pluginID_ ;
             if (rp.lang_ == Plugin_C)
                 object = adapter.adapt(object, rp.destroyFunc_) ;
             int32_t res = registerObject(objParms->apiStr_, &rp) ;
@@ -827,5 +829,21 @@ int PluginManager::destroyObject (const std::string &apiStr,
 PlatformServices &PluginManager::getPlatformServices ()
 {
     return (platformServices_) ;
+}
+
+/*
+  Find the full path for the library specified by libID.
+*/
+std::string PluginManager::getLibPath (PluginUniqueID libID)
+{
+    typedef LibPathToIDMap::const_iterator LPTIMI ;
+    /*
+      Step through the map and find the matching entry.
+    */
+    for (LPTIMI iter = libPathToIDMap_.begin() ;
+         iter != libPathToIDMap_.end() ; iter++) {
+        if (iter->second == libID) return (iter->first) ;
+    }
+    return ("<library not loaded>") ;
 }
 

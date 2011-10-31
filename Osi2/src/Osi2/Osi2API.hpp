@@ -21,19 +21,48 @@ namespace Osi2 {
 
 /*! \brief Osi2 API virtual base class
 
-  This class forms the root of the Osi2 API hierarchy. Its raison d'etre is to
-  provide a common pointer for API objects returned from load and unload calls.
-
   The general philosophy of the API hierarchy is that the APIs are defined by
   abstract classes. Concrete implementations derive from the abstract classes.
-*/
 
+  This class forms the root of the Osi2 API hierarchy. Its raison d'etre is to
+  provide a common pointer for API objects returned from load and unload calls.
+  It also provides a pointer where a control API can record information about
+  the API object.
+*/
 class API {
 
 public:
 
-    /// Virtual destructor, should be overridden in any derived class
-    virtual ~API () {}
+    /// Default constructor
+    API ()
+      : identInfo_(0)
+    { } ;
+
+    /// Virtual destructor.
+    virtual ~API () { }
+
+    /// Retrieve object identification information block
+    inline const void *getIdentInfo () const { return (identInfo_) ; }
+
+protected:
+
+    /// Set the identification information
+    inline void setIdentInfo(const void *identInfo)
+    { identInfo_ = identInfo ; }
+
+private:
+
+    /*! \brief API object identification information
+
+      This is a generic pointer which a control API implementation can
+      use as it pleases. Implementors, note that the only parameter to
+      ControlAPI::destroyObject is a pointer to the object to be destroyed.
+      The information stored here must be sufficient to allow the control
+      API implementation to determine how to destroy the object. Typically
+      this will depend on the implementation of the control API and the
+      underlying plugin manager.
+    */
+    const void *identInfo_ ;
 
 } ;
 

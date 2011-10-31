@@ -208,8 +208,8 @@ int ControlAPI_Imp::load (const std::string &shortName,
                 << fullPath << shortName << CoinMessageEol ;
     }
     DynLibInfo &info = knownLibMap_[shortName] ;
-    info.fullPath = fullPath ;
-    info.uniqueID = uniqueID ;
+    info.fullPath_ = fullPath ;
+    info.uniqueID_ = uniqueID ;
     msgHandler_->message(CTRLAPI_LIBLDOK, msgs_)
             << shortName << fullPath << CoinMessageEol ;
 
@@ -295,7 +295,7 @@ int ControlAPI_Imp::unload (const std::string &shortName)
     /*
       Separate the libName and directory, then call the plugin manager's unload.
     */
-    std::string fullPath = knownIter->second.fullPath ;
+    std::string fullPath = knownIter->second.fullPath_ ;
     char dirSep = CoinFindDirSeparator() ;
     std::string::size_type dirPos = fullPath.rfind(dirSep) ;
     std::string libName ;
@@ -359,7 +359,7 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
             msgHandler_->message(CTRLAPI_LIBUNREG, msgs_)
                     << (*shortName) << CoinMessageEol ;
         } else {
-            libID = knownIter->second.uniqueID ;
+            libID = knownIter->second.uniqueID_ ;
         }
     }
     /*
@@ -373,6 +373,8 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
         msgHandler_->printing(true) << CoinMessageEol ;
         retval = -1 ;
     } else {
+        APIObjIdentInfo *apiIdent = new APIObjIdentInfo(apiName,libID) ;
+	setIdentInfo(apiIdent) ;
         msgHandler_->message(CTRLAPI_CREATEOK, msgs_) << apiName ;
         msgHandler_->printing(restricted && libID != 0) << forPrinting ;
         msgHandler_->printing(true) << CoinMessageEol ;
@@ -381,6 +383,58 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
 
     return (retval) ;
 }
+
+/*
+  Invoke the plugin manager's destroyObject method.
+
+  Returns:
+    -3: no ident information
+    -2: no plugin manager
+    -1: destroyObject failed
+     0: destruction succeeded
+     1: destruction succeeded but plugin restriction was ignored/invalid
+*/
+int ControlAPI_Imp::destroyObject (API *&obj)
+{
+    int retval = -1 ;
+    /*
+      Make sure we can find the plugin manager.
+    */
+    if (findPluginMgr() == nullptr) {
+        retval = -2 ;
+        return (retval) ;
+    }
+    /*
+      Retrieve the identification information.
+    */
+    const APIObjIdentInfo *apiIdent =
+        static_cast<const APIObjIdentInfo *>(getIdentInfo()) ;
+    if (apiIdent == nullptr) {
+      msgHandler_->message(CTRLAPI_NOAPIIDENT,msgs_) << CoinMessageEol ;
+      retval = -3 ;
+      return (retval) ;
+    }
+    const std::string &apiName = apiIdent->apiName_ ;
+    const PluginUniqueID &libID = apiIdent->libID_ ;
+    /*
+      Invoke the plugin manager's destroyObject.
+    */
+    retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
+    if (retval != 0) {
+        msgHandler_->message(CTRLAPI_DESTROYFAIL, msgs_) << apiName ;
+        msgHandler_->printing(libID != 0) << getShortName(libID) ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = -1 ;
+    } else {
+        msgHandler_->message(CTRLAPI_DESTROYOK, msgs_) << apiName ;
+        msgHandler_->printing(libID != 0) << getShortName(libID) ;
+        msgHandler_->printing(true) << CoinMessageEol ;
+        retval = (libID == 0) ? 1 : 0 ;
+    }
+
+    return (retval) ;
+}
+
 
 /*
   Invoke the plugin manager's destroyObject method.
@@ -418,7 +472,7 @@ int ControlAPI_Imp::destroyObject (API *&obj, const std::string &apiName,
             msgHandler_->message(CTRLAPI_LIBUNREG,msgs_)
                     << (*shortName) << CoinMessageEol ;
         } else {
-            libID = knownIter->second.uniqueID ;
+            libID = knownIter->second.uniqueID_ ;
         }
     }
     /*
@@ -457,6 +511,30 @@ PluginManager *ControlAPI_Imp::findPluginMgr()
         msgHandler_->message(CTRLAPI_NOPLUGMGR, msgs_) << CoinMessageEol ;
 
     return (pluginMgr_) ;
+}
+
+/// Scan the knownLibMap and return the short name.
+std::string ControlAPI_Imp::getShortName (PluginUniqueID libID)
+{
+  typedef LibMapType::const_iterator LMTI ;
+  for (LMTI iter = knownLibMap_.begin() ;
+       iter != knownLibMap_.end() ; iter++) {
+    const DynLibInfo &dynInfo = iter->second ;
+    if (dynInfo.uniqueID_ == libID) return (iter->first) ;
+  }
+  return ("<unknown lib ID>") ;
+}
+
+/// Scan the knownLibMap and return the full path.
+std::string ControlAPI_Imp::getFullPath (PluginUniqueID libID)
+{
+  typedef LibMapType::const_iterator LMTI ;
+  for (LMTI iter = knownLibMap_.begin() ;
+       iter != knownLibMap_.end() ; iter++) {
+    const DynLibInfo &dynInfo = iter->second ;
+    if (dynInfo.uniqueID_ == libID) return (dynInfo.fullPath_) ;
+  }
+  return ("<unknown lib ID>") ;
 }
 
 } // end namespace Osi2
