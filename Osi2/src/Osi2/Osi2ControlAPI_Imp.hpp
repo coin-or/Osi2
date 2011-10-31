@@ -135,9 +135,6 @@ public:
     */
     virtual int destroyObject(API *&obj) ;
 
-    /// Soon to disappear
-    virtual int destroyObject(API *&obj, const std::string &apiName,
-                              const std::string *shortName) ;
     //@}
 
     /*! \name Control API control methods

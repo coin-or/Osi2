@@ -117,10 +117,6 @@ public:
     */
     virtual int destroyObject(API *&obj) = 0 ;
 
-    /// Soon to disappear
-    virtual int destroyObject(API *&obj, const std::string &apiName,
-                              const std::string *shortName) = 0 ;
-
     //@}
 
 } ;
