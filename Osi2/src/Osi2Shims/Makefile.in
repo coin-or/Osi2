@@ -72,6 +72,11 @@ libOsi2ClpHeavyShim_la_OBJECTS = $(am_libOsi2ClpHeavyShim_la_OBJECTS)
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libOsi2ClpShim_la_OBJECTS = Osi2ClpShim.lo Osi2ProbMgmtAPI_Clp.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
+libOsi2GlpkHeavyShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libOsi2GlpkHeavyShim_la_OBJECTS = Osi2GlpkHeavyShim.lo \
+	Osi2Osi1API_GlpkHeavy.lo
+libOsi2GlpkHeavyShim_la_OBJECTS =  \
+	$(am_libOsi2GlpkHeavyShim_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -91,9 +96,11 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
-	$(libOsi2ClpShim_la_SOURCES)
+	$(libOsi2ClpShim_la_SOURCES) \
+	$(libOsi2GlpkHeavyShim_la_SOURCES)
 DIST_SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
-	$(libOsi2ClpShim_la_SOURCES)
+	$(libOsi2ClpShim_la_SOURCES) \
+	$(libOsi2GlpkHeavyShim_la_SOURCES)
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
@@ -146,6 +153,8 @@ COIN_HAS_OSI2PLUGIN_FALSE = @COIN_HAS_OSI2PLUGIN_FALSE@
 COIN_HAS_OSI2PLUGIN_TRUE = @COIN_HAS_OSI2PLUGIN_TRUE@
 COIN_HAS_OSICLP_FALSE = @COIN_HAS_OSICLP_FALSE@
 COIN_HAS_OSICLP_TRUE = @COIN_HAS_OSICLP_TRUE@
+COIN_HAS_OSIGLPK_FALSE = @COIN_HAS_OSIGLPK_FALSE@
+COIN_HAS_OSIGLPK_TRUE = @COIN_HAS_OSIGLPK_TRUE@
 COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
 COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
 COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
@@ -227,6 +236,13 @@ OSI2CLPSHIM_LIBS = @OSI2CLPSHIM_LIBS@
 OSI2CLPSHIM_LIBS_INSTALLED = @OSI2CLPSHIM_LIBS_INSTALLED@
 OSI2CLPSHIM_PCLIBS = @OSI2CLPSHIM_PCLIBS@
 OSI2CLPSHIM_PCREQUIRES = @OSI2CLPSHIM_PCREQUIRES@
+OSI2GLPKHEAVYSHIM_CFLAGS = @OSI2GLPKHEAVYSHIM_CFLAGS@
+OSI2GLPKHEAVYSHIM_CFLAGS_INSTALLED = @OSI2GLPKHEAVYSHIM_CFLAGS_INSTALLED@
+OSI2GLPKHEAVYSHIM_DEPENDENCIES = @OSI2GLPKHEAVYSHIM_DEPENDENCIES@
+OSI2GLPKHEAVYSHIM_LIBS = @OSI2GLPKHEAVYSHIM_LIBS@
+OSI2GLPKHEAVYSHIM_LIBS_INSTALLED = @OSI2GLPKHEAVYSHIM_LIBS_INSTALLED@
+OSI2GLPKHEAVYSHIM_PCLIBS = @OSI2GLPKHEAVYSHIM_PCLIBS@
+OSI2GLPKHEAVYSHIM_PCREQUIRES = @OSI2GLPKHEAVYSHIM_PCREQUIRES@
 OSI2PLUGININT_CFLAGS = @OSI2PLUGININT_CFLAGS@
 OSI2PLUGININT_CFLAGS_INSTALLED = @OSI2PLUGININT_CFLAGS_INSTALLED@
 OSI2PLUGININT_DATA = @OSI2PLUGININT_DATA@
@@ -260,6 +276,13 @@ OSICLP_DATA_INSTALLED = @OSICLP_DATA_INSTALLED@
 OSICLP_DEPENDENCIES = @OSICLP_DEPENDENCIES@
 OSICLP_LIBS = @OSICLP_LIBS@
 OSICLP_LIBS_INSTALLED = @OSICLP_LIBS_INSTALLED@
+OSIGLPK_CFLAGS = @OSIGLPK_CFLAGS@
+OSIGLPK_CFLAGS_INSTALLED = @OSIGLPK_CFLAGS_INSTALLED@
+OSIGLPK_DATA = @OSIGLPK_DATA@
+OSIGLPK_DATA_INSTALLED = @OSIGLPK_DATA_INSTALLED@
+OSIGLPK_DEPENDENCIES = @OSIGLPK_DEPENDENCIES@
+OSIGLPK_LIBS = @OSIGLPK_LIBS@
+OSIGLPK_LIBS_INSTALLED = @OSIGLPK_LIBS_INSTALLED@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -354,13 +377,15 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
 
+# Name of the libraries compiled in this directory.  We don't want it
+# installed just yet.
+lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
+		  libOsi2GlpkHeavyShim.la
+
+
 ########################################################################
 #                      libOsi2ClpShim, ClpHeavyShim                    #
 ########################################################################
-
-# Name of the libraries compiled in this directory.  We don't want it
-# installed just yet.
-lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la
 
 # List all source files for this library, including headers
 libOsi2ClpShim_la_SOURCES = \
@@ -381,8 +406,20 @@ libOsi2ClpHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 libOsi2ClpShim_la_LIBADD = $(OSI2CLPSHIM_LIBS)
 libOsi2ClpHeavyShim_la_LIBADD = $(OSI2CLPHEAVYSHIM_LIBS)
 
+########################################################################
+#                      libOsi2GlpkHeavyShim                            #
+########################################################################
+libOsi2GlpkHeavyShim_la_SOURCES = \
+	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp \
+	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp
+
+libOsi2GlpkHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
+libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LIBS)
+
 # Here list all include flags.
-AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) $(OSI2CLPSHIM_CFLAGS)
+AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) \
+	$(OSI2CLPSHIM_CFLAGS) $(OSI2GLPKHEAVYSHIM_CFLAGS)
+
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
@@ -398,7 +435,8 @@ includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
 	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.hpp
+	Osi2Osi1API_ClpHeavy.hpp \
+	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
 
 all: all-am
 
@@ -464,6 +502,8 @@ libOsi2ClpHeavyShim.la: $(libOsi2ClpHeavyShim_la_OBJECTS) $(libOsi2ClpHeavyShim_
 	$(CXXLINK) -rpath $(libdir) $(libOsi2ClpHeavyShim_la_LDFLAGS) $(libOsi2ClpHeavyShim_la_OBJECTS) $(libOsi2ClpHeavyShim_la_LIBADD) $(LIBS)
 libOsi2ClpShim.la: $(libOsi2ClpShim_la_OBJECTS) $(libOsi2ClpShim_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(libdir) $(libOsi2ClpShim_la_LDFLAGS) $(libOsi2ClpShim_la_OBJECTS) $(libOsi2ClpShim_la_LIBADD) $(LIBS)
+libOsi2GlpkHeavyShim.la: $(libOsi2GlpkHeavyShim_la_OBJECTS) $(libOsi2GlpkHeavyShim_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(libdir) $(libOsi2GlpkHeavyShim_la_LDFLAGS) $(libOsi2GlpkHeavyShim_la_OBJECTS) $(libOsi2GlpkHeavyShim_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -473,7 +513,9 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpHeavyShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2GlpkHeavyShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_Clp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_ClpHeavy.Plo@am__quote@
 

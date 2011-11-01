@@ -8,13 +8,14 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+# Name of the libraries compiled in this directory.  We don't want it
+# installed just yet.
+lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
+		  libOsi2GlpkHeavyShim.la
+
 ########################################################################
 #                      libOsi2ClpShim, ClpHeavyShim                    #
 ########################################################################
-
-# Name of the libraries compiled in this directory.  We don't want it
-# installed just yet.
-lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la
 
 # List all source files for this library, including headers
 
@@ -35,8 +36,22 @@ libOsi2ClpHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 libOsi2ClpShim_la_LIBADD = $(OSI2CLPSHIM_LIBS)
 libOsi2ClpHeavyShim_la_LIBADD = $(OSI2CLPHEAVYSHIM_LIBS)
 
+########################################################################
+#                      libOsi2GlpkHeavyShim                            #
+########################################################################
+
+libOsi2GlpkHeavyShim_la_SOURCES = \
+	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp \
+	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp
+
+libOsi2GlpkHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
+libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LIBS)
+
+
+
 # Here list all include flags.
-AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) $(OSI2CLPSHIM_CFLAGS)
+AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) \
+	$(OSI2CLPSHIM_CFLAGS) $(OSI2GLPKHEAVYSHIM_CFLAGS)
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
@@ -53,5 +68,6 @@ includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
 	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.hpp
+	Osi2Osi1API_ClpHeavy.hpp \
+	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
 

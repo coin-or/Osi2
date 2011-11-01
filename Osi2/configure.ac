@@ -85,6 +85,9 @@ if test $coin_has_osiclp != yes ; then
   AC_MSG_ERROR([Required package OsiClp not available.])
 fi
 
+# Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
+AC_COIN_CHECK_PACKAGE(OsiGlpk, [osi-glpk], [Osi2GlpkHeavyShim])
+
 # It sure would be handy to use the pkgconfig machinery to build up
 # dependencies. Problem: On the first configure pass, none of the .pc files
 # exist.  So, on the first pass, fake it by manually building up the necessary
@@ -114,7 +117,7 @@ fi
 if test -f osi2plugin.pc ; then
   AC_MSG_NOTICE([Found .pc files; invoking pkg-config.])
   AC_COIN_CHECK_PACKAGE(Osi2PluginInt, [osi2plugin],
-      [Osi2 Osi2ClpShim Osi2ClpHeavyShim])
+      [Osi2 Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim])
   AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi osi2])
 else
   AC_MSG_NOTICE([No .pc files; faking it.])
@@ -129,6 +132,9 @@ else
   OSI2CLPHEAVYSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2CLPHEAVYSHIM_LIBS"
   OSI2CLPHEAVYSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2CLPHEAVYSHIM_CFLAGS"
   OSI2CLPHEAVYSHIM_PCREQUIRES="osi2plugin $OSI2CLPHEAVYSHIM_PCREQUIRES"
+  OSI2GLPKHEAVYSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2GLPKHEAVYSHIM_LIBS"
+  OSI2GLPKHEAVYSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2GLPKHEAVYSHIM_CFLAGS"
+  OSI2GLPKHEAVYSHIM_PCREQUIRES="osi2plugin $OSI2GLPKHEAVYSHIM_PCREQUIRES"
   OSI2_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2_CFLAGS"
   OSI2_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2_LIBS"
   OSI2_PCREQUIRES="osi2plugin $OSI2_PCREQUIRES"
@@ -155,7 +161,6 @@ OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Clp/src"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Osi/src/Osi"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Osi/src/Osi"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
-# OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
 
 # Avoid pulling Osi2Config.h and dependencies into the build for libOsi2Plugin
 # just for COIN_HAS_NULLPTR. Eventually nullptr should move to CoinUtils.

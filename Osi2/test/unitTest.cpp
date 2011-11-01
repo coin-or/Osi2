@@ -158,16 +158,14 @@ int testControlAPI (const std::string &shortName,
     ControlAPI_Imp ctrlAPI ;
     std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
     /*
-      Load shims. No sense proceeding if the load fails.
+      Load shims. There may not be a light shim, so allow failure.
     */
     retval = ctrlAPI.load(shortName) ;
     if (retval != 0) {
-        errcnt++ ;
         std::cout
                 << "Apparent failure to load " << shortName << "." << std::endl ;
         std::cout
                 << "Error code is " << retval << "." << std::endl ;
-        return (errcnt) ;
     }
     std::string heavyName = shortName+"Heavy" ;
     retval = ctrlAPI.load(heavyName) ;
@@ -194,7 +192,6 @@ int testControlAPI (const std::string &shortName,
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
         clp->readMps(exmip1Path.c_str(), true) ;
 	clp->initialSolve() ;
-        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
         int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
@@ -219,7 +216,6 @@ int testControlAPI (const std::string &shortName,
 	std::cout << "cloning ... " << std::endl ;
 	Osi1API *o2 = osi->clone() ;
 	std::cout << "destroying ... " << std::endl ;
-        // int retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
         int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
@@ -227,8 +223,9 @@ int testControlAPI (const std::string &shortName,
                     << "Apparent failure to destroy an Osi1 object." << std::endl ;
         }
 	o2->initialSolve() ;
+	if (o2->isProvenOptimal())
+	  std::cout << "Solved to optimality." << std::endl ;
 	apiObj = o2 ;
-        // retval = ctrlAPI.destroyObject(apiObj, "Osi1", 0) ;
         retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
@@ -251,7 +248,6 @@ int testControlAPI (const std::string &shortName,
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
         clp->readMps(exmip1Path.c_str(), true) ;
 	clp->initialSolve() ;
-        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", 0) ;
         int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
@@ -273,7 +269,6 @@ int testControlAPI (const std::string &shortName,
     } else {
         ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
         clp->readMps("exmip1.mps", true) ;
-        // int retval = ctrlAPI.destroyObject(apiObj, "ProbMgmt", &shortName) ;
         int retval = ctrlAPI.destroyObject(apiObj) ;
         if (retval < 0) {
             errcnt++ ;
@@ -332,6 +327,14 @@ int main(int argC, char* argV[])
     */
     std::cout << "Testing ControlAPI." << std::endl ;
     retval = testControlAPI("clp",dfltSampleDir) ;
+    std::cout
+            << "End test of ControlAPI, " << retval << " errors."
+            << std::endl << std::endl ;
+    /*
+      Now let's try the Osi2 control API.
+    */
+    std::cout << "Testing ControlAPI." << std::endl ;
+    retval = testControlAPI("glpk",dfltSampleDir) ;
     std::cout
             << "End test of ControlAPI, " << retval << " errors."
             << std::endl << std::endl ;

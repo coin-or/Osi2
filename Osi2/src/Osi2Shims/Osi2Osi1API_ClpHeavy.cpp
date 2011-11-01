@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include "ClpConfig.h"
-#include "Osi2ClpShim.hpp"
+#include "Osi2ClpHeavyShim.hpp"
 #include "ClpSimplex.hpp"
 
 #include "Osi2Config.h"
