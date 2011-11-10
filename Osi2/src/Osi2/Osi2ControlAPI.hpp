@@ -119,6 +119,26 @@ public:
 
     //@}
 
+    /*! \name Control API control methods
+
+      Miscellaneous methods that control the behaviour of a ControlAPI object.
+    */
+    //@{
+
+    /// Get the default plugin directory
+    virtual std::string getDfltPluginDir() const = 0 ;
+
+    /// Set the default plugin directory
+    virtual void setDfltPluginDir(std::string dfltDir) = 0 ;
+
+    /// Set the log (verbosity) level
+    virtual void setLogLvl(int logLvl) = 0 ;
+
+    /// Get the log (verbosity) level
+    virtual int getLogLvl() const = 0 ;
+
+    //@}
+
 } ;
 
 } // namespace Osi2 ;

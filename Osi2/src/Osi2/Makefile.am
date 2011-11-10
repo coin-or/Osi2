@@ -18,7 +18,7 @@ lib_LTLIBRARIES = libOsi2.la
 # List all source files for this library, including headers
 
 libOsi2_la_SOURCES = \
-	Osi2API.hpp \
+	Osi2API.hpp Osi2API.cpp \
 	Osi2ControlAPI.hpp Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
 	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp
 
