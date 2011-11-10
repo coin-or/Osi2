@@ -7,12 +7,12 @@
 
 
 \newcommand{\OsiTwo}{OSI2\xspace}
-\newcommand{\OsiTwoTop}{Osi2::API\xspace}
-\newcommand{\OsiTwoControl}{Osi2::ControlAPI\xspace}
-\newcommand{\OsiTwoOsi}{Osi2::Osi1API\xspace}
-\newcommand{\OsiTwoModel}{Osi2::ModelAPI\xspace}
-\newcommand{\OsiTwoSolve}{Osi2::SolveAPI\xspace}
-\newcommand{\revisionDate}{September 29, 2011}
+\newcommand{\OsiTwoTop}{\pgmid{Osi2::API}\xspace}
+\newcommand{\OsiTwoControl}{\pgmid{Osi2::ControlAPI}\xspace}
+\newcommand{\OsiTwoOsi}{\pgmid{Osi2::Osi1API}\xspace}
+\newcommand{\OsiTwoModel}{\pgmid{Osi2::ModelAPI}\xspace}
+\newcommand{\OsiTwoSolve}{\pgmid{Osi2::SolveAPI}\xspace}
+\newcommand{\revisionDate}{November 10, 2011}
 
 \begin{document}
 \markright{\OsiTwo \hfil Design and Architecture \hfil \revisionDate}
@@ -23,9 +23,9 @@ This document describes the design and architecture plans for \OsiTwo.
 
 \OsiTwo defines application programming interfaces (APIs) for common
 optimisation tasks (maintaining a model, obtaining an optimal solution to
-the model \etc).
-Libraries which supply objects to implement specific APIs can be
-dynamically loaded and unloaded by a plugin manager.
+the model, \etc).
+Plugin libraries supply objects to implement specific APIs.
+Libraries can be dynamically loaded and unloaded by a plugin manager.
 When a library is loaded, it registers the set of APIs that it supports
 with the plugin manager.
 
@@ -43,14 +43,12 @@ API(s) and hands this
 object over to the client.
 Clients interact with these objects according to the interface defined
 by the API\@.
-The \OsiTwoTop class serves as the base class for all APIs and provides
-some common services for interacting with plugins and mediating interactions
-between API objects.
+The \OsiTwoTop class serves as the base class for all APIs.
 
 There are a number of overarching design goals:
 \begin{itemize}
   \item
-  Dynamic loading of solvers and other functional modules in support of
+  Dynamic loading of solvers and other functional modules to implement
   specific APIs.
 
   \item
@@ -69,7 +67,7 @@ There are a number of overarching design goals:
 
 \subheading{API Architecture}
 
-\OsiTwo APIs derive from a common top-level virtual class \pgmid{Osi2::API} as
+\OsiTwo APIs derive from a common top-level virtual class \OsiTwoTop as
 shown in Figure~\ref{fig:OsiTwoAPIHierarchy}.
 \begin{figure}[b]
 \begin{center}
@@ -107,7 +105,7 @@ created by a particular plugin library.
 To destroy an object (\pgmid{destroyObject}),
 the client specifies the object to be destroyed.
 It is possible to use the standard C++ \pgmid{delete} operator to destroy an
-object, but clients should use the interface's \pgmid{destroyObject} method
+object, but clients should use the \pgmid{destroyObject} method
 to ensure that any additional actions required by the plugin library are
 performed.
 
@@ -148,27 +146,40 @@ The only feature requiring nontrivial adaptation is the
 \pgmid{ApplyCutsReturnCode} structure returned by \pgmid{applyCuts}.
 This is handled with an adapter method as:
 \begin{verbatim}
-  inline Osi1API::ApplyCutsReturnCode applyCutsPrivate(const OsiCuts &cuts,
-  						double eff = 0.0)
-  { 
-    const OsiSolverInterface::ApplyCutsReturnCode &tmp =
-        OsiClpSolverInterface::applyCuts(cuts,eff) ;
-    const Osi1API::ApplyCutsReturnCode
-        retval(tmp.getNumInconsistent(),
-               tmp.getNumInconsistentWrtIntegerModel(),
-               tmp.getNumInfeasible(),
-               tmp.getNumIneffective(),
-               tmp.getNumApplied()) ;
-    return (retval) ;
-  }
+inline Osi1API::ApplyCutsReturnCode applyCutsPrivate(const OsiCuts &cuts,
+					      double eff = 0.0)
+{ 
+  const OsiSolverInterface::ApplyCutsReturnCode &tmp =
+      OsiClpSolverInterface::applyCuts(cuts,eff) ;
+  const Osi1API::ApplyCutsReturnCode
+      retval(tmp.getNumInconsistent(),
+	     tmp.getNumInconsistentWrtIntegerModel(),
+	     tmp.getNumInfeasible(),
+	     tmp.getNumIneffective(),
+	     tmp.getNumApplied()) ;
+  return (retval) ;
+}
 \end{verbatim}
+The declaration of \pgmid{ApplyCutsReturnCode} is duplicated in
+\pgmid{Osi1API} with the addition of a constructor that allows all data values
+to be specified at construction.
+Then \pgmid{applyCuts} is implemented as
+\begin{verbatim}
+virtual ApplyCutsReturnCode applyCuts(const OsiCuts & cs,
+                                      double effectivenessLb = 0.0)
+{ 
+  return (applyCutsPrivate(cs,effectivenessLb)) ;
+}
+\end{verbatim}
+The client includes \pgmid{Osi2Osi1API.hpp} and works entirely with the
+\OsiTwoOsi API.
+In all other respects, it's exactly as if the client was working with the
+original \pgmid{OsiSolverInterface} API.
 
 \subheading[l]{The Frontier}
 
 Further work on \OsiTwo requires some fundamental decisions about the type of
 usage that should be supported.
-In particular, how will the plugin library support interactions between
-API objects.
 As a running example,
 assume that \OsiTwo defines an \OsiTwoModel API for model construction and
 modification and an \OsiTwoSolve API for `solving' the model by finding an
@@ -177,51 +188,82 @@ Consider the following scenario:
 The client starts out constructing a model using an object which supports the
 \OsiTwoModel API\@.
 Once the model is constructed, the client would like an object which supports
-the \OsiTwoSolve API which can be used to solve the model just constructed.
+the \OsiTwoSolve API to be used to solve the model just constructed.
 There may be multiple iterations of modify and solve, and the user will expect
 that changes to the model are seen by the solver.
 
-There are any number of questions to ask at this point.
-Here are two:
+Given an object implementing some set of APIs, the client might want to add to
+that set or reduce it.
 \begin{itemize}
   \item
-  Should the client be expected to work with two distinct (but coordinated)
-  objects, one supporting the \OsiTwoModel API and one supporting the
-  \OsiTwoSolve API?
-  If not, whose responsibility is it to define a single class that supports
-  both APIs?
+  A reduction would specify that support for a particular set of APIs is no
+  longer required.
+  This might be necessary in order to add an API that is incompatible with the
+  API being removed.
 
   \item
-  Independent of the client's view, should the implementation of this composite
-  capability be two interacting objects or a single object providing both
-  APIs?
+  An addition would specify that support for a particular set of APIs be added
+  to the object.
 \end{itemize}
 
-The first question seems easier to answer: If a single object supporting
-multiple APIs is what is desired, it's the client's responsibility to derive
-the necessary class fron \OsiTwoTop.
-The client knows the exact set of combinations that is needed.
-\OsiTwo could guess at the set of desireable combinations, but combinatorial
+The client needs to be able to choose whether the object resulting from an
+API change is a new, independent object, or the same object with a different
+set of capabilities.
+In \OsiTwo, the design decision is that the default should be to alter
+the existing object whenever possible, returning a new object only when
+absolutely necessary.
+
+In the context of the running example, should the object that supports the
+\OsiTwoModel API be independent from the object that also supports the
+\OsiTwoSolve API\@?
+If the model is initially constructed using the model construction
+capabilities of a solver, the existing object will do just fine.
+If the model is initially constructed using a standalone model representation
+optimised for efficient modification, it may be necessary to load the
+model into a solver object in order to provide the solve capability.
+
+\OsiTwo should provide the ability to explicitly request the creation of an
+independent object.
+It should also provide the capability to inquire whether the desired change in
+APIs will force the creation of an independent object.
+
+Should the client be expected to work with two distinct (but coordinated)
+objects, one supporting the \OsiTwoModel API and one supporting the
+\OsiTwoSolve API\@?
+If not, whose responsibility is it to define a single class that supports
+both APIs?
+
+In \OsiTwo, if a single object supporting multiple APIs is what is desired,
+it will be the client's responsibility to derive the necessary class
+from \OsiTwoTop.
+The client knows the exact set of combinations that will be needed in the
+application.
+\OsiTwo could guess at the set of desirable combinations and declare
+corresponding classes, but combinatorial
 explosion will defeat any attempt to exhaustively enumerate the possible
 combinations.
 
-The second question seems much more difficult.
+How will the plugin library support interactions between API objects?
+Independent of the client's view, should the implementation of this composite
+capability be two interacting objects or a single object providing both
+APIs?
 Here are two possible models:
 \begin{itemize}
   \item
-  Equal interacting objects can be supported within the \OsiTwo APIs.
-  One can divide the APIs into two broad classes: data objects and analytic
+  Multiple interacting plugin objects can be supported within the \OsiTwo APIs.
+  One can divide the objects into two broad classes: data objects and analytic
   (action) objects.
-  In the running example, we have a single data object (\OsiTwoModel) and a
-  single analytic object (\OsiTwoSolve).
-  Clearly the general case is a many-to-many interaction.
+  In the running example, we have a single data object (specified by the
+  \OsiTwoModel API) and a
+  single analytic object (specified by the \OsiTwoSolve API).
+  The general case is a many-to-many interaction.
   An analytic object can process multiple data objects.
   A data object can be processed by multiple analytic objects.
 
   As a general algorithm for synchronisation, data objects could keep sequence
   numbers that track modifications to the data object.
-  Each analytic object could record the most recent sequence number for its
-  associated data objects.
+  Each analytic object could record the current sequence number when it
+  updates itself from its associated data objects.
   At the point where an analytic object is asked to process its associated
   data objects, it queries each data object to determine its current sequence
   number and updates itself as necessary.
@@ -240,9 +282,10 @@ Here are two possible models:
   would simply maintain pointers to the underlying objects.
 
   \item
-  Single (monolithic) objects can be supported within the plugin library.
-  Coordination is trivial in the sense that it's the responsibility of the
-  object.
+  Single (monolithic) plugin objects implementing some fixed combination of
+  APIs can be supported entirely within the plugin library.
+  Coordination is trivial in the sense that it is an internal responsibility
+  of the object.
   No additional support is required within the \OsiTwo API hierarchy.
 
   As with the multiple interacting object model, the client-facing class
@@ -250,57 +293,68 @@ Here are two possible models:
   by the plugin library.
 
   A limitation of this model, as opposed to the multiple interacting object
-  model, is that arbitrary composition is not possible (because of the same
-  combinatorial explosion that prevents \OsiTwo from supporting arbitrary
-  collections of APIs).
-  Each additional API is layered on top of previous APIs.
+  model, is that arbitrary composition is not possible.
+  The plugin developer faces the same combinatorial explosion
+  mentioned earlier.
 
-  The advantage of this model is that it captures the great majority of
-  existing solvers.
-  Referring to the running example, most solvers will implement both the
-  \OsiTwoModel API and the \OsiTwoSolve API (a consequence of maintaining a
-  tailored internal representation).
-  Augmenting the \OsiTwoModel API with the \OsiTwoSolve API is a natural
-  (nearly trivial) operation.
+  An advantage of this model is that it captures a large class of analytic
+  tools (most solvers, for example) which provide extensive APIs for
+  building, manipulating, and solving models.
+  Referring to the running example, nearly all solvers will implement both the
+  \OsiTwoModel API and the \OsiTwoSolve API (a consequence of maintaining an
+  internal representation tailored to the algorithms implemented in the solver).
+  `Augmenting' the \OsiTwoModel API with the \OsiTwoSolve API is a
+  trivial operation, because the object provided by the plugin library always
+  supports both APIs.
 \end{itemize}
 
-A related question is whether the client prefers a new, independent object
-after an API change or prefers the same object with augmented capabilities.
-In the context of the running example, should the object that supports the
-\OsiTwoModel API be independent from the object that also supports the
-\OsiTwoSolve API\@.
-Our design decision is that the default should be to augment the existing
-object whenever possible.
-The user will need to explicitly request an independent object.
+One can ask whether there is a convincing use case that justifies the
+complexity of the multiple interacting objects model.
+Put another way, why do the majority of existing tools fit the single object
+model\@?
+A plausible explanation is that a tool such as a solver is expected to be 
+complete in itself.
+Given the infrastructure, would developers target the multiple object model,
+where the ability to use plugin modules would reduce the need to reimplement
+common functions and thus lower the initial effort to implement an
+algorithm\@?
+Or would they be deterred by the loss of control and possible loss of
+efficiency implied by dependence on an external plugin object?
 
-Another issue is the interface between the client-facing object and the
-implementing object provided by the plugin library.
-The client-facing interface is defined by the \OsiTwo APIs, but the
-plugin-facing interface need not be the same.
+Another issue is the nature of the interface between the \OsiTwo object
+and the implementing object provided by the plugin library.
+The client-facing interface of \OsiTwo objects is defined by the \OsiTwo APIs,
+but the plugin-facing interface need not be the same.
 Arguably, the plugin-facing interface should be parsimonious, particularly in
 the monolithic plugin object model, where each additional capability is
-layered on top of previous capabilities.
-The danger here is that the work required to implement a minimally functional
+added on top of previous capabilities.
+The danger is that the work required to implement a minimally functional
 plugin will become an insurmountable bar (one of the criticisms labelled at
 the existing \pgmid{OsiSolverInterface}).
 This must be balanced against efficiency: if the set of methods is too small
-and/or primitive, composing complex operations can be made less efficient.
+and/or primitive, too many basic operations will be required to implement a
+complex operation.
 
 
 \subheading{Plugin Manager Architecture}
 
 The plugin manager architecture used in \OsiTwo is broadly adopted from an
 architecture originally described by G.~Sayfan \cite{say07}.
+As plugin libraries are loaded, the plugin manager registers the capabilities
+(APIs) provided by the libraries.
+When a client asks for an object to implement an API, the plugin manager
+locates a library which can satisfy the request and invokes a factory method
+to create the object.
+APIs are identified by strings.
+Maps are used to associate an API identification string with the information
+necessary to create an object that implements that API.
 
 There is one (static) instance of the plugin manager, returned by a call to
 \pgmid{getInstance}.
-The plugin manager provides certain services and information to plugins,
-specified in the \pgmid{PlatformServices} class.
-Currently, a \pgmid{PlatformServices} object specifies a registration
-method that allows a plugin to register with the plugin manager, and it
-provides a general-purpose service method that the plugin can invoke
-to request other
-services from the manager\footnote{%
+The plugin manager provides services and information to plugins.
+Currently, the plugin manager provides a registration service for APIs.
+The plugin manager also implements the capability to provide general-purpose
+services\footnote{%
   No general-purpose services are implemented at present.}.
 
 A deficiency in the original architecture is that it assumes a very structured
@@ -310,8 +364,8 @@ interaction between plugin libraries and the client program.
   There is no provision for maintaining state to manage a library or individual
   APIs supported by the library.
 
-  The plugin libraries used for \OsiTwo are in general not stateless, hence the
-  interface between the plugin manager and the library  has been expanded
+  The plugin libraries used for \OsiTwo are in general not stateless.
+  The interface between the plugin manager and the library  has been expanded
   to allow a reference to a management object to be returned to the plugin
   manager during library initialisation and passed back to the plugin library
   whenever the library is asked to create an object to implement an API.
@@ -339,7 +393,7 @@ point of view of a client.
   \item
   Load the plugin library.
 
-  Currently, this is accomplished by a call to the static \pgmid{load}
+  This is accomplished by a call to the static \pgmid{load}
   method in the \pgmid{DynamicLibrary} class, which will invoke the system
   \pgmid{dlopen} method\footnote{%
       Support for Windows will be provided by has not been tested.}.
@@ -426,7 +480,16 @@ point of view of a client.
   The plugin manager requires that the request to destroy the object specify
   the plugin library that produced the object.
   This is necessary to ensure that the
-  request to destroy an object goes to the plugin library that created it.
+  request to destroy an object goes to the plugin library that created
+  it\footnote{%
+  The plugin manager does \textit{not} track objects; it's purely an
+  intermediary.
+  Given that objects can be deleted using the standard \pgmid{delete}
+  operator, there's no point in even trying.
+  While the \pgmid{destroyObject} method requires that the client specify a
+  plugin library, the plugin manager cannot ensure that the library specified
+  is in fact the library that produced the object.
+  It's the client's responsibility to keep this straight.}.
 
   \item
   Ask the plugin manager to unload a library.
@@ -463,7 +526,7 @@ so that future requests will be satisfied with an exact match.
 
 \subheading[l]{Shims}
 
-The \OsiTwo term for an implementation of an \OsiTwo APIs is a `shim'.
+The \OsiTwo term for an implementation of a plugin library is a `shim'.
 Two shim architectures have been tried, called `heavy' and `light'.
 
 A `heavy' shim includes any underlying libraries in the link that creates the
@@ -496,6 +559,35 @@ independently of the underlying libraries.
 The disadvantage is that all library methods must be explicitly loaded with
 \pgmid{getSymbol} (\pgmid{dlsym}) and are subject to all the restrictions of
 `C' linkage.
+
+The \OsiTwoOsi implementations described earlier use a multiple inheritance
+architecture, as
+\begin{verbatim}
+class Osi1API_ClpHeavy : public Osi1API, public OsiClpSolverInterface { ... }
+\end{verbatim}
+with methods implemented as
+\begin{verbatim}
+inline void initialSolve() { OsiClpSolverInterface::initialSolve() ; }
+\end{verbatim}
+One can also work with a pointer to the underlying solver object, as
+\begin{verbatim}
+#include "OsiClpSolverInterface.hpp"
+
+class Osi1API_ClpHeavy : public Osi1API {
+
+  OsiClpSolverInterface *clp_ ;
+
+}
+\end{verbatim}
+with methods implemented as
+\begin{verbatim}
+inline void initialSolve() { clp_->initialSolve() ; }
+\end{verbatim}
+At the expense of an additional indirection, this approach provides the
+ability to change the solver object.
+In a more general context, this approach offers considerable flexibility to
+assemble the methods required for an API from multiple underlying objects with
+fewer restrictions than multiple inheritance.
 
 \subheading[l]{The Frontier}
 
