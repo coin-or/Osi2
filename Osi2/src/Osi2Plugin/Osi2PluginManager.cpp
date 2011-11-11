@@ -336,8 +336,14 @@ int PluginManager::loadOneLib (const std::string &lib, const std::string *dir,
     /*
       Find the initialisation function "initPlugin". If this entry point
       is missing from the library, we're in trouble.
+
+      Suppress the "can't convert pointer-to-object to pointer-to-function"
+      warning. Use the guarantee that any pointer can be converted to size_t
+      and back to launder the function pointer
     */
-    InitFunc initFunc = (InitFunc)(dynLib->getSymbol("initPlugin", errStr)) ;
+    size_t grossHack =
+        reinterpret_cast<size_t>(dynLib->getSymbol("initPlugin", errStr)) ;
+    InitFunc initFunc = reinterpret_cast<InitFunc>(grossHack) ;
     if (initFunc == nullptr) {
         msgHandler_->message(PLUGMGR_SYMLDFAIL, msgs_)
                 << "function" << "initPlugin" << fullPath << errStr << CoinMessageEol ;
