@@ -43,8 +43,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@COIN_HAS_OSIGLPK_TRUE@am__append_1 = Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
 subdir = src/Osi2Shims
-DIST_COMMON = $(includecoin_HEADERS) $(srcdir)/Makefile.am \
+DIST_COMMON = $(am__includecoin_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -66,15 +67,21 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libOsi2ClpHeavyShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libOsi2ClpHeavyShim_la_OBJECTS = Osi2ClpHeavyShim.lo \
-	Osi2ProbMgmtAPI_ClpHeavy.lo Osi2Osi1API_ClpHeavy.lo
+am_libOsi2ClpHeavyShim_la_OBJECTS = Osi2ProbMgmtAPI_ClpHeavy.lo \
+	Osi2Osi1API_ClpHeavy.lo Osi2ClpHeavyShim.lo
 libOsi2ClpHeavyShim_la_OBJECTS = $(am_libOsi2ClpHeavyShim_la_OBJECTS)
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libOsi2ClpShim_la_OBJECTS = Osi2ClpShim.lo Osi2ProbMgmtAPI_Clp.lo
+am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo \
+	Osi2Osi1API_Clp.lo Osi2ClpShim.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
-libOsi2GlpkHeavyShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libOsi2GlpkHeavyShim_la_OBJECTS = Osi2GlpkHeavyShim.lo \
-	Osi2Osi1API_GlpkHeavy.lo
+@COIN_HAS_OSIGLPK_TRUE@libOsi2GlpkHeavyShim_la_DEPENDENCIES =  \
+@COIN_HAS_OSIGLPK_TRUE@	$(am__DEPENDENCIES_1)
+am__libOsi2GlpkHeavyShim_la_SOURCES_DIST = Osi2Osi1API_GlpkHeavy.cpp \
+	Osi2Osi1API_GlpkHeavy.hpp Osi2GlpkHeavyShim.cpp \
+	Osi2GlpkHeavyShim.hpp
+@COIN_HAS_OSIGLPK_TRUE@am_libOsi2GlpkHeavyShim_la_OBJECTS =  \
+@COIN_HAS_OSIGLPK_TRUE@	Osi2Osi1API_GlpkHeavy.lo \
+@COIN_HAS_OSIGLPK_TRUE@	Osi2GlpkHeavyShim.lo
 libOsi2GlpkHeavyShim_la_OBJECTS =  \
 	$(am_libOsi2GlpkHeavyShim_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -100,7 +107,11 @@ SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
 	$(libOsi2GlpkHeavyShim_la_SOURCES)
 DIST_SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
 	$(libOsi2ClpShim_la_SOURCES) \
-	$(libOsi2GlpkHeavyShim_la_SOURCES)
+	$(am__libOsi2GlpkHeavyShim_la_SOURCES_DIST)
+am__includecoin_HEADERS_DIST = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2Osi1API_Clp.hpp Osi2ClpHeavyShim.hpp \
+	Osi2ProbMgmtAPI_ClpHeavy.hpp Osi2Osi1API_ClpHeavy.hpp \
+	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
@@ -389,13 +400,14 @@ lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
 
 # List all source files for this library, including headers
 libOsi2ClpShim_la_SOURCES = \
-	Osi2ClpShim.cpp Osi2ClpShim.hpp \
-	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp
+	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp \
+	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpHeavyShim_la_SOURCES = \
-	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp \
 	Osi2ProbMgmtAPI_ClpHeavy.cpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.cpp Osi2Osi1API_ClpHeavy.hpp
+	Osi2Osi1API_ClpHeavy.cpp Osi2Osi1API_ClpHeavy.hpp \
+	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp
 
 
 # This is for libtool
@@ -409,12 +421,12 @@ libOsi2ClpHeavyShim_la_LIBADD = $(OSI2CLPHEAVYSHIM_LIBS)
 ########################################################################
 #                      libOsi2GlpkHeavyShim                            #
 ########################################################################
-libOsi2GlpkHeavyShim_la_SOURCES = \
-	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp \
-	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp
+@COIN_HAS_OSIGLPK_TRUE@libOsi2GlpkHeavyShim_la_SOURCES = \
+@COIN_HAS_OSIGLPK_TRUE@	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp \
+@COIN_HAS_OSIGLPK_TRUE@	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp
 
-libOsi2GlpkHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
-libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LIBS)
+@COIN_HAS_OSIGLPK_TRUE@libOsi2GlpkHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
+@COIN_HAS_OSIGLPK_TRUE@libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LIBS)
 
 # Here list all include flags.
 AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) \
@@ -423,7 +435,10 @@ AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) \
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
+	-I`$(CYGPATH_W) $(srcdir)/../Osi2` \
+	-I`$(CYGPATH_W) ../Osi2`
+
 
 ########################################################################
 #                Headers that need to be installed                     #
@@ -432,12 +447,10 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in 'includedir/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = \
-	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.hpp \
-	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
-
+includecoin_HEADERS = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2Osi1API_Clp.hpp Osi2ClpHeavyShim.hpp \
+	Osi2ProbMgmtAPI_ClpHeavy.hpp Osi2Osi1API_ClpHeavy.hpp \
+	$(am__append_1)
 all: all-am
 
 .SUFFIXES:
@@ -514,6 +527,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpHeavyShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2GlpkHeavyShim.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_Clp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_Clp.Plo@am__quote@

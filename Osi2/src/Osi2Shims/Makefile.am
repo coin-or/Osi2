@@ -20,13 +20,14 @@ lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
 # List all source files for this library, including headers
 
 libOsi2ClpShim_la_SOURCES = \
-	Osi2ClpShim.cpp Osi2ClpShim.hpp \
-	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp
+	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp \
+	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpHeavyShim_la_SOURCES = \
-	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp \
 	Osi2ProbMgmtAPI_ClpHeavy.cpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.cpp Osi2Osi1API_ClpHeavy.hpp
+	Osi2Osi1API_ClpHeavy.cpp Osi2Osi1API_ClpHeavy.hpp \
+	Osi2ClpHeavyShim.cpp Osi2ClpHeavyShim.hpp
 
 # This is for libtool
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -40,13 +41,14 @@ libOsi2ClpHeavyShim_la_LIBADD = $(OSI2CLPHEAVYSHIM_LIBS)
 #                      libOsi2GlpkHeavyShim                            #
 ########################################################################
 
+if COIN_HAS_OSIGLPK
 libOsi2GlpkHeavyShim_la_SOURCES = \
-	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp \
-	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp
+	Osi2Osi1API_GlpkHeavy.cpp Osi2Osi1API_GlpkHeavy.hpp \
+	Osi2GlpkHeavyShim.cpp Osi2GlpkHeavyShim.hpp
 
 libOsi2GlpkHeavyShim_la_LDFLAGS = $(LT_LDFLAGS) -module
 libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LIBS)
-
+endif
 
 
 # Here list all include flags.
@@ -55,7 +57,10 @@ AM_CPPFLAGS = $(COINUTILS_CFLAGS) $(CLP_CFLAGS) \
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
+	-I`$(CYGPATH_W) $(srcdir)/../Osi2` \
+	-I`$(CYGPATH_W) ../Osi2`
+
 
 ########################################################################
 #                Headers that need to be installed                     #
@@ -67,7 +72,10 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
 	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2Osi1API_Clp.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
-	Osi2Osi1API_ClpHeavy.hpp \
-	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
+	Osi2Osi1API_ClpHeavy.hpp
+if COIN_HAS_OSIGLPK
+includecoin_HEADERS += Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
+endif
 

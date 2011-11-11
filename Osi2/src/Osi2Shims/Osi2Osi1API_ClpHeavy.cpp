@@ -35,7 +35,7 @@ namespace Osi2 {
 Osi1API_ClpHeavy::Osi1API_ClpHeavy ()
 {
   /*
-  std::cout << "Osi1API_Clp object constructor." << std::endl ;
+  std::cout << "Osi1API_ClpHeavy object constructor." << std::endl ;
   */
 }
 
@@ -47,7 +47,7 @@ Osi1API_ClpHeavy::Osi1API_ClpHeavy (const Osi1API_ClpHeavy &rhs)
       OsiClpSolverInterface(rhs)
 {
   /*
-  std::cout << "Osi1API_Clp object copy constructor." << std::endl ;
+  std::cout << "Osi1API_ClpHeavy object copy constructor." << std::endl ;
   */
 }
 
@@ -57,7 +57,7 @@ Osi1API_ClpHeavy::Osi1API_ClpHeavy (const Osi1API_ClpHeavy &rhs)
 Osi1API_ClpHeavy::~Osi1API_ClpHeavy ()
 {
   /*
-  std::cout << "Osi1API_Clp object destructor." << std::endl ;
+  std::cout << "Osi1API_ClpHeavy object destructor." << std::endl ;
   */
 }
 

@@ -23,6 +23,7 @@
 #include "Osi2DynamicLibrary.hpp"
 
 #include "Osi2ProbMgmtAPI_Clp.hpp"
+#include "Osi2Osi1API_Clp.hpp"
 
 using namespace Osi2 ;
 
@@ -53,7 +54,10 @@ void *ClpShim::create (const ObjectParams *params)
 
     std::cout << "Clp create: type " << what << "." << std::endl ;
 
-    if (what == "ClpSimplex" || what == "ProbMgmt" || what == "WildProbMgmt") {
+    if (what == "ClpSimplex" ||
+        // what == "Osi1" ||
+	what == "ProbMgmt" ||
+        what == "WildProbMgmt") {
         std::cout
                 << "Request to create " << what << " recognised." << std::endl ;
         ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
@@ -79,6 +83,9 @@ void *ClpShim::create (const ObjectParams *params)
         if (what == "ProbMgmt" || what == "WildProbMgmt") {
             ProbMgmtAPI *probMgmt = new ProbMgmtAPI_Clp(libClp, wrapper) ;
             return (probMgmt) ;
+	} else if (what == "Osi1") {
+	    // Osi1API *osi1 = new Osi1API_Clp(libClp,wrapper) ;
+	    // return (osi1) ;
         } else {
             return (retval) ;
         }

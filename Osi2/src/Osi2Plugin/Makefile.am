@@ -39,7 +39,9 @@ AM_CPPFLAGS = $(COINUTILS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 # This line is necessary to allow VPATH compilation.
 # This "cygpath" stuff is necessary to compile with native compilers on Windows.
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
+	-I`$(CYGPATH_W) $(srcdir)/../Osi2` \
+	-I`$(CYGPATH_W) ../Osi2`
 
 ########################################################################
 #                Headers that need to be installed                     #

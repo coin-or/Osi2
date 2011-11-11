@@ -30,7 +30,9 @@ AM_CPPFLAGS = $(UNITTESTDEPS_CFLAGS)
 
 # This line is necessary to allow VPATH compilation with MS compilers
 # on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
+	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
+	-I`$(CYGPATH_W) ../src/Osi2`
 
 test: unitTest$(EXEEXT)
 	./unitTest$(EXEEXT)

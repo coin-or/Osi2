@@ -21,6 +21,7 @@
 #include <dlfcn.h>
 #endif
 
+#include "Osi2Config.h"
 #include "Osi2nullptr.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include <sstream>

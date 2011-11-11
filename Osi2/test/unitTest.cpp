@@ -288,7 +288,9 @@ int main(int argC, char* argV[])
     std::vector<TestVec> solvers ;
     solvers.push_back(TestVec("clp",1)) ;
     solvers.push_back(TestVec("clpHeavy",0)) ;
+#   ifdef COIN_HAS_OSIGLPK
     solvers.push_back(TestVec("glpkHeavy",2)) ;
+#   endif
     std::vector<TestVec>::const_iterator iter ;
     int totalErrs = 0 ;
     for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
