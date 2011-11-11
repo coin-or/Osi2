@@ -65,8 +65,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includecoindir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libOsi2_la_DEPENDENCIES =
-am_libOsi2_la_OBJECTS = Osi2API.lo Osi2ControlAPI_Imp.lo \
-	Osi2CtrlAPIMessages.lo
+am_libOsi2_la_OBJECTS = Osi2ControlAPI_Imp.lo Osi2CtrlAPIMessages.lo
 libOsi2_la_OBJECTS = $(am_libOsi2_la_OBJECTS)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -373,7 +372,7 @@ lib_LTLIBRARIES = libOsi2.la
 
 # List all source files for this library, including headers
 libOsi2_la_SOURCES = \
-	Osi2API.hpp Osi2API.cpp \
+	Osi2API.hpp \
 	Osi2ControlAPI.hpp Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
 	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp
 
@@ -500,7 +499,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2API.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ControlAPI_Imp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2CtrlAPIMessages.Plo@am__quote@
 

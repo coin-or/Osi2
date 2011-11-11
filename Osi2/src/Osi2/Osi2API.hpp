@@ -44,9 +44,6 @@ public:
     /// Retrieve object identification information block
     inline const void *getIdentInfo () const { return (identInfo_) ; }
 
-    /// Test method to see what happens when a method is defined
-    const void hiMom (int val) ;
-
 protected:
 
     /// Set the identification information

@@ -526,7 +526,8 @@ public:
 	       tmp.getNumInfeasible(),
 	       tmp.getNumIneffective(),
 	       tmp.getNumApplied()) ;
-    return (retval) ; }
+    return (retval) ;
+  }
 
   inline void applyRowCuts(int numCuts, const OsiRowCut *cuts)
   { OsiClpSolverInterface::applyRowCuts(numCuts,cuts) ; }
