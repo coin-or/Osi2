@@ -24240,7 +24240,6 @@ OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Clp/src"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Osi/src/Osi"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Osi/src/Osi"
 OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
-# OSI2CLPHEAVYSHIM_CFLAGS="$OSI2CLPHEAVYSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
 
 # Avoid pulling Osi2Config.h and dependencies into the build for libOsi2Plugin
 # just for COIN_HAS_NULLPTR. Eventually nullptr should move to CoinUtils.

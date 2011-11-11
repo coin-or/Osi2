@@ -154,28 +154,18 @@ int testControlAPI (const std::string &shortName,
     int retval = 0 ;
     int errcnt = 0 ;
     std::cout
-            << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
+	<< "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
     ControlAPI_Imp ctrlAPI ;
     std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
     /*
-      Load shims. There may not be a light shim, so allow failure.
+      Load shim.
     */
     retval = ctrlAPI.load(shortName) ;
     if (retval != 0) {
         std::cout
-                << "Apparent failure to load " << shortName << "." << std::endl ;
-        std::cout
-                << "Error code is " << retval << "." << std::endl ;
-    }
-    std::string heavyName = shortName+"Heavy" ;
-    retval = ctrlAPI.load(heavyName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-	    << "Apparent failure to load " << heavyName << "." << std::endl ;
+	    << "Apparent failure to load " << shortName << "." << std::endl ;
         std::cout
 	    << "Error code is " << retval << "." << std::endl ;
-        return (errcnt) ;
     }
     /*
       Create a ProbMgmt object, invoke a nontrivial method, and destroy the
@@ -186,7 +176,7 @@ int testControlAPI (const std::string &shortName,
     if (retval != 0) {
         errcnt++ ;
         std::cout
-                << "Apparent failure to create a ProbMgmt object." << std::endl ;
+	    << "Apparent failure to create a ProbMgmt object." << std::endl ;
     } else {
         ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
@@ -196,7 +186,7 @@ int testControlAPI (const std::string &shortName,
         if (retval < 0) {
             errcnt++ ;
             std::cout
-                    << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+		<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
         }
     }
     /*
@@ -208,7 +198,7 @@ int testControlAPI (const std::string &shortName,
     if (retval != 0) {
         errcnt++ ;
         std::cout
-                << "Apparent failure to create an Osi1 object." << std::endl ;
+	    << "Apparent failure to create an Osi1 object." << std::endl ;
     } else {
         Osi1API *osi = dynamic_cast<Osi1API *>(apiObj) ;
 	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
@@ -220,7 +210,7 @@ int testControlAPI (const std::string &shortName,
         if (retval < 0) {
             errcnt++ ;
             std::cout
-                    << "Apparent failure to destroy an Osi1 object." << std::endl ;
+		<< "Apparent failure to destroy an Osi1 object." << std::endl ;
         }
 	o2->initialSolve() ;
 	if (o2->isProvenOptimal())
@@ -230,29 +220,7 @@ int testControlAPI (const std::string &shortName,
         if (retval < 0) {
             errcnt++ ;
             std::cout
-                    << "Apparent failure to destroy an Osi1 object." << std::endl ;
-        }
-    }
-    /*
-      Create a ProbMgmt object from ClpHeavy, invoke a nontrivial method,
-      and destroy the object.
-    */
-    apiObj = nullptr ;
-    retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &heavyName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-	    << "Apparent failure to create a ProbMgmt (heavy) object." << std::endl ;
-    } else {
-        ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
-        clp->readMps(exmip1Path.c_str(), true) ;
-	clp->initialSolve() ;
-        int retval = ctrlAPI.destroyObject(apiObj) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-                    << "Apparent failure to destroy a ProbMgmt (heavy) object." << std::endl ;
+		<< "Apparent failure to destroy an Osi1 object." << std::endl ;
         }
     }
     /*
@@ -288,15 +256,6 @@ int testControlAPI (const std::string &shortName,
         std::cout
                 << "Error code is " << retval << "." << std::endl ;
     }
-    retval = ctrlAPI.unload(heavyName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure to unload " << heavyName << "." << std::endl ;
-        std::cout
-                << "Error code is " << retval << "." << std::endl ;
-    }
-
     return (errcnt) ;
 }
 
@@ -325,19 +284,24 @@ int main(int argC, char* argV[])
     /*
       Now let's try the Osi2 control API.
     */
-    std::cout << "Testing ControlAPI." << std::endl ;
-    retval = testControlAPI("clp",dfltSampleDir) ;
-    std::cout
-            << "End test of ControlAPI, " << retval << " errors."
-            << std::endl << std::endl ;
-    /*
-      Now let's try the Osi2 control API.
-    */
-    std::cout << "Testing ControlAPI." << std::endl ;
-    retval = testControlAPI("glpk",dfltSampleDir) ;
-    std::cout
-            << "End test of ControlAPI, " << retval << " errors."
-            << std::endl << std::endl ;
+    typedef std::pair<std::string,int> TestVec ;
+    std::vector<TestVec> solvers ;
+    solvers.push_back(TestVec("clp",1)) ;
+    solvers.push_back(TestVec("clpHeavy",0)) ;
+    solvers.push_back(TestVec("glpkHeavy",2)) ;
+    std::vector<TestVec>::const_iterator iter ;
+    int totalErrs = 0 ;
+    for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
+      std::string solverName = iter->first ;
+      std::cout
+        << "Testing ControlAPI (" << solverName << ")." << std::endl ;
+      retval = testControlAPI(solverName,dfltSampleDir) ;
+      std::cout
+          << "End test of ControlAPI (" << solverName << "), "
+	  << retval << " errors, expected " << iter->second
+	  << std::endl << std::endl ;
+      totalErrs += retval-(iter->second) ;
+    }
     /*
       Shut down the plugin manager. This will call the plugin library exit
       functions and unload the libraries.
@@ -349,7 +313,7 @@ int main(int argC, char* argV[])
 
     std::cout << "END UNIT TEST" << std::endl ;
 
-    return (retval) ;
+    return (totalErrs) ;
 
 }
 
