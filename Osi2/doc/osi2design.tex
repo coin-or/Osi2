@@ -329,7 +329,7 @@ Arguably, the plugin-facing interface should be parsimonious, particularly in
 the monolithic plugin object model, where each additional capability is
 added on top of previous capabilities.
 The danger is that the work required to implement a minimally functional
-plugin will become an insurmountable bar (one of the criticisms labelled at
+plugin will become an insurmountable bar (one of the criticisms levelled at
 the existing \pgmid{OsiSolverInterface}).
 This must be balanced against efficiency: if the set of methods is too small
 and/or primitive, too many basic operations will be required to implement a
@@ -394,9 +394,9 @@ point of view of a client.
   Load the plugin library.
 
   This is accomplished by a call to the static \pgmid{load}
-  method in the \pgmid{DynamicLibrary} class, which will invoke the system
+  method in the \pgmid{DynamicLibrary} class, which invokes the system
   \pgmid{dlopen} method\footnote{%
-      Support for Windows will be provided by has not been tested.}.
+      Support for Windows will be provided but has not been tested.}.
   The plugin manager supports specification of a default plugin
   directory\footnote{%
     We need to add infrastructure to check the environment. We might also
