@@ -63,17 +63,21 @@ void *ClpShim::create (const ObjectParams *params)
         ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
         DynamicLibrary *libClp = shim->libClp_ ;
         std::string errStr ;
-        ClpFactory factory =
-            reinterpret_cast<ClpFactory>(libClp->getSymbol("Clp_newModel", errStr)) ;
+	/*
+	  Use size_t as an intermediary to suppress function to object pointer
+	  conversion error.
+	*/
+	size_t grossHack =
+            reinterpret_cast<size_t>(libClp->getSymbol("Clp_newModel", errStr)) ;
+        ClpFactory factory = reinterpret_cast<ClpFactory>(grossHack) ;
         if (factory == nullptr) {
             std::cout << "Apparent failure to find Clp_newModel." << std::endl ;
             std::cout << errStr << std::endl ;
             return (nullptr) ;
         }
         Clp_Simplex *wrapper = factory() ;
-        ClpSimplexFactory underlyingModel =
-            reinterpret_cast<ClpSimplexFactory>
-            (libClp->getSymbol("Clp_model", errStr)) ;
+        grossHack = reinterpret_cast<size_t>(libClp->getSymbol("Clp_model", errStr)) ;
+        ClpSimplexFactory underlyingModel = reinterpret_cast<ClpSimplexFactory>(grossHack) ;
         if (underlyingModel == 0) {
             std::cout << "Apparent failure to find Clp_model." << std::endl ;
             std::cout << errStr << std::endl ;
