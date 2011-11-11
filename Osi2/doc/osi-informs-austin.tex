@@ -1,0 +1,93 @@
+\documentclass{beamer}
+
+\title{Next Steps for the  \\ COIN-OR \\ Open Solver Interface}
+\author{Lou Hafer\inst{1} \and Matthew Saltzman\inst{2}}
+\institute{
+  \inst{1}
+  Department of Computer Science \\
+  Simon Fraser University
+  \and
+  \inst{2}
+  Department of Mathematical Sciences \\
+  Clemson University.
+}
+\date{INFORMS Annual Meeting \\ Austin, Texas \\ November 10, 2010}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Outline}
+
+  \begin{itemize}
+  \item What's wrong with the current API?
+  \item Dynamic Plugin Architecture
+  \item Factories and Run-Time Instantiation
+  \item Callbacks: Function-Pointer and Object-Based Approaches
+  \item Extending the Basic Interface: OsiSimplex, etc.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What's Wrong with the Current OSI?}
+
+  The current OSI architecture is the original one from 2000.  It
+  has proved to be useful in many contexts, but it has several
+  properties that make it difficult to use and maintain.
+  \begin{itemize}
+  \item Back-end interfaces are created by inheritance from a base
+    class (front end).
+    \begin{itemize}
+    \item Front-end and back-end interfaces can get out of sync.
+    \item Too many tasks are implemented in the back end.
+    \item Extending interfaces is difficult.
+    \item Separation between instances and algorithms is problematic.
+    \end{itemize}
+  \item Solver interfaces are required at compile time.
+    \begin{itemize}
+    \item Control of which interfaces are needed is handled in
+      source code, or by preprocessor directives (\texttt{\#ifdef}).
+    \end{itemize}
+  \item Solver libraries are required at link time.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plugin Architecture for Dynamic Solver Engine Linking}
+  \begin{itemize}
+  \item Decide which back-end interface and solver engine at runtime.
+  \item Load just functions needed.
+  \item No need to include engine library references with binary
+    distributions.
+  \item Windows DLLs and *nix static, shared, and dynamic libraries
+    can be handled.
+  \item C++ and C interfaces are possible.  With C++, all class
+    information is exposed across the interface.  With C, objects
+    can be wrapped to pass across.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Callbacks and Event Handlers}
+
+  Opprtunity for the user to collect information about algorithm
+  progress or take action at certain points in the algorithm or on
+  the occurence of certain external events.
+  \begin{itemize}
+  \item C solvers allow the user to register functions with the
+    solver to be called at those points.
+  \item C++ solvers call virtual functions at those points.  Users
+    can derive replacement functions to achieve the desired result.
+  \item A portable callback framework is a challenge.  Full callback
+    flexibility probably requires exposing the solver engine's
+    callback interface.
+  \item Portability for callbacks using the intersection of common
+    callback interfaces can be done.
+  \item Hiding the C mechanism from C++ programs is possible.
+    Hiding the C++ mechanism from C programs is possible if the set
+    of actions is fixed (e.g., just abort).
+  \end{itemize}
+\end{frame}
+\end{document}

@@ -1,0 +1,368 @@
+\documentclass{beamer}
+\usepackage{amsmath,amssymb,listings}
+
+\title{The COIN-OR \\ Open Solver Interface 2.0 \\ Redux \\[\jot] \tiny
+  (Zombies Attack!)}
+\author{Lou Hafer\inst{1} \and Matthew Saltzman\inst{2}}
+\institute{
+  \inst{1}
+  Department of Computer Science \\
+  Simon Fraser University
+  \and
+  \inst{2}
+  Department of Mathematical Sciences \\
+  Clemson University.
+}
+\date{INFORMS Annual Meeting \\ Austin, Texas \\ November 10, 2010}
+
+\begin{document}
+\lstset{language=C++}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is OSI?}
+
+\begin{itemize}
+\item A cross-solver API
+\item Lower level than most solver APIs
+  \begin{itemize}
+  \item Instance management
+  \item Algorithm control (e.g., pivot-level simplex) is a goal
+    (honored more often than not in the breach)
+  \item Intended as a ``crossbar switch'' to connect applications to
+    solvers
+  \end{itemize}
+\item One of the original COIN-OR projects (a product of impetuous
+  youth and inexperience)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Fractured History}
+
+  \begin{itemize}
+  \item Original goal for OSI: ``solver independent''
+    \begin{itemize}
+    \item Too ambitious---can't reproduce outcomes reliably with
+      different solvers
+    \end{itemize}
+    \pause
+  \item More achievable: ``solver agnostic''
+    \begin{itemize}
+    \item Common way to interact with solvers, but don't enforce
+      solver behavior
+    \item Success (more or less) at source code level
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Source Level Control}
+  \begin{itemize}
+  \item \texttt{OsiXxxSolverInterface} derived from
+    \texttt{OsiSolverInterface} for various values of \texttt{Xxx}
+    ($\text{\texttt{Xxx}} \in \{\text{\texttt{Clp}}, \text{\texttt{Cpx}},
+  \text{\texttt{Grb}}, \dots \}$).
+  \item User program instantiates concrete
+    \texttt{OsiXxxSolverInterface} object
+  \item So \texttt{Xxx} needs to be specified in source
+  \item Selection can be controlled by compiler directives
+    (\texttt{\#ifdef}) 
+  \item Specified solver engine library required at link time
+    \pause
+  \item Solver engine library must ship with user's binary!
+    \begin{itemize}
+    \item For example, our CBC binary must ship with CLP as LP
+      solver, because we can't ship other LP solvers.
+    \item An end user who wants another solver engine must build
+      from source
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared Library for Solver Engine}
+
+  \begin{itemize}
+  \item If solver libraries are shared (\texttt{libxxx.so} on Unix,
+    DLL on Windows)
+    \begin{itemize}
+    \item We can ship without solver libs---they are linked at load time
+    \item Still need to specify solver in source code
+    \item User still needs to have solver libs
+    \item CPLEX isn't shipped as shared lib!
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dynamic Loading of Solver Engine}
+  \begin{itemize}
+  \item \texttt{dlopen()}, \texttt{dlsym()}, etc., in Linux, other
+    calls in Windows and other Unix systems
+  \item There are cross-platform libraries for this task (GNOME
+    glib, GNU libtool)
+  \item Solver Engine loaded at runtime, not needed at link time
+  \item But still tied to solver in source
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plugins: An Alternate Definition of ``Solver Independence''}
+
+  \begin{itemize}
+  \item Delay decision of what solver to instantiate until runtime
+    \begin{itemize}
+    \item User declares abstract interface object (\texttt{OsiSolverInterface})
+    \item Asks factory object to create a specified concrete implementation
+    \end{itemize}
+  \item Solver engine loaded dynamically when implementation object
+    is created
+  \item Now we can ship CBC (say) and let the end user decide at runtime
+    which LP engine to use
+  \item Plugin builder and user need access to solver engine
+    \pause
+  \item Now we're breaking source code compatibility\dots
+    \pause
+  \item \dots so we can think about what we would do if we were
+    starting with a clean slate
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What Else is Wrong?}
+
+  \begin{itemize}
+  \item Front and back ends can get out of sync
+  \item Interface changes break everything
+  \item Extensions are difficult
+  \item Feature-complete new shims are painful to implement
+  \item No upgrade path
+  \item Too many tasks are implemented in the shim layer (e.g.,
+    caching)---no way to implement common code
+  \item No way for caller to know what capabilities are available or
+    missing
+  \item \dots
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What do we want?}
+
+  \begin{itemize}
+  \item Writing shims should be straightforward (not much harder than
+    other APIs)
+  \item Using the interface should be straightforward (not much harder
+    than using an unwrapped solver)
+  \item Performance penalty should be minimal
+  \item The interface should provide a useful set of capabilities
+  \item The interface should be extensible
+    \begin{itemize}
+    \item New capabilities should be easy to offer through the interface
+    \item Hooking the solver directly should truly be a last resort
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Decouple Interface from Implementation}
+
+  \begin{itemize}
+  \item In C++, this is a matter of programmer discipline
+  \item Necessary to implement plugins
+  \item Necessary to implement extensions
+  \end{itemize}
+  \pause
+  \begin{itemize}
+  \item Abstract base class exposes only public interface---defines
+    module semantics
+  \item Concrete implementation object derived from abstract base class
+  \item User asks factory method to return concrete object
+  \item All implementation details and private data are hidden
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Modularization}
+
+  \begin{itemize}
+  \item Clusters of related methods to accomplish tasks
+    \begin{itemize}
+    \item Core instance management
+    \item Presolve
+    \item Linear algebra, basis management
+    \item Simplex
+    \item B\&C control
+    \item \dots
+    \end{itemize}
+  \item Capabilities managed via a map (name, version, factory)
+    \begin{itemize}
+    \item Name defines semantics via abstract base class
+    \item Loading an interface returns a pointer to a concrete object
+    \item Upgrades (for developer)
+    \item Fallbacks (for user)
+    \end{itemize}
+  \item Modules associated with an instance need to match solver engine
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inter-Module Communication}
+
+  \begin{itemize}
+  \item Modules are users too
+    \begin{itemize}
+    \item Need access to capabilities
+    \end{itemize}
+  \item Incoming module responsible for replacing existing module
+    with the same functionality
+    \begin{itemize}
+    \item Extract data
+    \item Replace capabilities
+    \item Unload old module
+    \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Callbacks}
+
+  \begin{itemize}
+  \item C engine callback handled by registering a function with
+    specific signature
+  \item C++ engine callback is method derived from virtual base
+    method
+  \item Different engines define different categories of callbacks,
+    provide different types of information, and allow different sets
+    of actions
+  \item OSI could implement a limited set of callback actions (check
+    for abort flag and abort) in a common set of hooks
+  \item Much more than that requires exposing solver-specific interfaces
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameter Management}
+
+  \begin{itemize}
+  \item Infinite variety
+  \item Might be able to identify a set of common ones
+  \item Map/table?
+  \item Probably need to expose solver-specific interface for less
+    common settings
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other matters}
+
+  \begin{itemize}
+  \item Message handling
+  \item Interactions with other COIN-OR components
+  \item ???
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Lawyers, Guns, and Money}
+
+  \begin{itemize}
+  \item Plugins mitigate license compatibility issues
+  \item GPL requires any program that ``includes'' GPL code must be GPL
+  \item But plugins are not ``included'' in programs that use them
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    Questions?  Suggestions?
+  \end{center}
+\end{frame}
+\end{document}
+
+
+
+
+
+
+
+
+\begin{frame}
+  \frametitle{Outline}
+
+  \begin{itemize}
+  \item What's wrong with the current API?
+  \item Dynamic Plugin Architecture
+  \item Factories and Run-Time Instantiation
+  \item Callbacks: Function-Pointer and Object-Based Approaches
+  \item Extending the Basic Interface: OsiSimplex, etc.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What's Wrong with the Current OSI?}
+
+  The current OSI architecture is the original one from 2000.  It
+  has proved to be useful in many contexts, but it has several
+  properties that make it difficult to use and maintain.
+  \begin{itemize}
+  \item Back-end interfaces are created by inheritance from a base
+    class (front end).
+    \begin{itemize}
+    \item Front-end and back-end interfaces can get out of sync.
+    \item Too many tasks are implemented in the back end.
+    \item Extending interfaces is difficult.
+    \item Separation between instances and algorithms is problematic.
+    \end{itemize}
+  \item Solver interfaces are required at compile time.
+    \begin{itemize}
+    \item Control of which interfaces are needed is handled in
+      source code, or by preprocessor directives (\texttt{\%ifdef}).
+    \end{itemize}
+  \item Solver libraries are required at link time.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plugin Architecture for Dynamic Solver Engine Linking}
+  \begin{itemize}
+  \item Decide which back-end interface and solver engine at runtime.
+  \item Load just functions needed.
+  \item No need to include engine library references with binary
+    distributions.
+  \item Windows DLLs and *nix static, shared, and dynamic libraries
+    can be handled.
+  \item C++ and C interfaces are possible.  With C++, all class
+    information is exposed across the interface.  With C, objects
+    can be wrapped to pass across.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Callbacks and Event Handlers}
+
+  Opportunity for the user to collect information about algorithm
+  progress or take action at certain points in the algorithm or on
+  the occurrence of certain external events.
+  \begin{itemize}
+  \item C solvers allow the user to register functions with the
+    solver to be called at those points.
+  \item C++ solvers call virtual functions at those points.  Users
+    can derive replacement functions to achieve the desired result.
+  \item A portable callback framework is a challenge.  Full callback
+    flexibility probably requires exposing the solver engine's
+    callback interface.
+  \item Portability for callbacks using the intersection of common
+    callback interfaces can be done.
+  \item Hiding the C mechanism from C++ programs is possible.
+    Hiding the C++ mechanism from C programs is possible if the set
+    of actions is fixed (e.g., just abort).
+  \end{itemize}
+\end{frame}
+\end{document}
