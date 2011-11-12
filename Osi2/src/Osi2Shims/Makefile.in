@@ -71,8 +71,7 @@ am_libOsi2ClpHeavyShim_la_OBJECTS = Osi2ProbMgmtAPI_ClpHeavy.lo \
 	Osi2Osi1API_ClpHeavy.lo Osi2ClpHeavyShim.lo
 libOsi2ClpHeavyShim_la_OBJECTS = $(am_libOsi2ClpHeavyShim_la_OBJECTS)
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo \
-	Osi2Osi1API_Clp.lo Osi2ClpShim.lo
+am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo Osi2ClpShim.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
 @COIN_HAS_OSIGLPK_TRUE@libOsi2GlpkHeavyShim_la_DEPENDENCIES =  \
 @COIN_HAS_OSIGLPK_TRUE@	$(am__DEPENDENCIES_1)
@@ -109,9 +108,9 @@ DIST_SOURCES = $(libOsi2ClpHeavyShim_la_SOURCES) \
 	$(libOsi2ClpShim_la_SOURCES) \
 	$(am__libOsi2GlpkHeavyShim_la_SOURCES_DIST)
 am__includecoin_HEADERS_DIST = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2Osi1API_Clp.hpp Osi2ClpHeavyShim.hpp \
-	Osi2ProbMgmtAPI_ClpHeavy.hpp Osi2Osi1API_ClpHeavy.hpp \
-	Osi2GlpkHeavyShim.hpp Osi2Osi1API_GlpkHeavy.hpp
+	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
+	Osi2Osi1API_ClpHeavy.hpp Osi2GlpkHeavyShim.hpp \
+	Osi2Osi1API_GlpkHeavy.hpp
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
@@ -399,9 +398,10 @@ lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
 ########################################################################
 
 # List all source files for this library, including headers
+
+#	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp
 libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpHeavyShim_la_SOURCES = \
@@ -447,10 +447,10 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in 'includedir/coin'
 includecoindir = $(includedir)/coin
+#	Osi2Osi1API_Clp.hpp
 includecoin_HEADERS = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2Osi1API_Clp.hpp Osi2ClpHeavyShim.hpp \
-	Osi2ProbMgmtAPI_ClpHeavy.hpp Osi2Osi1API_ClpHeavy.hpp \
-	$(am__append_1)
+	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
+	Osi2Osi1API_ClpHeavy.hpp $(am__append_1)
 all: all-am
 
 .SUFFIXES:
@@ -527,7 +527,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpHeavyShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2GlpkHeavyShim.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_Clp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ProbMgmtAPI_Clp.Plo@am__quote@

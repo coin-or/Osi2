@@ -19,9 +19,10 @@ lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
 
 # List all source files for this library, including headers
 
+#	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp
+
 libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2Osi1API_Clp.cpp Osi2Osi1API_Clp.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpHeavyShim_la_SOURCES = \
@@ -70,9 +71,9 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
 # and that therefore should be installed in 'includedir/coin'
 
 includecoindir = $(includedir)/coin
+#	Osi2Osi1API_Clp.hpp
 includecoin_HEADERS = \
 	Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
-	Osi2Osi1API_Clp.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
 	Osi2Osi1API_ClpHeavy.hpp
 if COIN_HAS_OSIGLPK
