@@ -23,7 +23,6 @@
 #include "Osi2DynamicLibrary.hpp"
 
 #include "Osi2ProbMgmtAPI_Clp.hpp"
-#include "Osi2Osi1API_Clp.hpp"
 
 using namespace Osi2 ;
 
