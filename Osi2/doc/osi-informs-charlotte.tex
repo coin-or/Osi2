@@ -207,8 +207,8 @@ else {
 \begin{frame}
   \frametitle{Design Concepts}
 
-  Composition rather than inheritance
-  Bridge architecure
+  Composition or inheritance
+  Bridge architecture
   Factory and abstract API
 \end{frame}
 
@@ -221,13 +221,81 @@ else {
   \begin{itemize}
   \item Multiple inheritance
   \item Backward compatibility
-  \item Ease of implementation when user API and solver API match
+  \item Ease of implementation when the user API matches the solver API
   \end{itemize}
 
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{\lstinline|Osi1API| on the User Side}
+
+\begin{itemize}
+  \item
+  A new class that declares all \lstinline|OsiSolverInterface| methods
+  as pure virtual methods
+
+  \item
+  \begin{lstlisting}
+  class Osi1API : public API
+  {
+    ...
+    void initialSolve() = 0 ;
+    ...
+  }
+  \end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\lstinline|Osi1API_ClpHeavy| on the Plugin Side}
+
+\begin{itemize}
+  \item
+  A new class that inherits all \lstinline|OsiSolverInterface| methods.
+
+  \item
+  \begin{lstlisting}
+  class Osi1API_ClpHeavy
+    : public API, public OsiSolverInterface
+  {
+    ...
+    inline void initialSolve()
+    { OsiClpSolverInterface::initialSolve() ; }
+    ...
+  }
+  \end{lstlisting}
+\end{itemize}
+\end{frame}
+
 \section{The Frontier: Open Design Decisions}
 
+\begin{frame}
+  \frametitle{Sample Use Case}
+
+  \begin{itemize}
+  \item \lstinline|ModelAPI| provides methods to create and maintain
+    a model instance
+  \item \lstinline|SolverAPI| provides methods to determine an
+    optimal solution to a model instance
+  \item User builds a model with a plugin designed for model
+    building, then hands off to a plugin desinged for model solving
+  \item Separating model and solver supports optimized operations
+    for each category
+  \end{itemize}
+
+  How should this work?
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Integrated Model}
+
+  \begin{itemize}
+  \item Current solver libraries maintain internal instance
+    representation and provide both model and solver operations
+    operating on it
+  \end{itemize}
+\end{frame}
 
 %%%%%%%%%%%%%%%% Below this line is old stuff from the last INFORMS %%%%%%%%
 \begin{frame}
