@@ -55,8 +55,8 @@ host_triplet = @host@
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is
-# included in the tarball
-@ALWAYS_FALSE@am__append_1 = test
+# included in the tarball. Similarly for cxxtest.
+@ALWAYS_FALSE@am__append_1 = test cxxtest
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../install-sh \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
@@ -108,7 +108,7 @@ pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(pkgconfiglib_DATA)
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims test
+DIST_SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims test cxxtest
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -155,6 +155,10 @@ COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
 COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
 COIN_HAS_CPX_FALSE = @COIN_HAS_CPX_FALSE@
 COIN_HAS_CPX_TRUE = @COIN_HAS_CPX_TRUE@
+COIN_HAS_CXXTEST_FALSE = @COIN_HAS_CXXTEST_FALSE@
+COIN_HAS_CXXTEST_TRUE = @COIN_HAS_CXXTEST_TRUE@
+COIN_HAS_CXXUNITTESTDEPS_FALSE = @COIN_HAS_CXXUNITTESTDEPS_FALSE@
+COIN_HAS_CXXUNITTESTDEPS_TRUE = @COIN_HAS_CXXUNITTESTDEPS_TRUE@
 COIN_HAS_GRB_FALSE = @COIN_HAS_GRB_FALSE@
 COIN_HAS_GRB_TRUE = @COIN_HAS_GRB_TRUE@
 COIN_HAS_MSK_FALSE = @COIN_HAS_MSK_FALSE@
@@ -188,6 +192,23 @@ CXXCPP = @CXXCPP@
 CXXDEFS = @CXXDEFS@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
+CXXTESTGEN = @CXXTESTGEN@
+CXXTEST_CFLAGS = @CXXTEST_CFLAGS@
+CXXTEST_CFLAGS_INSTALLED = @CXXTEST_CFLAGS_INSTALLED@
+CXXTEST_DATA = @CXXTEST_DATA@
+CXXTEST_DATA_INSTALLED = @CXXTEST_DATA_INSTALLED@
+CXXTEST_DEPENDENCIES = @CXXTEST_DEPENDENCIES@
+CXXTEST_LIBS = @CXXTEST_LIBS@
+CXXTEST_LIBS_INSTALLED = @CXXTEST_LIBS_INSTALLED@
+CXXUNITTESTDEPS_CFLAGS = @CXXUNITTESTDEPS_CFLAGS@
+CXXUNITTESTDEPS_CFLAGS_INSTALLED = @CXXUNITTESTDEPS_CFLAGS_INSTALLED@
+CXXUNITTESTDEPS_DATA = @CXXUNITTESTDEPS_DATA@
+CXXUNITTESTDEPS_DATA_INSTALLED = @CXXUNITTESTDEPS_DATA_INSTALLED@
+CXXUNITTESTDEPS_DEPENDENCIES = @CXXUNITTESTDEPS_DEPENDENCIES@
+CXXUNITTESTDEPS_LIBS = @CXXUNITTESTDEPS_LIBS@
+CXXUNITTESTDEPS_LIBS_INSTALLED = @CXXUNITTESTDEPS_LIBS_INSTALLED@
+CXXUNITTESTDEPS_PCLIBS = @CXXUNITTESTDEPS_PCLIBS@
+CXXUNITTESTDEPS_PCREQUIRES = @CXXUNITTESTDEPS_PCREQUIRES@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
@@ -901,6 +922,9 @@ uninstall-info: uninstall-info-recursive
 test: all
 	cd test; $(MAKE) test
 
+cxxtest: all
+	cd cxxtest ; $(MAKE) test
+
 unitTest: test
 
 # Doxygen documentation
@@ -913,9 +937,11 @@ clean-doxydoc:
 
 clean-local: clean-doxydoc
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
+	if test -r cxxtest/Makefile; then cd cxxtest; $(MAKE) clean; fi
 
 distclean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
+	if test -r cxxtest/Makefile; then cd cxxtest; $(MAKE) distclean; fi
 
 install-exec-local: install-doc
 

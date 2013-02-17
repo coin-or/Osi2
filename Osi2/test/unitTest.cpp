@@ -33,7 +33,7 @@ namespace {
 
   The test is (sort of) clp-specific, but only in the sense that the test clp
   plugin will return a ProbMgmt object via the wildcard mechanism when asked
-  for a WildProgMgmt object.
+  for a WildProbMgmt object.
 
   Over time, this test should be expanded and broken out into a separate file.
   Arguably, it should be a separate executable.
@@ -57,31 +57,31 @@ int testPluginManager (const std::string libName)
     if (retval != 0) {
         errcnt++ ;
         std::cout
-                << "Apparent failure to load " << shimPath << "." << std::endl ;
+	  << "Apparent failure to load " << shimPath << "." << std::endl ;
         std::cout
-                << "Error code is " << retval << "." << std::endl ;
+	  << "Error code is " << retval << "." << std::endl ;
         return (errcnt) ;
     }
     /*
-      Invoke createObject. If it works, try to invoke a nontrivial method. Which
-      will fail, because exmip1 is not available, but that's not the point. Then
-      destroy the object.
+      Invoke createObject. If it works, try to invoke a nontrivial
+      method. Which will fail, because exmip1 is not available, but that's
+      not the point. Then destroy the object.
     */
     DummyAdapter dummy ;
     PluginUniqueID libID = 0 ;
     ProbMgmtAPI *clp =
-        static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt", libID, dummy)) ;
+      static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt",libID,dummy)) ;
     if (clp == nullptr) {
         errcnt++ ;
         std::cout
-                << "Apparent failure to create a ProbMgmt object." << std::endl ;
+	  << "Apparent failure to create a ProbMgmt object." << std::endl ;
     } else {
         clp->readMps("exmip1.mps", true) ;
         int retval = plugMgr.destroyObject("ProbMgmt", 0, clp) ;
         if (retval < 0) {
             errcnt++ ;
             std::cout
-                    << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+	      << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
         }
         clp = nullptr ;
     }
@@ -91,16 +91,16 @@ int testPluginManager (const std::string libName)
     */
     libID = 0 ;
     ProbMgmtAPI *bogus =
-        static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI", libID, dummy)) ;
+      static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",libID,dummy)) ;
     if (bogus == nullptr) {
         std::cout
-                << "Apparent failure to create a BogusAPI object (expected)."
-                << std::endl ;
+	  << "Apparent failure to create a BogusAPI object (expected)."
+	  << std::endl ;
     } else {
         errcnt++ ;
         std::cout
-                << "Eh? We shouldn't be able to create a BogusAPI object!"
-                << std::endl ;
+	  << "Eh? We shouldn't be able to create a BogusAPI object!"
+	  << std::endl ;
     }
     /*
       Check that we can create an object through the wildcard mechanism.
@@ -269,16 +269,17 @@ int main(int argC, char* argV[])
 
     std::string dfltSampleDir = "../../Data/Sample" ;
     /*
-      Test the bare PluginManager. There's no sense proceeding to the API tests if
-      the PluginManager isn't working.
+      Test the bare PluginManager. There's no sense proceeding to the API
+      tests if the PluginManager isn't working.
     */
     std::cout << "Testing bare PluginManager." << std::endl ;
     int retval = testPluginManager("libOsi2ClpShim.so") ;
     std::cout
-            << "End test of bare PluginManager, " << retval << " errors."
-            << std::endl << std::endl ;
+      << "End test of bare PluginManager, " << retval << " errors."
+      << std::endl << std::endl ;
     if (retval != 0) {
-        std::cout << "Aborting unitTest; errors in PluginManager." << std::endl ;
+        std::cout
+	  << "Aborting unitTest; errors in PluginManager." << std::endl ;
         return (retval) ;
     }
     /*
@@ -310,7 +311,7 @@ int main(int argC, char* argV[])
     */
     PluginManager &plugMgr = PluginManager::getInstance() ;
     std::cout
-            << "Shutting down plugins (executing exit functions)." << std::endl ;
+      << "Shutting down plugins (executing exit functions)." << std::endl ;
     plugMgr.shutdown() ;
 
     std::cout << "END UNIT TEST" << std::endl ;

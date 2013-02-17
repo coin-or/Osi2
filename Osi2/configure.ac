@@ -53,8 +53,8 @@ AC_COIN_CHECK_CXX_CHEADER(stdint)
 
 # See if we have native support for nullptr.
 
-AC_MSG_CHECKING([for nullptr support])
 AC_LANG_PUSH(C++)
+AC_MSG_CHECKING([for nullptr support])
 AC_COMPILE_IFELSE(
  [AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr ;]])],
  [AC_DEFINE(COIN_HAS_NULLPTR,[1],
@@ -88,6 +88,14 @@ fi
 # Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
 AC_COIN_CHECK_PACKAGE(OsiGlpk, [osi-glpk], [Osi2GlpkHeavyShim])
 
+# Can we find CxxTest? We'll need it for the unit test.
+AC_COIN_CHECK_PACKAGE(CxxTest, [coincxxtest], [CxxUnitTestDeps])
+if test $coin_has_cxxtest = yes ; then
+  AC_SUBST(CXXTESTGEN)
+  CXXTESTGEN="\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen"
+  AC_MSG_NOTICE([Using $CXXTESTGEN])
+fi
+
 # It sure would be handy to use the pkgconfig machinery to build up
 # dependencies. Problem: On the first configure pass, none of the .pc files
 # exist.  So, on the first pass, fake it by manually building up the necessary
@@ -119,11 +127,13 @@ if test -f osi2plugin.pc ; then
   AC_COIN_CHECK_PACKAGE(Osi2PluginInt, [osi2plugin],
       [Osi2 Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim])
   AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi osi2])
+  AC_COIN_CHECK_PACKAGE(CxxUnitTestDeps, [osi osi2 coincxxtest])
 else
   AC_MSG_NOTICE([No .pc files; faking it.])
   # Create variables
   AM_CONDITIONAL(COIN_HAS_OSI2PLUGININT,true)
   AM_CONDITIONAL(COIN_HAS_UNITTESTDEPS,true)
+  AM_CONDITIONAL(COIN_HAS_CXXUNITTESTDEPS,true)
   AC_SUBST(OSI2CLPSHIM_LIBS)
   AC_SUBST(OSI2CLPSHIM_CFLAGS)
   AC_SUBST(OSI2CLPSHIM_PCREQUIRES, [osi2plugin])
@@ -143,6 +153,14 @@ else
   UNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
   UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
   UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../Osi/src/Osi $UNITTESTDEPS_CFLAGS"
+
+# CxxUnitTest libs should be the same as regular UnitTest libs, but don't
+# define in those terms because regular unit test may disappear. CFLAGS needs
+# the additional include directories for the CxxTest source.
+  CXXUNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
+  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
+  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../Osi/src/Osi $CXXUNITTESTDEPS_CFLAGS"
+  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest $CXXUNITTESTDEPS_CFLAGS"
 fi
 
 # So we can use OSI2PLUGIN in makefiles instead of OSI2PLUGININT. Not clear
@@ -245,6 +263,7 @@ AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 # configuration header file)
 AC_CONFIG_FILES([Makefile
                  test/Makefile
+                 cxxtest/Makefile
 		 src/Osi2Plugin/Makefile
 		 src/Osi2/Makefile
 		 src/Osi2Shims/Makefile

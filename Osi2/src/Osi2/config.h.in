@@ -6,6 +6,12 @@
 /* Define to 1 if the Cplex package is available */
 #undef COIN_HAS_CPX
 
+/* Define to 1 if the CxxTest package is available */
+#undef COIN_HAS_CXXTEST
+
+/* Define to 1 if the CxxUnitTestDeps package is available */
+#undef COIN_HAS_CXXUNITTESTDEPS
+
 /* Define to 1 if the Gurobi package is available */
 #undef COIN_HAS_GRB
 

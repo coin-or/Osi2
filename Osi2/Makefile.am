@@ -24,10 +24,10 @@ SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is
-# included in the tarball
+# included in the tarball. Similarly for cxxtest.
 
 if ALWAYS_FALSE
-  SUBDIRS += test
+  SUBDIRS += test cxxtest
 endif
 
 ########################################################################
@@ -45,6 +45,9 @@ EXTRA_DIST =
 test: all
 	cd test; $(MAKE) test
 
+cxxtest: all
+	cd cxxtest ; $(MAKE) test
+
 unitTest: test
 
 # Doxygen documentation
@@ -58,9 +61,11 @@ clean-doxydoc:
 
 clean-local: clean-doxydoc
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
+	if test -r cxxtest/Makefile; then cd cxxtest; $(MAKE) clean; fi
 
 distclean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
+	if test -r cxxtest/Makefile; then cd cxxtest; $(MAKE) distclean; fi
 
 install-exec-local: install-doc
 

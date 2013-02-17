@@ -42,8 +42,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = unitTest$(EXEEXT)
-subdir = test
+noinst_PROGRAMS = cxxUnitTest$(EXEEXT)
+subdir = cxxtest
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -55,10 +55,12 @@ CONFIG_HEADER = $(top_builddir)/src/Osi2/config.h \
 	$(top_builddir)/src/Osi2/config_osi2.h
 CONFIG_CLEAN_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_unitTest_OBJECTS = unitTest.$(OBJEXT)
-unitTest_OBJECTS = $(am_unitTest_OBJECTS)
+am_cxxUnitTest_OBJECTS = Osi2PluginTest.$(OBJEXT)
+nodist_cxxUnitTest_OBJECTS = cxxUnitTest.$(OBJEXT)
+cxxUnitTest_OBJECTS = $(am_cxxUnitTest_OBJECTS) \
+	$(nodist_cxxUnitTest_OBJECTS)
 am__DEPENDENCIES_1 =
-unitTest_DEPENDENCIES = $(am__DEPENDENCIES_1)
+cxxUnitTest_DEPENDENCIES = $(am__DEPENDENCIES_1)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -69,8 +71,16 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(unitTest_SOURCES)
-DIST_SOURCES = $(unitTest_SOURCES)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(cxxUnitTest_SOURCES) $(nodist_cxxUnitTest_SOURCES)
+DIST_SOURCES = $(cxxUnitTest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -367,13 +377,20 @@ target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
 
 # List all source files for this executable, including headers
-unitTest_SOURCES = unitTest.cpp 
+cxxUnitTest_SOURCES = \
+  $(srcdir)/Osi2PluginTest.cpp $(srcdir)/Osi2PluginTest.hpp
+
+nodist_cxxUnitTest_SOURCES = cxxUnitTest.cpp 
+
+# The driver will be built by running cxxtestgen
+BUILT_SOURCES = cxxUnitTest.cpp
+CLEANFILES = cxxUnitTest.cpp
 
 # Add the necessary libraries
-unitTest_LDADD = $(UNITTESTDEPS_LIBS)
+cxxUnitTest_LDADD = $(CXXUNITTESTDEPS_LIBS)
 
 # Now add the include paths for compilation
-AM_CPPFLAGS = $(UNITTESTDEPS_CFLAGS)
+AM_CPPFLAGS = $(CXXUNITTESTDEPS_CFLAGS)
 
 # This line is necessary to allow VPATH compilation with MS compilers
 # on Cygwin
@@ -381,7 +398,8 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
 	-I`$(CYGPATH_W) ../src/Osi2`
 
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -394,9 +412,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  cxxtest/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  test/Makefile
+	  $(AUTOMAKE) --foreign  cxxtest/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -421,9 +439,9 @@ clean-noinstPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-unitTest$(EXEEXT): $(unitTest_OBJECTS) $(unitTest_DEPENDENCIES) 
-	@rm -f unitTest$(EXEEXT)
-	$(CXXLINK) $(unitTest_LDFLAGS) $(unitTest_OBJECTS) $(unitTest_LDADD) $(LIBS)
+cxxUnitTest$(EXEEXT): $(cxxUnitTest_OBJECTS) $(cxxUnitTest_DEPENDENCIES) 
+	@rm -f cxxUnitTest$(EXEEXT)
+	$(CXXLINK) $(cxxUnitTest_LDFLAGS) $(cxxUnitTest_OBJECTS) $(cxxUnitTest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -431,7 +449,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2PluginTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cxxUnitTest.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -453,6 +472,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+Osi2PluginTest.o: $(srcdir)/Osi2PluginTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Osi2PluginTest.o -MD -MP -MF "$(DEPDIR)/Osi2PluginTest.Tpo" -c -o Osi2PluginTest.o `test -f '$(srcdir)/Osi2PluginTest.cpp' || echo '$(srcdir)/'`$(srcdir)/Osi2PluginTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/Osi2PluginTest.Tpo" "$(DEPDIR)/Osi2PluginTest.Po"; else rm -f "$(DEPDIR)/Osi2PluginTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(srcdir)/Osi2PluginTest.cpp' object='Osi2PluginTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Osi2PluginTest.o `test -f '$(srcdir)/Osi2PluginTest.cpp' || echo '$(srcdir)/'`$(srcdir)/Osi2PluginTest.cpp
+
+Osi2PluginTest.obj: $(srcdir)/Osi2PluginTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Osi2PluginTest.obj -MD -MP -MF "$(DEPDIR)/Osi2PluginTest.Tpo" -c -o Osi2PluginTest.obj `if test -f '$(srcdir)/Osi2PluginTest.cpp'; then $(CYGPATH_W) '$(srcdir)/Osi2PluginTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(srcdir)/Osi2PluginTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/Osi2PluginTest.Tpo" "$(DEPDIR)/Osi2PluginTest.Po"; else rm -f "$(DEPDIR)/Osi2PluginTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(srcdir)/Osi2PluginTest.cpp' object='Osi2PluginTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Osi2PluginTest.obj `if test -f '$(srcdir)/Osi2PluginTest.cpp'; then $(CYGPATH_W) '$(srcdir)/Osi2PluginTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(srcdir)/Osi2PluginTest.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -540,10 +573,12 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS)
 installdirs:
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -560,6 +595,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -567,6 +603,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
@@ -630,9 +667,12 @@ uninstall-am: uninstall-info-am
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-info-am
 
+cxxUnitTest.cpp: $(cxxUnitTest_SOURCES)
+	$(CXXTESTGEN) --fog-parser --error-printer \
+	    -o cxxUnitTest.cpp $(cxxUnitTest_SOURCES)
 
-test: unitTest$(EXEEXT)
-	./unitTest$(EXEEXT)
+test: cxxUnitTest$(EXEEXT)
+	./cxxUnitTest$(EXEEXT)
 
 .PHONY: test
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
