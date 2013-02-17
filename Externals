@@ -4,4 +4,5 @@ CoinUtils     https://projects.coin-or.org/svn/CoinUtils/trunk/CoinUtils
 Clp           https://projects.coin-or.org/svn/Clp/branches/ClpForOsi2/Clp
 Osi           https://projects.coin-or.org/svn/Osi/trunk/Osi
 ThirdParty/Glpk   https://projects.coin-or.org/svn/BuildTools/ThirdParty/Glpk/trunk
+ThirdParty/CxxTest   https://projects.coin-or.org/svn/BuildTools/ThirdParty/CxxTest/trunk
 
