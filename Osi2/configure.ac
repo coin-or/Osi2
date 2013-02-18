@@ -88,13 +88,21 @@ fi
 # Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
 AC_COIN_CHECK_PACKAGE(OsiGlpk, [osi-glpk], [Osi2GlpkHeavyShim])
 
-# Can we find CxxTest? We'll need it for the unit test.
+# Can we find CxxTest? We'll need it for the unit test. If there's a
+# ThirdParty project, choose the installed version (prefix/bin) over the
+# uninstalled version. Otherwise, do a standard check for a system version.
 AC_COIN_CHECK_PACKAGE(CxxTest, [coincxxtest], [CxxUnitTestDeps])
 if test $coin_has_cxxtest = yes ; then
   AC_SUBST(CXXTESTGEN)
-  CXXTESTGEN="\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen"
-  AC_MSG_NOTICE([Using $CXXTESTGEN])
+  if test -x "${prefix}/bin/cxxtestgen" ; then
+    CXXTESTGEN="\$(prefix)/bin/cxxtestgen"
+  elif test -x "${srcdir}/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen" ; then
+    CXXTESTGEN="\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen"
+  fi
+else
+  AC_CHECK_PROG(CXXTESTGEN,cxxtestgen)
 fi
+  AC_MSG_NOTICE([Using $CXXTESTGEN])
 
 # It sure would be handy to use the pkgconfig machinery to build up
 # dependencies. Problem: On the first configure pass, none of the .pc files
