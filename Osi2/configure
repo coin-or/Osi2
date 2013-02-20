@@ -23800,6 +23800,8 @@ fi
 
   if test -n "$CXXTESTGEN" ; then
     coin_has_cxxtest=yes
+    COIN_HAS_CXXTEST_TRUE=''
+    COIN_HAS_CXXTEST_FALSE='#'
   fi
 fi
 # AC_MSG_NOTICE([Using $CXXTESTGEN])
@@ -25420,6 +25422,10 @@ fi
 
 
 
+  if test -n "$CXXTESTGEN" ; then
+    COIN_HAS_CXXUNITTESTDEPS_TRUE=''
+    COIN_HAS_CXXUNITTESTDEPS_FALSE='#'
+  fi
 else
   { echo "$as_me:$LINENO: No .pc files; faking it." >&5
 echo "$as_me: No .pc files; faking it." >&6;}

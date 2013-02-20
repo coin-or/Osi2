@@ -102,6 +102,8 @@ else
   AC_PATH_PROG(CXXTESTGEN,cxxtestgen)
   if test -n "$CXXTESTGEN" ; then
     coin_has_cxxtest=yes
+    COIN_HAS_CXXTEST_TRUE=''
+    COIN_HAS_CXXTEST_FALSE='#'
   fi
 fi
 # AC_MSG_NOTICE([Using $CXXTESTGEN])
@@ -138,6 +140,10 @@ if test -f osi2plugin.pc ; then
       [Osi2 Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim])
   AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi osi2])
   AC_COIN_CHECK_PACKAGE(CxxUnitTestDeps, [osi osi2 coincxxtest])
+  if test -n "$CXXTESTGEN" ; then
+    COIN_HAS_CXXUNITTESTDEPS_TRUE=''
+    COIN_HAS_CXXUNITTESTDEPS_FALSE='#'
+  fi
 else
   AC_MSG_NOTICE([No .pc files; faking it.])
   # Create variables
