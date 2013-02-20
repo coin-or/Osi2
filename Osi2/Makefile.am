@@ -45,8 +45,13 @@ EXTRA_DIST =
 test: all
 	cd test; $(MAKE) test
 
+if COIN_HAS_CXXUNITTESTDEPS
 cxxtest: all
 	cd cxxtest ; $(MAKE) test
+else
+cxxtest: all
+	@echo "CxxTest does not appear to be installed!"
+endif
 
 unitTest: test
 

@@ -922,8 +922,10 @@ uninstall-info: uninstall-info-recursive
 test: all
 	cd test; $(MAKE) test
 
-cxxtest: all
-	cd cxxtest ; $(MAKE) test
+@COIN_HAS_CXXUNITTESTDEPS_TRUE@cxxtest: all
+@COIN_HAS_CXXUNITTESTDEPS_TRUE@	cd cxxtest ; $(MAKE) test
+@COIN_HAS_CXXUNITTESTDEPS_FALSE@cxxtest: all
+@COIN_HAS_CXXUNITTESTDEPS_FALSE@	@echo "CxxTest does not appear to be installed!"
 
 unitTest: test
 

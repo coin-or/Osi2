@@ -88,9 +88,8 @@ fi
 # Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
 AC_COIN_CHECK_PACKAGE(OsiGlpk, [osi-glpk], [Osi2GlpkHeavyShim])
 
-# Can we find CxxTest? We'll need it for the unit test. If there's a
-# ThirdParty project, choose the installed version (prefix/bin) over the
-# uninstalled version. Otherwise, do a standard check for a system version.
+# Can we find CxxTest? We'll need it for the unit test. If there's a ThirdParty
+# project, use it. Otherwise, look for a system installation.
 AC_COIN_CHECK_PACKAGE(CxxTest, [coincxxtest], [CxxUnitTestDeps])
 if test $coin_has_cxxtest = yes ; then
   AC_SUBST(CXXTESTGEN)
@@ -100,9 +99,12 @@ if test $coin_has_cxxtest = yes ; then
     CXXTESTGEN="\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen"
   fi
 else
-  AC_CHECK_PROG(CXXTESTGEN,cxxtestgen)
+  AC_PATH_PROG(CXXTESTGEN,cxxtestgen)
+  if test -n "$CXXTESTGEN" ; then
+    coin_has_cxxtest=yes
+  fi
 fi
-  AC_MSG_NOTICE([Using $CXXTESTGEN])
+AC_MSG_NOTICE([Using $CXXTESTGEN])
 
 # It sure would be handy to use the pkgconfig machinery to build up
 # dependencies. Problem: On the first configure pass, none of the .pc files
@@ -141,7 +143,9 @@ else
   # Create variables
   AM_CONDITIONAL(COIN_HAS_OSI2PLUGININT,true)
   AM_CONDITIONAL(COIN_HAS_UNITTESTDEPS,true)
-  AM_CONDITIONAL(COIN_HAS_CXXUNITTESTDEPS,true)
+  AM_CONDITIONAL(COIN_HAS_CXXUNITTESTDEPS,
+  		 [test $coin_has_cxxtest != notGiven &&
+		  test $coin_has_cxxtest != skipping])
   AC_SUBST(OSI2CLPSHIM_LIBS)
   AC_SUBST(OSI2CLPSHIM_CFLAGS)
   AC_SUBST(OSI2CLPSHIM_PCREQUIRES, [osi2plugin])
