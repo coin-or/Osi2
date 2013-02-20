@@ -104,7 +104,7 @@ else
     coin_has_cxxtest=yes
   fi
 fi
-AC_MSG_NOTICE([Using $CXXTESTGEN])
+# AC_MSG_NOTICE([Using $CXXTESTGEN])
 
 # It sure would be handy to use the pkgconfig machinery to build up
 # dependencies. Problem: On the first configure pass, none of the .pc files
