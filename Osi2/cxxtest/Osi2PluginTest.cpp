@@ -21,10 +21,6 @@ static PluginManager &plugMgr = PluginManager::getInstance();
 
 void Osi2PluginTest::test_loadOneLib(void)
 {
-	/*
-	 * Test that th
-	 */
-
 	std::cout << std::endl << "Plugin directory: " << OSI2PLUGINDIR << std::endl;
 	TS_TRACE("Test loadOneLib()");
 	std::string libName = "libOsi2ClpShim.so";
