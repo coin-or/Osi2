@@ -25,7 +25,7 @@ nodist_cxxUnitTest_SOURCES = cxxUnitTest.cpp
 # The driver will be built by running cxxtestgen
 BUILT_SOURCES = cxxUnitTest.cpp
 CLEANFILES = cxxUnitTest.cpp
-cxxUnitTest.cpp: $(cxxUnitTest_SOURCES)
+cxxUnitTest.cpp: $(cxxUnitTest_SOURCES) 
 	$(CXXTESTGEN) --fog-parser --error-printer \
 	    -o cxxUnitTest.cpp $(cxxUnitTest_SOURCES)
 
@@ -35,7 +35,7 @@ cxxUnitTest_LDADD = $(CXXUNITTESTDEPS_LIBS)
 
 # Now add the include paths for compilation
 
-AM_CPPFLAGS = $(CXXUNITTESTDEPS_CFLAGS)
+AM_CPPFLAGS = $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 # This line is necessary to allow VPATH compilation with MS compilers
 # on Cygwin
