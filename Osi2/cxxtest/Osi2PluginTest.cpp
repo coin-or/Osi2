@@ -10,8 +10,6 @@
 #include "Osi2ObjectAdapter.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 
-using namespace Osi2;
-
 static PluginManager &plugMgr = PluginManager::getInstance();
 
 //void setUp(void)
