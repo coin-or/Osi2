@@ -1,5 +1,5 @@
 
-#ifndef OSI2LUGINTEST_HPP_
+#ifndef OSI2PLUGINTEST_HPP_
 #define OSI2PLUGINTEST_HPP_
 
 #include <cxxtest/TestSuite.h>
