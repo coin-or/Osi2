@@ -1,0 +1,107 @@
+
+Notes on Generic Interfaces Panel, Thursday October 18th
+
+Oscar Dowson said Jump puts an emphasis on sustainability, standard form,
+solver status reporting
+
+Sustainability for them is an active user community from academia,
+industry, and the open-source (?) community. Presumably renewing itself
+as time goes by.
+
+Standard form is the MathOpt interface, the set of standard constraint
+forms that Oscar introduced when talking about Julia/Jump.
+
+I didn't write down the set of standard forms, assuming I could look
+them up again later. I was definitely impressed with the idea; it seemed
+sufficiently general to carry through a large range of solvers.
+
+Efficiency might be an issue. And there's the whole size thing, for
+the sort of humongous linear problems that people like to solve these
+days. Knowing you have a linear matrix is a really big help towards a
+compact representation. I don't see why you couldn't incorporate special
+packed forms for specific problem types.  It wasn't clear to me that the
+MathOpt set extends to, for example, constraint programming solvers. I'd
+need to look further.
+
+But there was the Julia/Jump idea of simple A -> B translators to convert
+constraint form A to constraint form B. You construct a graph representation
+of connectivity and look for shortest paths to transform constraints.
+
+This kind of went along with what Gleb Belov was doing with Zinc. Gleb had a
+different set of constraint types (logical, element, global? I'd have to look
+it up). There was the same idea of transformations to adapt constraints to
+underlying solvers.
+
+The important notion here, to my mind, was that you wanted a very general
+representation at the front end, a rich set of A -> B transform primitives,
+and (here's the rub) some way for a solver to specify what sort of constraint
+forms it accepted. It's the final point that's missing from any solver I'm
+aware of. This is something for a solver shim.
+
+I've sort of gotten off on an analysis tangent here. Back to solver status
+reporting. The returned result needs to report both termination (why did the
+solver stop) and primal and dual status of the solution. Not all solvers give
+sufficient information. (My thought: Possibly because it's computationally
+expensive to give a complete characterisation once the solver has decided it's
+done based on some single criteria?)
+
+Usage modes. I'm thinking Oscar didn't introduce this at the beginning, but he
+talked about it later.
+
+  * Direct: Solver shim is a strict pass-through to problem held in solver.
+  	    Parameters, model changes, whatever, go directly to solver and
+	    answer comes directly back for interpretation by user.
+  * Manual: Jump maintains a copy of the model. An `attach' operation copies
+	    the model to the solver and shifts into direct mode. A `detach'
+	    operation returns to manual mode.
+  * Automatic: Jump decides when to do the attach and detach operations. And
+            presumably hides those points? Oscar said there are subtleties,
+	    and I'd want to chase those down before fully trusting automatic
+	    mode. But likely the right thing for casual users.
+
+Various folks mentioned callbacks, with no clear consensus. Oscar and John
+Siirola gave up entirely, citing semantic inconsistency and differences
+from one implementation to the next. Gleb (and Bjarni?) seemed to
+be of the opinion that a generic set was possible, dealing with the
+implemenation issues as multiple special cases and papering over the
+semantic inconsistencies.
+
+I wrote (I think in response to comments from several of the panelists)
+that a general takeaway is that users know their domain and should not
+be forced out of it (or allowed out of it!) due to a restrictive set of
+constraint forms at the interface.  There's value in special structure, but
+who should flag it, and how?  There's a lot that's very problem-specific,
+particularly in the non-linear world.
+
+This seemed to be captured pretty well by John's comment that if you're
+confronted with user Bob who wants Bob's Funky Constraint, then Bob has a
+solver in mind that understands BFC, or has some clever way to transforming
+BFC to something more-or-less standard. And you're going to have a hard
+time dealing with these folks unless you have a largish development team,
+because Bob likely can't code the solver interface or the A -> B translator
+on his own. (Think typical math / OR Ph.D. student Bob, whose thesis probably
+depends on devising a new-to-the-world Funky Constraint  :-)
+
+What I took away from all the above is that, given a rich (but not
+exhaustive) set of input constraint forms, and a rich (but not exhaustive)
+set of A -> B transform operators, and some way to query a solver about what
+it accepts (enter the solver shim :-), a generic interface could handle quite
+a large range of constraints and satisfy a large chunk of the world. Some
+sort of model held in the interface is necessary for any kind of efficiency
+and independence creating and manipulating the model. Bob with his BFC is
+on his own and will have to learn to code, at least sufficient for gradware.
+
+A general principle might be `if the interface doesn't understand it,
+trust the user knows their stuff and hand whatever it is to the solver.'
+Easier said than implemented. Opaque data blobs?
+
+Another important point (which I think was mentioned by various folks
+on the panel) is that the interface should be capable of handling a
+software-as-a-service solver at the backend. My reaction is `that's a lot of
+machinery', but people will want it. Then there's Bjarni's remark about
+`this multi-gigabyte dataset won't fit on my phone', introducing yet
+more middleware as the model is shipped somewhere, blown out into an expanded
+representation, and shipped to a solver somewhere else. My attitude here is
+that this is someone else's problem and a good SaaS solver shim should hide
+this sort of thing.
+
