@@ -12,91 +12,83 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi2],[trunk],[osi2@list.coin-or.org])
+AC_INIT([Osi2],[trunk],[osi2@list.coin-or.org],[coin-or-osi2],
+	[https://projects.coin-or.org/Osi2])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
 All Rights Reserved.
-This file is part of the open source package Coin which is distributed
+This file is part of the open source package Osi2 which is distributed
 under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
-# whether the package is actually there
+# whether the package is actually there.
+
 AC_CONFIG_SRCDIR(src/Osi2Plugin/Osi2Plugin.hpp)
 
-# Where should everything be installed by default?  Here, we want it
-# to be installed directly in 'bin', 'lib', 'include' subdirectories
-# of the directory where configure is run.  The default would be
-# /usr/local.
-AC_PREFIX_DEFAULT([`pwd`])
+# Do some initialization work (version numbers, change prefix default, ...)
+
+AC_COIN_INITIALIZE(Osi2)
 
 #############################################################################
 #                         Standard build tool stuff                         #
 #############################################################################
 
-# Get the system type
-AC_CANONICAL_BUILD
+# Get the name of the C++ compiler and appropriate compiler options.
 
-# A bit of initial setup
-AC_COIN_PROJECTDIR_INIT(Osi2)
-
-# Check if user wants to produce debugging code
-AC_COIN_DEBUG_COMPILE(Osi2)
-
-# Get the name of the C++ compiler and appropriate compiler options
 AC_COIN_PROG_CXX
 
-# Osi2Plugin uses types defined in cstdint, and these require a compiler flag
-# for acceptance. We also need to check for cstdint vs. stdint.h
-
-AC_COIN_CHECK_CXX_CHEADER(stdint)
-
-# See if we have native support for nullptr.
+# This is a C++ package, set the language accordingly.
 
 AC_LANG_PUSH(C++)
-AC_MSG_CHECKING([for nullptr support])
-AC_COMPILE_IFELSE(
- [AC_LANG_PROGRAM([],[[double *ptr ; ptr = nullptr ;]])],
- [AC_DEFINE(COIN_HAS_NULLPTR,[1],
- 	    [Define to 1 if the C++ compiler supports nullptr])
-  ac_cv_type_nullptr=yes
-  AC_MSG_RESULT(yes)],
- [ ac_cv_type_nullptr=no
-   AC_MSG_RESULT(no)])
-AC_LANG_POP()
 
-# Initialize automake and libtool
-AC_COIN_INIT_AUTO_TOOLS
+# Initialize libtool.
+
+AC_COIN_PROG_LIBTOOL
+
+# Assume we have native support for nullptr. We can remove this from the code
+# later, if this turns out to be a valid assumption  --lh, 190529 --
+
+AC_DEFINE(COIN_HAS_NULLPTR,[1],
+          [Define to 1 if the C++ compiler supports nullptr])
 
 #############################################################################
 #                              COIN-OR components                           #
 #############################################################################
 
-AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [Osi2 Osi2Plugin])
+# First the plugin handling library.
+
+AC_COIN_CHK_PKG(CoinUtils,[Osi2Plugin])
 if test $coin_has_coinutils != yes ; then
   AC_MSG_ERROR([Required package CoinUtils not available.])
 fi
+AC_COIN_FINALIZE_FLAGS(Osi2Plugin)
 
-# One can build ClpShim without libClp, but ClpHeavyShim must be linked with
-# libOsiClp and dependencies. But see below for separate additions to CFLAGS.
+# Next, do up flags for the main Osi2 code base, then tack on info from
+# Osi2Plugin.
 
-AC_COIN_CHECK_PACKAGE(OsiClp, [osi-clp], [Osi2ClpHeavyShim])
-if test $coin_has_osiclp != yes ; then
-  AC_MSG_ERROR([Required package OsiClp not available.])
-fi
+AC_COIN_FINALIZE_FLAGS(Osi2Lib)
+AC_COIN_CHK_HERE(Osi2Plugin,Osi2Lib)
 
-# Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
-AC_COIN_CHECK_PACKAGE(OsiGlpk, [osi-glpk], [Osi2GlpkHeavyShim])
+# All we need from Data projects are the COIN_HAS_XXX and XXX_DATA variables.
 
-# Can we find CxxTest? We'll need it for the unit test. If there's a ThirdParty
+AC_COIN_CHK_PKG(Sample,,[coindatasample],,dataonly)
+AC_COIN_CHK_PKG(Netlib,,[coindatanetlib],,dataonly)
+
+# Can we find CxxTest? We can use it in the unit test. If there's a ThirdParty
 # project, use it. Otherwise, look for a system installation.
-AC_COIN_CHECK_PACKAGE(CxxTest, [coincxxtest], [CxxUnitTestDeps])
+
+AC_COIN_CHK_PKG(CxxTest,[CxxUnitTestDeps],[coincxxtest])
 if test $coin_has_cxxtest = yes ; then
   AC_SUBST(CXXTESTGEN)
   if test -x "${prefix}/bin/cxxtestgen" ; then
     CXXTESTGEN="\$(prefix)/bin/cxxtestgen"
-  elif test -x "${srcdir}/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen" ; then
-    CXXTESTGEN="\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest/bin/cxxtestgen"
+  else
+    AC_MSG_WARN([cxxtestgen not in ${prefix}/bin as expected.])
+    AC_MSG_WARN([Check that ThirdParty/CxxTest is properly installed?])
+    coin_has_cxxtest=no
+    COIN_HAS_CXXTEST_TRUE='#'
+    COIN_HAS_CXXTEST_FALSE=''
   fi
 else
   AC_PATH_PROG(CXXTESTGEN,cxxtestgen)
@@ -106,139 +98,51 @@ else
     COIN_HAS_CXXTEST_FALSE='#'
   fi
 fi
-# AC_MSG_NOTICE([Using $CXXTESTGEN])
-
-# It sure would be handy to use the pkgconfig machinery to build up
-# dependencies. Problem: On the first configure pass, none of the .pc files
-# exist.  So, on the first pass, fake it by manually building up the necessary
-# variables.  (The alternative is to build them up in the makefiles. This way
-# the makefiles look like normal usage.)  Because the light shim (Osi2ClpShim)
-# has no prior dependencies, the variables OSI2CLPSHIM_XXX don't exist yet
-# (because there's been no reference to Osi2ClpShim in a package check)
-# and must be created. Similarly UNITTESTDEPS_XXX. We need to be careful
-# to delay expansion of variables that won't have a value until the final
-# Makefile is generated.
-
-# The reason for Osi2PluginInt is that using the name Osi2Plugin will result
-# in OSI2PLUGIN_PCREQUIRES = osi2plugin, which we do not want. (This can't be
-# fixed in coin.m4 because it's a feature when constructing a .pc file
-# for a synthetic package.) But we would like to have pkg-config collect the
-# dependencies of osi2plugin and augment the dependency info for the listed
-# packages. Variables OSI2PLUGININT_XXX are never used.
-
-# UNITTESTDEPS serves a different purpose. It exists so that we have
-# convenient variables UNITTESTDEPS_LIBS and UNITTESTDEPS_CFLAGS to use in
-# test/Makefile.am.
-
-# It's necessary to add osi2plugin to OSI2CLPSHIM_PCREQUIRES and
-# OSI2_PCREQUIRES so that we end up with properly-formed Requires specs in the
-# .pc files.
-
-if test -f osi2plugin.pc ; then
-  AC_MSG_NOTICE([Found .pc files; invoking pkg-config.])
-  AC_COIN_CHECK_PACKAGE(Osi2PluginInt, [osi2plugin],
-      [Osi2 Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim])
-  AC_COIN_CHECK_PACKAGE(UnitTestDeps, [osi osi2])
-  AC_COIN_CHECK_PACKAGE(CxxUnitTestDeps, [osi osi2 coincxxtest])
-  if test -n "$CXXTESTGEN" ; then
-    COIN_HAS_CXXUNITTESTDEPS_TRUE=''
-    COIN_HAS_CXXUNITTESTDEPS_FALSE='#'
-  fi
+if test x${coin_has_cxxtest} = xyes ; then
+  AC_MSG_NOTICE([Using $CXXTESTGEN])
 else
-  AC_MSG_NOTICE([No .pc files; faking it.])
-  # Create variables
-  AM_CONDITIONAL(COIN_HAS_OSI2PLUGININT,true)
-  AM_CONDITIONAL(COIN_HAS_UNITTESTDEPS,true)
-  AM_CONDITIONAL(COIN_HAS_CXXUNITTESTDEPS,
-  		 [test $coin_has_cxxtest != notGiven &&
-		  test $coin_has_cxxtest != skipping])
-  AC_SUBST(OSI2CLPSHIM_LIBS)
-  AC_SUBST(OSI2CLPSHIM_CFLAGS)
-  AC_SUBST(OSI2CLPSHIM_PCREQUIRES, [osi2plugin])
-  OSI2CLPSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la"
-  OSI2CLPSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin"
-  OSI2CLPHEAVYSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2CLPHEAVYSHIM_LIBS"
-  OSI2CLPHEAVYSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2CLPHEAVYSHIM_CFLAGS"
-  OSI2CLPHEAVYSHIM_PCREQUIRES="osi2plugin $OSI2CLPHEAVYSHIM_PCREQUIRES"
-  OSI2GLPKHEAVYSHIM_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2GLPKHEAVYSHIM_LIBS"
-  OSI2GLPKHEAVYSHIM_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2GLPKHEAVYSHIM_CFLAGS"
-  OSI2GLPKHEAVYSHIM_PCREQUIRES="osi2plugin $OSI2GLPKHEAVYSHIM_PCREQUIRES"
-  OSI2_CFLAGS="-I\$(top_srcdir)/src/Osi2Plugin $OSI2_CFLAGS"
-  OSI2_LIBS="\$(top_builddir)/src/Osi2Plugin/libOsi2Plugin.la $OSI2_LIBS"
-  OSI2_PCREQUIRES="osi2plugin $OSI2_PCREQUIRES"
-  AC_SUBST(UNITTESTDEPS_LIBS)
-  AC_SUBST(UNITTESTDEPS_CFLAGS)
-  UNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
-  UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
-  UNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../Osi/src/Osi $UNITTESTDEPS_CFLAGS"
-
-# CxxUnitTest libs should be the same as regular UnitTest libs, but don't
-# define in those terms because regular unit test may disappear. CFLAGS needs
-# the additional include directories for the CxxTest source.
-  CXXUNITTESTDEPS_LIBS="\$(top_builddir)/src/Osi2/libOsi2.la $OSI2_LIBS"
-  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/src/Osi2 $OSI2_CFLAGS"
-  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../Osi/src/Osi $CXXUNITTESTDEPS_CFLAGS"
-  CXXUNITTESTDEPS_CFLAGS="-I\$(top_srcdir)/../ThirdParty/CxxTest/cxxtest $CXXUNITTESTDEPS_CFLAGS"
+  AC_MSG_NOTICE([Not using CxxTest.])
 fi
 
-# So we can use OSI2PLUGIN in makefiles instead of OSI2PLUGININT. Not clear
-# it's necessary at present.
+#############################################################################
+#                            Shims                                          #
+#############################################################################
 
-AM_CONDITIONAL(COIN_HAS_OSI2PLUGIN,true)
+# One can build ClpShim without libClp, but ClpHeavyShim must be linked with
+# libOsiClp and dependencies. But see below for separate additions to CFLAGS.
 
-# Augment OSI2CLPSHIM_CFLAGS (used when building both the light and heavy
-# shims) so we can find all necessary include files. Do this explicitly to
-# avoid dragging in libs we don't need. I should figure out how to
-# use separate CFLAGS variables in Makefile.am. -- lh, 111021 --
-
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Clp/src"
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Clp/src/OsiClp"
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Clp/src"
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/../Osi/src/Osi"
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_builddir)/../Osi/src/Osi"
-OSI2CLPSHIM_CFLAGS="$OSI2CLPSHIM_CFLAGS -I\$(top_srcdir)/src/Osi2"
-
-# Avoid pulling Osi2Config.h and dependencies into the build for libOsi2Plugin
-# just for COIN_HAS_NULLPTR. Eventually nullptr should move to CoinUtils.
-
-if test "x$ac_cv_type_nullptr" = xyes ; then
-  OSI2PLUGIN_CFLAGS="$OSI2PLUGIN_CFLAGS -DCOIN_HAS_NULLPTR"
+AC_COIN_CHK_PKG(OsiClp,[Osi2ClpHeavyShim],[osi-clp])
+if test $coin_has_osiclp != yes ; then
+  AC_MSG_ERROR([Required package OsiClp not available.])
 fi
 
-AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
-AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
+# Similarly, GlpkHeavyShim needs libOsiGlpk and dependencies.
 
-#############################################################################
-#                            Third party solvers                            #
-#############################################################################
+AC_COIN_CHK_PKG(OsiGlpk,[Osi2GlpkHeavyShim],[osi-glpk])
 
-# Check which third party solvers are available. Cplex detection has been
-# tested on a semi-regular basis, and Mosek detection most likely works. For
-# the rest, it's anyone's guess.  -- lh, 080529 --
-# fixed detection of Mosek and Xpress -- stefan, 091003 (linux32, gcc) --
+# Finalize flags, then tack on the local stuff
 
-AC_COIN_CHECK_USER_LIBRARY([Cplex], [CPX],[cplex.h],   [CPXgetstat])
-AC_COIN_CHECK_USER_LIBRARY([Mosek], [MSK],[mosek.h],   [MSK_makeenv])
-AC_COIN_CHECK_USER_LIBRARY([Xpress],[XPR],[xprs.h],    [XPRSinit])
-AC_COIN_CHECK_USER_LIBRARY([Gurobi],[GRB],[gurobi_c.h],[GRBloadenv])
+AC_COIN_FINALIZE_FLAGS([Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim])
+AC_COIN_CHK_HERE(Osi2Lib,[Osi2ClpShim Osi2ClpHeavyShim Osi2GlpkHeavyShim],osi2)
+
+# Create some artificial variables that'll be useful in the makefile when
+# building unit tests. Finalize, then tack on Osi2.
+
+AC_COIN_CHK_PKG(Osi,[UnitTestDeps CxxUnitTestDeps])
+AC_COIN_FINALIZE_FLAGS([UnitTestDeps CxxUnitTestDeps])
+AC_COIN_CHK_HERE(Osi2Lib,[UnitTestDeps CxxUnitTestDeps],osi2)
 
 #############################################################################
 #                            Examples solver                                #
 #############################################################################
 
-# choose a solver interface that can be used in the examples
+# Choose a solver interface that can be used in the examples
 
 if test x$coin_has_glpk = xyes ; then
   OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
   OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
   OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
   OSI_EXAMPLES_SOLVER_PCNAME=osi-glpk
-fi
-
-# adjust linker flags for (i)cl compiler
-if test x$coin_cxx_is_cl = xtrue || test x$coin_cc_is_cl = xtrue ;
-then
-  [OSI2_EXAMPLES_SOLVER_LIBS=`echo " $OSI2_EXAMPLES_SOLVER_LIBS" | sed -e 's/ -L\([^ ]*\)/ \/libpath:\`$(CYGPATH_W) \1\`/g' -e 's/ -l\([^ ]*\)/ lib\1.lib/g'`]
 fi
 
 AC_SUBST(OSI2_EXAMPLES_SOLVER_NAME)
@@ -263,15 +167,7 @@ AC_DEFINE(GLPK_HAS_INTOPT, [1],
 #                  Check for doxygen                                        #
 #############################################################################
 
-AC_COIN_DOXYGEN(CoinUtils)
-
-#############################################################################
-#                  System header                                            #
-#############################################################################
-
-AC_COIN_CHECK_CXX_CHEADER(math)
-AC_COIN_CHECK_CXX_CHEADER(float)
-AC_COIN_CHECK_CXX_CHEADER(ieeefp)
+AC_COIN_DOXYGEN(CoinUtils Osi)
 
 ##############################################################################
 #                   Finishing up by writing all the output                   #
@@ -285,11 +181,11 @@ AC_CONFIG_FILES([Makefile
 		 src/Osi2Plugin/Makefile
 		 src/Osi2/Makefile
 		 src/Osi2Shims/Makefile
-                 osi2.pc osi2-uninstalled.pc
-                 osi2plugin.pc osi2plugin-uninstalled.pc
-                 osi2clpshim.pc osi2clpshim-uninstalled.pc
-                 osi2clpheavyshim.pc osi2clpheavyshim-uninstalled.pc
-                 osi2-unittests.pc osi2-unittests-uninstalled.pc])
+                 osi2.pc
+                 osi2plugin.pc
+                 osi2clpshim.pc
+                 osi2clpheavyshim.pc
+                 osi2-unittests.pc])
 
 AC_CONFIG_FILES([doxydoc/doxygen.conf])
 

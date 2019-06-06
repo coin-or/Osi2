@@ -8,42 +8,46 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+include $(top_srcdir)/BuildTools/Makemain.inc
+
 ########################################################################
 #                               libOsi2                                 #
 ########################################################################
 
 # Name of the library compiled in this directory.
+
 lib_LTLIBRARIES = libOsi2.la
 
-# List all source files for this library, including headers
+# List all source files for this library, including headers.
 
 libOsi2_la_SOURCES = \
 	Osi2API.hpp \
-	Osi2ControlAPI.hpp Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
+	Osi2ControlAPI.hpp \
+	Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
 	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp
 
-# This is for libtool
+# List all additionally required libraries.
+
+libOsi2_la_LIBADD = $(OSI2LIB_LFLAGS)
+
+# This is for libtool.
+
 libOsi2_la_LDFLAGS = $(LT_LDFLAGS)
 
-# Make sure the library includes the necessary dependencies
-libOsi2_la_LIBADD =
-
 # Here list all include flags.
-AM_CPPFLAGS = $(OSI2_CFLAGS)
+
+AM_CPPFLAGS = -DOSI2_BUILD \
+	      -I$(srcdir)/../Osi2Plugin \
+	      $(OSI2LIB_CFLAGS)
 	      
-
-# This line is necessary to allow VPATH compilation.
-# This "cygpath" stuff is necessary to compile with native compilers on Windows.
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
-
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'includedir/coin'
+# and that therefore should be installed in pkgincludedir.
 
-includecoindir = $(includedir)/coin
+includecoindir = $(pkgincludedir)
 includecoin_HEADERS = \
 	Osi2API.hpp \
 	Osi2ControlAPI.hpp \

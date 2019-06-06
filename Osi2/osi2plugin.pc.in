@@ -7,6 +7,8 @@ Name: Osi2Plugin
 Description: COIN-OR Osi2 Plugin management
 URL: https://projects.coin-or.org/Osi2
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lOsi2Plugin @OSI2PLUGIN_PCLIBS@
+Libs: -L${libdir} -lOsi2Plugin
+Libs.private: @OSI2PLUGIN_LFLAGS_NOPC@
 Cflags: -I${includedir}
-Requires: @OSI2PLUGIN_PCREQUIRES@
+Requires:
+Requires.private: @OSI2PLUGIN_PCFILES@

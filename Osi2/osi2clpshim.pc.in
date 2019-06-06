@@ -7,7 +7,9 @@ Name: Osi2 Clp Shim
 Description: Clp solver shim for Osi2
 URL: https://projects.coin-or.org/Osi2
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -losi2clpshim @OSI2CLPSHIM_PCLIBS@
+Libs: -L${libdir} -losi2clpshim
+Libs.private: @OSI2CLPSHIM_LFLAGS_NOPC@
 Cflags: -I${includedir}
-Requires: osi2plugin @OSI2CLPSHIM_PCREQUIRES@
+Requires:
+Requires.private: @OSI2CLPSHIM_PCFILES@
 

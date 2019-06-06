@@ -8,39 +8,36 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+include $(top_srcdir)/BuildTools/Makemain.inc
 
 ########################################################################
 #                          unitTest  program                               #
 ########################################################################
 
 # Name of the executable compiled in this directory.  We want it to be
-# installed in the 'bin' directory
+# installed in the 'bin' directory.
+
 noinst_PROGRAMS = unitTest
 
-# List all source files for this executable, including headers
+# List all source files for this executable, including headers.
+
 unitTest_SOURCES = unitTest.cpp 
 
 # Add the necessary libraries
 
-unitTest_LDADD = $(UNITTESTDEPS_LIBS)
+unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
+		 ../src/Osi2/libOsi2.la \
+		 $(UNITTESTDEPS_LFLAGS)
 
 # Now add the include paths for compilation
 
-AM_CPPFLAGS = $(UNITTESTDEPS_CFLAGS)
-
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
-	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
-	-I`$(CYGPATH_W) ../src/Osi2`
+AM_CPPFLAGS = -DOSI2_BUILD \
+	      -I$(srcdir)/../src/Osi2 \
+	      -I$(srcdir)/../src/Osi2Plugin \
+	      $(UNITTESTDEPS_CFLAGS)
 
 test: unitTest$(EXEEXT)
 	./unitTest$(EXEEXT)
 
 .PHONY: test
-
-
-
-
-
 
