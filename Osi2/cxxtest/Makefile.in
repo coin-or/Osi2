@@ -125,7 +125,8 @@ nodist_cxxUnitTest_OBJECTS = cxxUnitTest.$(OBJEXT)
 cxxUnitTest_OBJECTS = $(am_cxxUnitTest_OBJECTS) \
 	$(nodist_cxxUnitTest_OBJECTS)
 am__DEPENDENCIES_1 =
-cxxUnitTest_DEPENDENCIES = $(am__DEPENDENCIES_1)
+cxxUnitTest_DEPENDENCIES = ../src/Osi2Plugin/libOsi2Plugin.la \
+	../src/Osi2/libOsi2.la $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -414,15 +415,24 @@ cxxUnitTest_SOURCES = Osi2PluginTest.cpp \
 
 nodist_cxxUnitTest_SOURCES = cxxUnitTest.cpp 
 
-# The driver will be built by running cxxtestgen.
+# The driver will be built by running cxxtestgen. For a VPATH build, cxxtestgen
+# isn't running in the cxxtest source directory, hence needs some help to
+# find the source header files.  The trickery with set -x allows the user
+# to see the cxxtestgen command without being bothered by the source file
+# prep that precedes it.
 BUILT_SOURCES = cxxUnitTest.cpp
 CLEANFILES = cxxUnitTest.cpp
 
 # Add the necessary libraries
-cxxUnitTest_LDADD = $(CXXUNITTESTDEPS_LFLAGS)
+cxxUnitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
+		    ../src/Osi2/libOsi2.la \
+		    $(CXXUNITTESTDEPS_LFLAGS)
+
 
 # Now add the include paths for compilation
-AM_CPPFLAGS = $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
+AM_CPPFLAGS = -I$(srcdir)/../src/Osi2Plugin \
+	      $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
+
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -802,9 +812,15 @@ uninstall-doc:
 .PHONY: install-doc uninstall-doc \
 	doxygen-docs pdf-doxygen-docs clean-doxygen-docs \
 	install-doxygen-docs uninstall-doxygen-docs
-cxxUnitTest.cpp: $(cxxUnitTest_SOURCES) 
+cxxUnitTest.cpp: $(cxxUnitTest_SOURCES)
+	@for file in $(cxxUnitTest_SOURCES) ; do \
+	  if expr "$$file" : '^.*\.h.*$$' &>/dev/null ; then \
+	    tmp="$$tmp $(srcdir)/$$file" ; \
+	  fi ; \
+	done ; \
+	set -x ; \
 	$(CXXTESTGEN) --fog-parser --error-printer \
-	    -o cxxUnitTest.cpp $(cxxUnitTest_SOURCES)
+	    -o cxxUnitTest.cpp $$tmp
 
 test: cxxUnitTest$(EXEEXT)
 	./cxxUnitTest$(EXEEXT)
