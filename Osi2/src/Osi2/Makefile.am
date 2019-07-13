@@ -24,7 +24,10 @@ libOsi2_la_SOURCES = \
 	Osi2API.hpp \
 	Osi2ControlAPI.hpp \
 	Osi2ControlAPI_Imp.hpp Osi2ControlAPI_Imp.cpp \
-	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp
+	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp \
+	Osi2ParamMgmtAPI.hpp \
+	Osi2ParamMgmtAPI_Imp.hpp Osi2ParamMgmtAPI_Imp.cpp \
+	Osi2ParamMgmtAPIMessages.hpp Osi2ParamMgmtAPIMessages.cpp
 
 # List all additionally required libraries.
 
