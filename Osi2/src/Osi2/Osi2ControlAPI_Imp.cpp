@@ -186,8 +186,7 @@ int ControlAPI_Imp::load (const std::string &shortName,
         return (retval) ;
     }
     /*
-      Construct a full path and ask the plugin manager to load the solver. If
-      we're successful, enter it into the known libraries map.
+      Construct a full path and ask the plugin manager to load the solver.
     */
     std::string fullPath = libName ;
     PluginUniqueID uniqueID ;
@@ -203,10 +202,18 @@ int ControlAPI_Imp::load (const std::string &shortName,
                 << shortName << fullPath << CoinMessageEol ;
         return (retval) ;
     }
+    /*
+      Return value of 1 means PluginManager thinks the library is already
+      loaded. Internal confusion: we should have had a known libraries map
+      entry.
+    */
     if (retval == 1) {
         msgHandler_->message(CTRLAPI_UNREG, msgs_)
                 << fullPath << shortName << CoinMessageEol ;
     }
+    /*
+      Success. Create and initialize an entry in the known libraries map.
+    */
     DynLibInfo &info = knownLibMap_[shortName] ;
     info.fullPath_ = fullPath ;
     info.uniqueID_ = uniqueID ;

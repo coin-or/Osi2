@@ -6,7 +6,7 @@
   in five parts in Dr. Dobbs, starting November 2007.
 */
 /*! \file Osi2PluginManager.hpp
-    \brief Declarations for Osi2::PluginManagera
+    \brief Declarations for Osi2::PluginManager
 
   A class to manage dynamic libraries and objects. Wraps the low-level methods
   of DynamicLibrary with convenient bookkeeping.
@@ -42,21 +42,39 @@ struct IObjectAdapter ;
   its initialisation function before registration information is copied into
   the manager's client-accessible data structures.
 
-  APIs are registered by plugin libraries; a character string identifies each
-  API. If the registration string is exactly "*", the registration is classed
-  as a wildcard and entered in the #wildCardVec_. Otherwise, it will be
-  entered in the #exactMatchMap_ using the character string as the key.
+  APIs are registered by plugin libraries; a character string identifies
+  each API. If the registration string is exactly "*", the registration is
+  classed as a wildcard and entered in the #wildCardVec_. Otherwise, it will
+  be entered in the #exactMatchMap_ using the character string as the key.
+  Duplicate registrations are not allowed; each <API string,library> pair
+  must be unique. A corollary of this is that there is at most one entry
+  per library in the #wildCardVec_.
 
   Clients request an object supporting a specific API by specifying a
   character string.  If an exact match for the API requested by the client
-  is not found in #exactMatchMap_, the #wildCardVec_ is scanned. For each
-  entry, the corresponding create function is asked to create an object
-  supporting the requested API. If this is successful, an entry is made in the
-  #exactMatchMap_ so that subsequent requests for the same API can be
-  satisfied more efficiently.
+  is found in #exactMatchMap_, the corresponding create function is invoked
+  and the object is returned to the client.
+
+  If no exact match is found, the #wildCardVec_ is scanned. For each entry,
+  the corresponding create function is invoked to attempt to create an
+  object supporting the requested API. If the plugin library responds with
+  an object, an entry is made in the #exactMatchMap_ so that subsequent
+  requests for the same API can be satisfied more efficiently. The plugin
+  library may chose to invoke the registration function itself to create the
+  exact match entry, before returning the object. Otherwise the PluginManager
+  creates an exact match entry from information in the wild card vector entry.
 
   Any request for an object supporting a particular API can be qualified with
   a request that the object be supplied by a particular library.
+
+  To allow Osi2 to provide utility APIs through compiled-in `plugin
+  libraries'.  The PluginManager class provides a hook, #addPreloadLib,
+  to allow these `plugins' to register their APIs. The expected technique
+  is for the file defining the class to instantiate a single file-local
+  static object using a constructor whose main purpose is to invoke
+  #addPreloadLib with the library's \link Osi2::InitFunc \endlink as a
+  parameter. The collected InitFunc's are executed when the single instance
+  of the PluginManager is constructed.
 */
 
 class PluginManager {
@@ -68,6 +86,13 @@ public:
       Returns a reference to the single instance of the plugin manager.
     */
     static PluginManager &getInstance() ;
+
+    /*! \brief Add a library to the set of preloaded libraries
+
+      A hook for compiled-in libraries to register the APIs that they
+      implement.
+    */
+    static void addPreloadLib(InitFunc initFunc) ;
 
     /*! \name Public plugin library management methods
 
@@ -220,22 +245,21 @@ public:
     //@}
 
 private:
-    /*! \brief Register an object type with the plugin manager
+    /*! \brief Register an API with the plugin manager
 
       Invoked by plugins to register the objects they can create.
     */
-    static int32_t registerObject(const CharString *nodeType,
-                                  const RegisterParams *params) ;
+    static int32_t registerAPI(const CharString *nodeType,
+                               const APIRegInfo *params) ;
 
     /*! \name Constructors and Destructors
 
       Private because the plugin manager should be a single static instance.
+      For that same reason, there's no copy constructor.
     */
     //@{
     /// Default constructor
     PluginManager() ;
-    /// Copy constructor
-    PluginManager(const PluginManager &pm) ;
     /// Destructor
     ~PluginManager() ;
     //@}
@@ -247,36 +271,52 @@ private:
       Check the validity of a registration parameter block supplied by
       a plugin to register an API.
 
-      \returns A reference to the dynamic library object for the plugin
-      	     library attempting the registration, or null on error.
+      \returns true if the block is valid, false otherwise
     */
-    DynamicLibrary *validateRegParams(const CharString *apiStr,
-                                      const RegisterParams *params) const ;
+    bool validateAPIRegInfo(const CharString *apiStr,
+			    const APIRegInfo *params) const ;
+
     /*! \brief Construct an ObjectParams block
 
       Constructs the parameter block passed to the plugin for object creation
       or destruction.
     */
+    class APIInfo ;
     ObjectParams *buildObjectParams(const std::string apiStr,
-                                    const RegisterParams &rp) ;
+                                    const APIInfo &rp) ;
+
+    /*! \brief Generate a unique plugin ID */
+    inline PluginUniqueID genUniqueID ()
+    { return (reinterpret_cast<PluginUniqueID>(++currentID_)) ; } ;
     //@}
+
+    /*! \brief Current `unique ID'.
+
+      Arguably we could use something more complicated, but given there's only
+      one PluginManager object, a simple incrementing count should do it.
+    */
+    size_t currentID_ ;
 
     /// Partially filled-in platform services record
     PlatformServices platformServices_ ;
 
     /*! \brief Plugin library management information
 
-      This struct holds the information needed to manage a plugin library.
+      This struct holds the information needed to manage a plugin library. A
+      `plugin' library can be compiled in or dynamically loaded.
     */
-    struct DynLibInfo {
+    struct LibraryInfo {
 
+        /// The unique ID for the library.
+	PluginUniqueID id_ ;
+	/// True if this is a dynamically loaded library
+	bool isDynamic_ ;
         /// The dynamic library
         DynamicLibrary *dynLib_ ;
         /// Plugin library state object supplied by plugin (opaque pointer)
         PluginState *ctrlObj_ ;
         /// Exit (cleanup) function for the library; called prior to unload
         ExitFunc exitFunc_ ;
-
     } ;
 
     /// Map type to map library path strings to PluginUniqueID
@@ -290,58 +330,88 @@ private:
     LibPathToIDMap libPathToIDMap_ ;
 
     /// Map type for plugin library management
-    typedef std::map<PluginUniqueID, DynLibInfo> DynamicLibraryMap ;
+    typedef std::map<PluginUniqueID, LibraryInfo> LibraryMap ;
 
     /*! \brief Plugin library management map
 
       Maps the unique ID assigned to the plugin library to a block of
-      information (#DynLibInfo) used to manage the library.
+      information (PluginManager::LibraryInfo) used to manage the library.
     */
-    DynamicLibraryMap dynamicLibraryMap_ ;
+    LibraryMap libraryMap_ ;
+
+
+    /*! \brief API management information
+
+      This struct holds the information needed to manage an individual API
+      provided by a plugin library.
+    */
+    struct APIInfo {
+	/// The API name
+	std::string api_ ;
+        /// The unique ID for the library.
+	PluginUniqueID id_ ;
+        /// API state object supplied by plugin (opaque pointer)
+        APIState *ctrlObj_ ;
+	/// Language
+	PluginLang lang_ ;
+	/// Constructor for API objects
+	CreateFunc createFunc_ ;
+	/// Destructor for API objects
+	DestroyFunc destroyFunc_ ;
+    } ;
 
     /// Map type for API management
-    typedef std::multimap<std::string, RegisterParams> RegistrationMap ;
+    typedef std::multimap<std::string, APIInfo> APIRegMap ;
     /// Vector type for wildcard management
-    typedef std::vector<RegisterParams> RegistrationVec ;
+    typedef std::vector<APIInfo> APIRegVec ;
 
     /*! \brief Check for an existing entry in the API multimaps
 
       Checks both the key and the plugin unique ID. Returns an iterator for the
       entry if it exists, null otherwise.
     */
-    RegistrationMap::iterator apiEntryExists(RegistrationMap &regMap,
+    APIRegMap::const_iterator apiEntryExists(const APIRegMap &regMap,
             const std::string &key,
             PluginUniqueID libID) ;
 
     /*! \brief API management information map
 
       Maps specific APIs registered by plugin libraries to a block of
-      information (#APIInfo) used to manage the API.
+      information (PluginManager::APIInfo) used to manage the API.
     */
-    RegistrationMap exactMatchMap_ ;
+    APIRegMap exactMatchMap_ ;
     /*! \brief Wildcard management information
 
       Records management information for wildcard registrations by plugin
       libraries.
     */
-    RegistrationVec wildCardVec_ ;
+    APIRegVec wildCardVec_ ;
 
     /*! \brief Initialising a plugin?
 
-      True during initialisation of a plugin library. Used to determine if plugin
-      activity (API registration, etc) should go to temporary structures.
+      True during initialisation of a plugin library. Used to determine if
+      plugin activity (API registration, etc) should go to temporary
+      structures.
     */
     bool initialisingPlugin_ ;
-    /*! \brief The library we're initialising;
+
+    /*! \brief The unique ID of the library we're initialising.
 
       Valid exactly when #initialisingPlugin_ is true.
     */
-    DynamicLibrary *libInInit_ ;
+    PluginUniqueID libInInit_ ;
+
+    /*! \brief Full path for the library we're initialising.
+
+      Valid exactly when #initialisingPlugin_ is true. Handy for
+      human-friendly messages.
+    */
+    std::string pathInInit_ ;
 
     /// Temporary API map used during plugin library initialisation
-    RegistrationMap tmpExactMatchMap_ ;
+    APIRegMap tmpExactMatchMap_ ;
     /// Temporary wildcard vector used during plugin library initialisation
-    RegistrationVec tmpWildCardVec_ ;     // wild card ('*') object types
+    APIRegVec tmpWildCardVec_ ;     // wild card ('*') object types
 
     /// Default plugin directory
     std::string dfltPluginDir_ ;

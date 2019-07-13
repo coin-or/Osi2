@@ -44,21 +44,21 @@ typedef struct {
 */
 static OnePlugMgrMessage us_english[] = {
     // Information: 0 -- 2999
-    { PLUGMGR_INIT, 0000, 7, "Plugin Manager initialising." },
-    { PLUGMGR_LIBLDOK, 0001, 4, "Loaded plugin library \"%s\"." },
-    { PLUGMGR_LIBINITOK, 0002, 4, "Initialised plugin library \"%s\"." },
-    { PLUGMGR_LIBEXITOK, 0003, 4, "Shut down plugin library \"%s\"." },
-    { PLUGMGR_LIBCLOSE, 0004, 4, "Unloading plugin library \"%s\"." },
+    { PLUGMGR_INIT, 0, 7, "Plugin Manager initialising." },
+    { PLUGMGR_LIBLDOK, 1, 4, "Loaded plugin library \"%s\"." },
+    { PLUGMGR_LIBINITOK, 2, 4, "Initialised plugin library \"%s\"." },
+    { PLUGMGR_LIBEXITOK, 3, 4, "Shut down plugin library \"%s\"." },
+    { PLUGMGR_LIBCLOSE, 4, 4, "Unloading plugin library \"%s\"." },
     {
-        PLUGMGR_APIREGOK, 0010, 5,
+        PLUGMGR_APIREGOK, 10, 5,
         "Registered API \"%s\" for plugin library \"%s\"."
     },
     {
-        PLUGMGR_APIUNREG, 0011, 5,
+        PLUGMGR_APIUNREG, 11, 5,
         "Unregistered API \"%s\" for plugin library \"%s\"."
     },
-    { PLUGMGR_APICREATEOK, 0012, 5, "Created object \"%s\" (%s)." },
-    { PLUGMGR_APIDELOK, 0013, 5, "Destroyed object \"%s\"." },
+    { PLUGMGR_APICREATEOK, 12, 5, "Created object \"%s\" (%s)." },
+    { PLUGMGR_APIDELOK, 13, 5, "Destroyed object \"%s\"." },
 
     // Warning: 3000 -- 5999
     { PLUGMGR_LIBLDDUP, 3000, 3, "Plugin library \"%s\" is already loaded." },
