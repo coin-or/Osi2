@@ -85,46 +85,45 @@ int32_t GlpkHeavyShim::destroy (void *victim, const ObjectParams *objParms)
 extern "C"
 ExitFunc initPlugin (PlatformServices *services)
 {
-    std::string version = glp_version() ;
-    std::cout
-            << "Executing GlpkHeavyShim::initPlugin, glpk version "
-            << version << "." << std::endl ;
-    /*
-      Create the plugin library state object, GlpkHeavyShim.  Arrange to
-      remember our unique ID from the plugin manager.  Then stash a pointer
-      to the shim in PlatformServices to return it to the plugin manager.
-      This allows the plugin manager to hand back the shim object with each
-      call, which in turn allows us to remember what we're doing.
-    */
-    GlpkHeavyShim *shim = new GlpkHeavyShim() ;
-    shim->setPluginID(services->pluginID_) ;
-    services->ctrlObj_ = static_cast<PluginState *>(shim) ;
-    /*
-      RegisterParams.
-    */
-    /*
-      Fill in the rest of the registration parameters and invoke the
-      registration method. We could specify a separate state object for each
-      API, but so far that doesn't seem necessary --- just use the library's
-      state object.
-    */
-    RegisterParams reginfo ;
-    reginfo.ctrlObj_ = static_cast<PluginState *>(shim) ;
-    reginfo.version_.major_ = 1 ;
-    reginfo.version_.minor_ = GLP_MINOR_VERSION ;
-    reginfo.lang_ = Plugin_CPP ;
-    reginfo.pluginID_ = shim->getPluginID() ;
-    reginfo.createFunc_ = GlpkHeavyShim::create ;
-    reginfo.destroyFunc_ = GlpkHeavyShim::destroy ;
-    int retval = services->registerObject_(
-		reinterpret_cast<const unsigned char*>("Osi1"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register Osi1 plugin." << std::endl ;
-        return (nullptr) ;
-    }
+  std::string version = glp_version() ;
+  std::cout
+      << "Executing GlpkHeavyShim::initPlugin, glpk version "
+      << version << "." << std::endl ;
+/*
+  Create the plugin library state object, GlpkHeavyShim.  Arrange to remember
+  our unique ID from the plugin manager.  Then stash a pointer to the shim
+  in PlatformServices to return it to the plugin manager.  This allows the
+  plugin manager to hand back the shim object with each call, which in turn
+  allows us to remember what we're doing.
+*/
+  GlpkHeavyShim *shim = new GlpkHeavyShim() ;
+  shim->setPluginID(services->pluginID_) ;
+  services->ctrlObj_ = static_cast<PluginState *>(shim) ;
+/*
+  Register our APIs.
 
-    return (cleanupPlugin) ;
+  For each API, fill in the the registration parameters and invoke the
+  registration function. We could specify a separate state object for each
+  API, but so far that doesn't seem necessary --- just use the library's
+  state object.
+*/
+  APIRegInfo reginfo ;
+  reginfo.version_.major_ = 1 ;
+  reginfo.version_.minor_ = GLP_MINOR_VERSION ;
+  reginfo.pluginID_ = shim->getPluginID() ;
+  reginfo.lang_ = Plugin_CPP ;
+  reginfo.ctrlObj_ = static_cast<PluginState *>(shim) ;
+  reginfo.createFunc_ = GlpkHeavyShim::create ;
+  reginfo.destroyFunc_ = GlpkHeavyShim::destroy ;
+  int retval = services->registerAPI_(
+	  reinterpret_cast<const unsigned char*>("Osi1"), &reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register Osi1 plugin." << std::endl ;
+    return (nullptr) ;
+  }
+
+  return (cleanupPlugin) ;
 }
 
 /*

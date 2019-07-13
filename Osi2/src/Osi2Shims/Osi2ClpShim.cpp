@@ -126,82 +126,79 @@ int32_t ClpShim::destroy (void *victim, const ObjectParams *objParms)
 extern "C"
 ExitFunc initPlugin (PlatformServices *services)
 {
-    std::string version = CLP_VERSION ;
+  std::string version = CLP_VERSION ;
+  std::cout
+      << "Executing ClpShim::initPlugin, clp version "
+      << version << "." << std::endl ;
+/*
+  Attempt to load clp.
+*/
+  std::string libClpName = "libClp.so.0" ;
+  const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir_) ;
+  std::string libPath(tmp) ;
+  std::string errMsg ;
+  std::string fullPath = libPath + "/" + libClpName ;
+  DynamicLibrary *libClp = DynamicLibrary::load(fullPath, errMsg) ;
+  if (libClp == nullptr) {
     std::cout
-            << "Executing ClpShim::initPlugin, clp version "
-            << version << "." << std::endl ;
-    /*
-      Attempt to load clp.
-    */
-    std::string libClpName = "libClp.so.0" ;
-    const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir_) ;
-    std::string libPath(tmp) ;
-    std::string errMsg ;
-    std::string fullPath = libPath + "/" + libClpName ;
-    DynamicLibrary *libClp = DynamicLibrary::load(fullPath, errMsg) ;
-    if (libClp == nullptr) {
-        std::cout
-                << "Apparent failure opening " << fullPath << "." << std::endl ;
-        std::cout
-                << "Error is " << errMsg << "." << std::endl ;
-        return (nullptr) ;
-    }
-    /*
-      Create the plugin library state object, ClpShim.  Arrange to remember the
-      handle to libClp, and our unique ID from the plugin manager.  Then stash a
-      pointer to the shim in PlatformServices to return it to the plugin
-      manager.  This allows the plugin manager to hand back the shim object with
-      each call, which in turn allows us to remember what we're doing.
-    */
-    ClpShim *shim = new ClpShim() ;
-    shim->setLibClp(libClp) ;
-    shim->setPluginID(services->pluginID_) ;
-    services->ctrlObj_ = static_cast<PluginState *>(shim) ;
-    /*
-      RegisterParams.
-    */
-    /*
-      Fill in the rest of the registration parameters and invoke the registration
-      method. We could specify a separate state object for each API, but so far
-      that doesn't seem necessary --- just use the library's state object.
-    */
-    RegisterParams reginfo ;
-    reginfo.ctrlObj_ = static_cast<PluginState *>(shim) ;
-    reginfo.version_.major_ = 1 ;
-    reginfo.version_.minor_ = CLP_VERSION_MINOR ;
-    reginfo.lang_ = Plugin_CPP ;
-    reginfo.pluginID_ = shim->getPluginID() ;
-    reginfo.createFunc_ = ClpShim::create ;
-    reginfo.destroyFunc_ = ClpShim::destroy ;
-    int retval =
-        services->registerObject_(
-            reinterpret_cast<const unsigned char*>("ClpSimplex"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register ClpSimplex plugin." << std::endl ;
-        return (nullptr) ;
-    }
-    retval =
-        services->registerObject_(
-            reinterpret_cast<const unsigned char*>("ProbMgmt"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register ProgMgmt plugin." << std::endl ;
-        return (nullptr) ;
-    }
-    /*
-      Register a wildcard object (for testing)
-    */
-    retval =
-        services->registerObject_(
-            reinterpret_cast<const unsigned char*>("*"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register wildcard plugin." << std::endl ;
-        return (nullptr) ;
-    }
+	<< "Apparent failure opening " << fullPath << "." << std::endl ;
+    std::cout
+	<< "Error is " << errMsg << "." << std::endl ;
+    return (nullptr) ;
+  }
+/*
+  Create the plugin library state object, ClpShim.  Arrange to remember the
+  handle to libClp, and our unique ID from the plugin manager.  Then stash a
+  pointer to the shim in PlatformServices to return it to the plugin manager.
+  This allows the plugin manager to hand back the shim object with each call,
+  which in turn allows us to remember what we're doing.
+*/
+  ClpShim *shim = new ClpShim() ;
+  shim->setLibClp(libClp) ;
+  shim->setPluginID(services->pluginID_) ;
+  services->ctrlObj_ = static_cast<PluginState *>(shim) ;
+/*
+  Register our APIs.
 
-    return (cleanupPlugin) ;
+  For each API, fill in the the registration parameters and invoke the
+  registration function. We could specify a separate state object for each
+  API, but so far that doesn't seem necessary --- just use the library's
+  state object.
+*/
+  APIRegInfo reginfo ;
+  reginfo.version_.major_ = 1 ;
+  reginfo.version_.minor_ = CLP_VERSION_MINOR ;
+  reginfo.pluginID_ = shim->getPluginID() ;
+  reginfo.lang_ = Plugin_CPP ;
+  reginfo.ctrlObj_ = static_cast<APIState *>(shim) ;
+  reginfo.createFunc_ = ClpShim::create ;
+  reginfo.destroyFunc_ = ClpShim::destroy ;
+  int retval = services->registerAPI_(
+	  reinterpret_cast<const CharString*>("ClpSimplex"),&reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register ClpSimplex API." << std::endl ;
+    return (nullptr) ;
+  }
+  retval = services->registerAPI_(
+	  reinterpret_cast<const CharString*>("ProbMgmt"),&reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register ProgMgmt API." << std::endl ;
+    return (nullptr) ;
+  }
+/*
+  Register a wildcard object (just for testing)
+*/
+  retval =
+      services->registerAPI_(
+	  reinterpret_cast<const CharString*>("*"), &reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register wildcard plugin." << std::endl ;
+    return (nullptr) ;
+  }
+  return (cleanupPlugin) ;
 }
 
 /*

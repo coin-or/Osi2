@@ -27,6 +27,12 @@ namespace Osi2 {
   \todo Restore/check Windows functionality.
 
   \todo Convert/augment with libltdl.
+
+  \todo Should there be a distinct unload method to invoke dlclose? Currently
+        the destructor is the only way to close.
+
+  \todo Consider making this a virtual class, with implementation classes for
+        vanilla dlopen/dlclose, libtool ltdl, Windows, etc.
 */
 /*
   Doxygen's builtin notion of grouping gets in the way here. What you see is a
