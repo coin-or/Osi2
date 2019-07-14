@@ -68,13 +68,13 @@ struct IObjectAdapter ;
   a request that the object be supplied by a particular library.
 
   To allow Osi2 to provide utility APIs through compiled-in `plugin
-  libraries'.  The PluginManager class provides a hook, #addPreloadLib,
-  to allow these `plugins' to register their APIs. The expected technique
-  is for the file defining the class to instantiate a single file-local
-  static object using a constructor whose main purpose is to invoke
-  #addPreloadLib with the library's \link Osi2::InitFunc \endlink as a
-  parameter. The collected InitFunc's are executed when the single instance
-  of the PluginManager is constructed.
+  libraries'.  The PluginManager class provides a hook, #addPreloadLib, to
+  allow these `plugins' to register their APIs. The expected technique is
+  for the file defining the class to instantiate a single file-local static
+  object using a constructor whose main purpose is to invoke #addPreloadLib
+  with the library's name and \link Osi2::InitFunc initialisation function
+  \endlink as a parameter. The collected InitFunc's are executed when the
+  single instance of the PluginManager is constructed.
 */
 
 class PluginManager {
@@ -92,7 +92,7 @@ public:
       A hook for compiled-in libraries to register the APIs that they
       implement.
     */
-    static void addPreloadLib(InitFunc initFunc) ;
+    void addPreloadLib(std::string libName, InitFunc initFunc) ;
 
     /*! \name Public plugin library management methods
 
@@ -266,6 +266,16 @@ private:
 
     /*! \name Utility methods */
     //@{
+
+    /*! \brief Initialise a library given the InitFunc
+
+      A utility helper for #loadOneLib. Also used by the PluginManager
+      \link PluginManager::PluginManager constructor \endlink to register
+      innate libraries.
+    */
+    PluginUniqueID initOneLib(std::string fullPath,
+    		InitFunc initFunc, DynamicLibrary *dynLib = nullptr) ;
+
     /*! \brief Validate registration parameters
 
       Check the validity of a registration parameter block supplied by
