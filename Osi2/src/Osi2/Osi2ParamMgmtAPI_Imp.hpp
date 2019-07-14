@@ -23,67 +23,67 @@ namespace Osi2 {
 
 /*! \brief Osi2 ParamMgmtAPI implementation
 
-  This class implements the Osi2 ParamMgmt API (Osi2::ParamMgmtAPI).
+  This class implements the Osi2::ParamMgmt API.
 */
 class ParamMgmtAPI_Imp : public ParamMgmtAPI {
 
 public:
 
-    /// \name Constructors and Destructors
-    //@{
-    /// Virtual constructor
-    ParamMgmtAPI *create() ;
-    /// Virtual copy constructor
-    ParamMgmtAPI *clone() ;
-    /// Destructor
-    virtual ~ParamMgmtAPI_Imp() ;
-    /// Default constructor; \sa #create
-    ParamMgmtAPI_Imp() ;
-    /// Registration constructor
-    ParamMgmtAPI_Imp(bool unused) ;
-    /// Default copy constructor; \sa #clone
-    ParamMgmtAPI_Imp(const ParamMgmtAPI_Imp &original) ;
-    /// Assignment
-    ParamMgmtAPI_Imp &operator=(const ParamMgmtAPI_Imp &rhs) ;
-    //@}
+/*! \name Constructors and Destructors */
+//@{
+  /// Default constructor
+  ParamMgmtAPI_Imp() ;
+  /// Registration constructor
+  ParamMgmtAPI_Imp(std::string name) ;
+  /// Default copy constructor
+  ParamMgmtAPI_Imp(const ParamMgmtAPI_Imp &original) ;
+  /// Assignment
+  ParamMgmtAPI_Imp &operator=(const ParamMgmtAPI_Imp &rhs) ;
 
-    /*! \name ParamMgmt API control methods
+  /// Create (factory constructor)
+  ParamMgmtAPI *create() ;
+  /// Clone (factory copy constructor)
+  ParamMgmtAPI *clone() ;
 
-      Miscellaneous methods that control the behaviour of a ParamMgmtAPI object.
-    */
-    //@{
+  /// Destructor
+  ~ParamMgmtAPI_Imp() ;
+//@}
 
-    /// Set the log (verbosity) level
-    inline void setLogLvl(int logLvl) {
-        logLvl_ = logLvl ;
-        msgHandler_->setLogLevel(logLvl_) ;
-    }
+/*! \name ParamMgmt API control methods
 
-    /// Get the log (verbosity) level
-    inline int getLogLvl() const {
-        return (logLvl_) ;
-    }
+  Miscellaneous methods that control the behaviour of a ParamMgmtAPI object.
+*/
+//@{
 
-    /*! \brief Set the message handler
+  /// Set the log (verbosity) level
+  inline void setLogLvl(int logLvl) {
+    logLvl_ = logLvl ;
+    msgHandler_->setLogLevel(logLvl_) ;
+  }
 
-      Replaces the current message handler. If newHandler is null, the existing
-      handler is replaced with a default handler. It is the responsibility of
-      the client to destroy any handler it supplies. The plugin manager takes
-      responsibility for a default handler.
-    */
-    void setMsgHandler(CoinMessageHandler *newHandler) ;
+  /// Get the log (verbosity) level
+  inline int getLogLvl() const { return (logLvl_) ; }
 
-    /// Get the message handler
-    inline CoinMessageHandler *getMsgHandler() const {
-        return (msgHandler_) ;
-    }
+  /*! \brief Set the message handler
 
-    /// Report owner of message handler (false if owned by client).
-    inline bool dfltHandler () const {
-        return (dfltHandler_) ;
-    }
+    Replaces the current message handler. If newHandler is null, the existing
+    handler is replaced with a default handler. It is the responsibility of
+    the client to destroy any handler it supplies. The plugin manager takes
+    responsibility for a default handler.
+  */
+  void setMsgHandler(CoinMessageHandler *newHandler) ;
 
-    //@}
+  /// Get the message handler
+  inline CoinMessageHandler *getMsgHandler() const {
+      return (msgHandler_) ;
+  }
+
+  /// Report owner of message handler (false if owned by client).
+  inline bool dfltHandler () const {
+      return (dfltHandler_) ;
+  }
+
+  //@}
 
 private:
 

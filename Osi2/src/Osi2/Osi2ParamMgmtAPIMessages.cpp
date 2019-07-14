@@ -48,7 +48,7 @@ static OneParamMgmtAPIMessage us_english[] = {
 
     // Information: 0 -- 2999
 
-    { PMMGAPI_INIT, 0000, 7, "Parameter Management API constructor (%s)." },
+    { PMMGAPI_INIT, 0, 7, "Parameter Management API constructor (%s)." },
 
     // Warning: 3000 -- 5999
 

@@ -27,36 +27,36 @@ namespace Osi2 {
 
 /*! \brief Osi2 ParamMgmtAPI virtual base class
 
-  This abstract class defines the Osi2 control interface, including loading and
-  unloading of objects.
+  This abstract class defines the Osi2 parameter management interface, a
+  convenience API for handling parameters associated with plugin libraries.
 */
 class ParamMgmtAPI : public API {
 
 public:
 
-    /// \name Constructors and Destructors
-    //@{
-    /// Virtual constructor
-    virtual ParamMgmtAPI *create() = 0 ;
-    /// Virtual copy constructor
-    virtual ParamMgmtAPI *clone() = 0 ;
-    /// Virtual destructor
-    virtual ~ParamMgmtAPI() {}
-    //@}
+/*! \name Constructors and Destructors */
+//@{
+  /// Virtual constructor
+  virtual ParamMgmtAPI *create() = 0 ;
+  /// Virtual copy constructor
+  virtual ParamMgmtAPI *clone() = 0 ;
+  /// Virtual destructor
+  virtual ~ParamMgmtAPI() {}
+//@}
 
-    /*! \name ParamMgmt API control methods
+/*! \name ParamMgmt API control methods
 
-      Miscellaneous methods that control the behaviour of a ParamMgmtAPI object.
-    */
-    //@{
+  Miscellaneous methods that control the behaviour of a ParamMgmtAPI object.
+*/
+//@{
 
-    /// Set the log (verbosity) level
-    virtual void setLogLvl(int logLvl) = 0 ;
+  /// Set the log (verbosity) level
+  virtual void setLogLvl(int logLvl) = 0 ;
 
-    /// Get the log (verbosity) level
-    virtual int getLogLvl() const = 0 ;
+  /// Get the log (verbosity) level
+  virtual int getLogLvl() const = 0 ;
 
-    //@}
+//@}
 
 } ;
 
