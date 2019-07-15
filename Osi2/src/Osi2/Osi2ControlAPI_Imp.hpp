@@ -221,14 +221,14 @@ private:
     /// Log (verbosity) level
     int logLvl_ ;
 
-    /*! \brief Identity information
+    /*! \brief Control information
 
-      This class defines how API object identity information is structured for
+      This class defines how API object control information is structured for
       this implementation of the control API.
     */
-    struct APIObjIdentInfo {
+    struct APIObjCtrlInfo {
       /// Initialising constructor
-      APIObjIdentInfo(std::string apiName, PluginUniqueID libID)
+      APIObjCtrlInfo(std::string apiName, PluginUniqueID libID)
         : apiName_(apiName),
 	  libID_(libID)
       {}

@@ -35,34 +35,47 @@ public:
 
     /// Default constructor
     API ()
-      : identInfo_(0)
+      : ctrlInfo_(0)
+    { } ;
+
+    /*! \brief Copy constructor
+    
+      C++ programmers will tend to use clone without thinking about it.
+      Semantically, this is a problem because the clone was not created
+      by Osi2ControlAPI::createObject.  When the user clones, the cloned
+      object becomes their responsibility.  We need this to avoid passing
+      the control information pointer on to the cloned object.
+    */
+    API (const API &orig)
+      : ctrlInfo_(0)
     { } ;
 
     /// Virtual destructor.
     virtual ~API () { }
 
-    /// Retrieve object identification information block
-    inline const void *getIdentInfo () const { return (identInfo_) ; }
+/*! \brief Object control information
 
-protected:
+  Set or retrieve object control information. See the comments for
+  #ctrlInfo_.
+*/
+//@{
+    /// Set the object control information block
+    inline void setCtrlInfo(const void *ctrlInfo)
+    { ctrlInfo_ = ctrlInfo ; }
 
-    /// Set the identification information
-    inline void setIdentInfo(const void *identInfo)
-    { identInfo_ = identInfo ; }
+    /// Retrieve the object control information block
+    inline const void *getCtrlInfo () const { return (ctrlInfo_) ; }
+//@}
 
 private:
 
-    /*! \brief API object identification information
+    /*! \brief API object control information
 
-      This is a generic pointer which a control API implementation can
-      use as it pleases. Implementors, note that the only parameter to
-      ControlAPI::destroyObject is a pointer to the object to be destroyed.
-      The information stored here must be sufficient to allow the control
-      API implementation to determine how to destroy the object. Typically
-      this will depend on the implementation of the control API and the
-      underlying plugin manager.
+      This is an opaque pointer for exclusive use of the Osi2::ControlAPI.
+      The exact content depends on the implementation of the control API and
+      the underlying plugin manager.
     */
-    const void *identInfo_ ;
+    const void *ctrlInfo_ ;
 
 } ;
 

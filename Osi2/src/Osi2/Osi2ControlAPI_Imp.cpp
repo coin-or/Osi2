@@ -380,8 +380,8 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
         msgHandler_->printing(true) << CoinMessageEol ;
         retval = -1 ;
     } else {
-        APIObjIdentInfo *apiIdent = new APIObjIdentInfo(apiName,libID) ;
-	setIdentInfo(apiIdent) ;
+        APIObjCtrlInfo *apiCtrl = new APIObjCtrlInfo(apiName,libID) ;
+	obj->setCtrlInfo(apiCtrl) ;
         msgHandler_->message(CTRLAPI_CREATEOK, msgs_) << apiName ;
         msgHandler_->printing(restricted && libID != 0) << forPrinting ;
         msgHandler_->printing(true) << CoinMessageEol ;
@@ -414,15 +414,15 @@ int ControlAPI_Imp::destroyObject (API *&obj)
     /*
       Retrieve the identification information.
     */
-    const APIObjIdentInfo *apiIdent =
-        static_cast<const APIObjIdentInfo *>(getIdentInfo()) ;
-    if (apiIdent == nullptr) {
+    const APIObjCtrlInfo *apiCtrl =
+        static_cast<const APIObjCtrlInfo *>(obj->getCtrlInfo()) ;
+    if (apiCtrl == nullptr) {
       msgHandler_->message(CTRLAPI_NOAPIIDENT,msgs_) << CoinMessageEol ;
       retval = -3 ;
       return (retval) ;
     }
-    const std::string &apiName = apiIdent->apiName_ ;
-    const PluginUniqueID &libID = apiIdent->libID_ ;
+    const PluginUniqueID &libID = apiCtrl->libID_ ;
+    const std::string &apiName = apiCtrl->apiName_ ;
     /*
       Invoke the plugin manager's destroyObject.
     */
@@ -438,6 +438,7 @@ int ControlAPI_Imp::destroyObject (API *&obj)
         msgHandler_->printing(true) << CoinMessageEol ;
         retval = (libID == 0) ? 1 : 0 ;
     }
+    delete apiCtrl ;
 
     return (retval) ;
 }

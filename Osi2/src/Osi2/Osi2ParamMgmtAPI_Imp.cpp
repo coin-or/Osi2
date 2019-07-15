@@ -62,7 +62,7 @@ namespace Osi2 {
   Default constructor
 */
 ParamMgmtAPI_Imp::ParamMgmtAPI_Imp ()
-  : pluginMgr_(0),
+  : pluginMgr_(PluginManager::getInstance()),
     logLvl_(7)
 {
   msgHandler_ = new CoinMessageHandler() ;
@@ -81,7 +81,7 @@ ParamMgmtAPI_Imp::ParamMgmtAPI_Imp ()
   to construct a static, file local instance that has absolutely no other use.
 */
 ParamMgmtAPI_Imp::ParamMgmtAPI_Imp (std::string name)
-  : pluginMgr_(0),
+  : pluginMgr_(PluginManager::getInstance()),
     dfltHandler_(true),
     msgHandler_(0),
     msgs_(0),
@@ -98,9 +98,7 @@ ParamMgmtAPI_Imp::ParamMgmtAPI_Imp (std::string name)
       << "registration" << CoinMessageEol ;
 #endif
 
-  PluginManager &pm = PluginManager::getInstance() ;
-
-  pm.addPreloadLib(name,initPlugin) ;
+  pluginMgr_.addPreloadLib(name,initPlugin) ;
 }
 
 /*

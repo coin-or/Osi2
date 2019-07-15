@@ -148,115 +148,133 @@ int testPluginManager (const std::string libName)
     return (errcnt) ;
 }
 
+/*
+  Test the control API and various aspects of object creation and destruction.
+  The method creates various objects, works with them, and finally destroys
+  all of them. Part of the test is that there are multiple objects in
+  existence, and multiple objects of the same API.
+*/
 int testControlAPI (const std::string &shortName,
 		    const std::string &dfltSampleDir)
 {
-    int retval = 0 ;
-    int errcnt = 0 ;
+  int retval = 0 ;
+  int errcnt = 0 ;
+  std::vector<API *> apiObjs ;
+  char dirSep = CoinFindDirSeparator() ;
+
+  std::cout
+      << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
+  ControlAPI_Imp ctrlAPI ;
+  std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
+/*
+  Load the shim.
+*/
+  retval = ctrlAPI.load(shortName) ;
+  if (retval != 0) {
     std::cout
-	<< "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
-    ControlAPI_Imp ctrlAPI ;
-    std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
-    /*
-      Load shim.
-    */
-    retval = ctrlAPI.load(shortName) ;
-    if (retval != 0) {
-        std::cout
-	    << "Apparent failure to load " << shortName << "." << std::endl ;
-        std::cout
-	    << "Error code is " << retval << "." << std::endl ;
-    }
-    /*
-      Create a ProbMgmt object, invoke a nontrivial method, and destroy the
-      object.
-    */
-    API *apiObj = nullptr ;
-    retval = ctrlAPI.createObject(apiObj, "ProbMgmt") ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-	    << "Apparent failure to create a ProbMgmt object." << std::endl ;
+	<< "Apparent failure to load " << shortName << "." << std::endl ;
+    std::cout
+	<< "Error code is " << retval << "." << std::endl ;
+  }
+/*
+  Create a ProbMgmt API object and invoke a nontrivial method.
+*/
+  API *apiObj = nullptr ;
+  retval = ctrlAPI.createObject(apiObj, "ProbMgmt") ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+	<< "Apparent failure to create a ProbMgmt object." << std::endl ;
+  } else {
+    apiObjs.push_back(apiObj) ;
+    ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
+    std::string exmip1Path = dfltSampleDir+dirSep+"brandy.mps" ;
+    clp->readMps(exmip1Path.c_str(), true) ;
+    clp->initialSolve() ;
+  }
+/*
+  Create an Osi1 object, invoke a nontrivial method, and destroy the
+  object. The clone test here is checking several things: First, that the
+  cloned object is viable (i.e., the original clone method still works)
+  and, second, that the control information block has been stripped. The
+  second destroy should fail because there's no control information block.
+  (The ControlAPI didn't create this object and takes no responsibility
+  for it!)  Later, the destruction of the original object should succeed,
+  because it still possesses the control information block.
+*/
+  apiObj = nullptr ;
+  retval = ctrlAPI.createObject(apiObj, "Osi1") ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+	<< "Apparent failure to create an Osi1 object." << std::endl ;
+  } else {
+    apiObjs.push_back(apiObj) ;
+    Osi1API *osi = dynamic_cast<Osi1API *>(apiObj) ;
+    std::string exmip1Path = dfltSampleDir+dirSep+"brandy.mps" ;
+    osi->readMps(exmip1Path.c_str()) ;
+    std::cout << "    cloning ... " << std::endl ;
+    Osi1API *o2 = osi->clone() ;
+    o2->initialSolve() ;
+    if (o2->isProvenOptimal())
+      std::cout << "    solved to optimality." << std::endl ;
+    apiObj = o2 ;
+    retval = ctrlAPI.destroyObject(apiObj) ;
+    if (retval < 0) {
+	std::cout
+	    << "Apparent failure to destroy a cloned Osi1 object"
+	    << " (expected)." << std::endl ;
+	delete o2 ;
     } else {
-        ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
-        clp->readMps(exmip1Path.c_str(), true) ;
-	clp->initialSolve() ;
-        int retval = ctrlAPI.destroyObject(apiObj) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-		<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
-        }
+      errcnt++ ;
+      std::cout
+	<< "Invoking ControlAPI::destroyObject on a cloned object"
+	<< " should fail!" << std::endl ;
     }
-    /*
-      Create an Osi1 object, invoke a nontrivial method, and destroy the
-      object.
-    */
-    apiObj = nullptr ;
-    retval = ctrlAPI.createObject(apiObj, "Osi1") ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-	    << "Apparent failure to create an Osi1 object." << std::endl ;
-    } else {
-        Osi1API *osi = dynamic_cast<Osi1API *>(apiObj) ;
-	std::string exmip1Path = dfltSampleDir+"/brandy.mps" ;
-        osi->readMps(exmip1Path.c_str()) ;
-	std::cout << "cloning ... " << std::endl ;
-	Osi1API *o2 = osi->clone() ;
-	std::cout << "destroying ... " << std::endl ;
-        int retval = ctrlAPI.destroyObject(apiObj) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-		<< "Apparent failure to destroy an Osi1 object." << std::endl ;
-        }
-	o2->initialSolve() ;
-	if (o2->isProvenOptimal())
-	  std::cout << "Solved to optimality." << std::endl ;
-	apiObj = o2 ;
-        retval = ctrlAPI.destroyObject(apiObj) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-		<< "Apparent failure to destroy an Osi1 object." << std::endl ;
-        }
+  }
+  /*
+    Create a restricted ProbMgmt object, invoke a nontrivial method,
+    and destroy the object.
+  */
+  apiObj = nullptr ;
+  retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &shortName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+	<< "Apparent failure to create a restricted ProbMgmt object."
+	<< std::endl ;
+  } else {
+    apiObjs.push_back(apiObj) ;
+    ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
+    clp->readMps("exmip1.mps", true) ;
+  }
+/*
+  Now destroy all the objects.
+*/
+  for (std::vector<API *>::iterator iter = apiObjs.begin() ;
+       iter != apiObjs.end() ;
+       iter++) {
+    API *apiObj = *iter ;
+    int retval = ctrlAPI.destroyObject(apiObj) ;
+    if (retval < 0) {
+      errcnt++ ;
+      std::cout
+	<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
     }
-    /*
-      Create a restricted ProbMgmt object, invoke a nontrivial method,
-      and destroy the object.
-    */
-    apiObj = nullptr ;
-    retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &shortName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure to create a restricted ProbMgmt object."
-                << std::endl ;
-    } else {
-        ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-        clp->readMps("exmip1.mps", true) ;
-        int retval = ctrlAPI.destroyObject(apiObj) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-                    << "Apparent failure to destroy a restricted ProbMgmt object."
-                    << std::endl ;
-        }
-    }
-    /*
-      Unload the shims.
-    */
-    retval = ctrlAPI.unload(shortName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure to unload " << shortName << "." << std::endl ;
-        std::cout
-                << "Error code is " << retval << "." << std::endl ;
-    }
-    return (errcnt) ;
+  }
+  apiObjs.clear() ;
+/*
+  Unload the shim.
+*/
+  retval = ctrlAPI.unload(shortName) ;
+  if (retval != 0) {
+    errcnt++ ;
+    std::cout
+	<< "Apparent failure to unload " << shortName << "." << std::endl ;
+    std::cout
+	<< "Error code is " << retval << "." << std::endl ;
+  }
+  return (errcnt) ;
 }
 
 } // end unnamed file-local namespace

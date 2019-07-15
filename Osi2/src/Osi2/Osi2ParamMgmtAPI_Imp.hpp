@@ -12,7 +12,7 @@
 
 
 #ifndef Osi2ParamMgmtAPI_Imp_HPP
-# define Osi2ParamMgmtAPI_Imp_HPP
+#define Osi2ParamMgmtAPI_Imp_HPP
 
 #include "Osi2PluginManager.hpp"
 
@@ -49,6 +49,18 @@ public:
   ~ParamMgmtAPI_Imp() ;
 //@}
 
+/*! \brief Parameter handling methods.
+
+  Methods to register / deregister the parameter set for an object, and to set
+  and get the values of parameters.
+*/
+//@{
+
+/// Typedef for the parameter registration function (pointer to member)
+  typedef bool (API:: *ParamRegFunc)() ; 
+//@}
+
+
 /*! \name ParamMgmt API control methods
 
   Miscellaneous methods that control the behaviour of a ParamMgmtAPI object.
@@ -83,12 +95,12 @@ public:
       return (dfltHandler_) ;
   }
 
-  //@}
+//@}
 
 private:
 
     /// Cached reference to plugin manager.
-    PluginManager *pluginMgr_ ;
+    PluginManager &pluginMgr_ ;
 
     /// Indicator; false if the message handler belongs to the client
     bool dfltHandler_ ;
