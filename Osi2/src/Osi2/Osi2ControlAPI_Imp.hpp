@@ -12,10 +12,11 @@
 
 
 #ifndef Osi2ControlAPI_Imp_HPP
-# define Osi2ControlAPI_Imp_HPP
+#define Osi2ControlAPI_Imp_HPP
 
 #include "Osi2PluginManager.hpp"
 
+#include "Osi2ParamBEAPI_Imp.hpp"
 #include "Osi2ControlAPI.hpp"
 #include "Osi2CtrlAPIMessages.hpp"
 
@@ -29,14 +30,17 @@ class ControlAPI_Imp : public ControlAPI {
 
 public:
 
-    /// \name Constructors and Destructors
+  static const char *getAPIIDString ()
+  { return (Osi2::ControlAPI::getAPIIDString()) ; }
+
+    /// \name Constructors and Destructor
     //@{
     /// Virtual constructor
     ControlAPI *create() ;
     /// Virtual copy constructor
     ControlAPI *clone() ;
     /// Destructor
-    virtual ~ControlAPI_Imp() ;
+    ~ControlAPI_Imp() ;
     /// Default constructor; \sa #create
     ControlAPI_Imp() ;
     /// Default copy constructor; \sa #clone
@@ -184,6 +188,12 @@ public:
         return (dfltHandler_) ;
     }
 
+    /// Parameter management forwarding functions
+    inline int getAPIs(const char **&idents)
+    { return (paramHandler_.getAPIs(idents)) ; }
+    inline void *getAPIPtr (const char *ident)
+    { return (paramHandler_.getAPIPtr(ident)) ; }
+
     //@}
 
 private:
@@ -220,6 +230,9 @@ private:
     CoinMessages msgs_ ;
     /// Log (verbosity) level
     int logLvl_ ;
+
+    /// Parameter management object
+    Osi2::ParamBEAPI_Imp<ControlAPI> paramHandler_ ;
 
     /*! \brief Control information
 

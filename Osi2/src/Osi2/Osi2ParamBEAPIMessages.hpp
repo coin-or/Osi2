@@ -2,35 +2,29 @@
   Copyright 2019 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 */
-/*! \file Osi2ParamMgmtAPIMessages.hpp
+/*! \file Osi2ParamBEAPIMessages.hpp
     \brief Type definitions for Osi2::ParamMgmtAPI messages.
 */
 
-#ifndef Osi2ParamMgmtAPIMessages_HPP
-# define Osi2ParamMgmtAPIMessages_HPP
+#ifndef Osi2ParamBEAPIMessages_HPP
+# define Osi2ParamBEAPIMessages_HPP
 
 #include "CoinMessageHandler.hpp"
 
 namespace Osi2 {
 
-/*! \brief Enum to specify individual Osi2::ParamMgmtAPI messages
+/*! \brief Enum to specify individual Osi2::ParamBEAPI messages
 
   The only purpose here is to define symbolic names for the messages. This
   makes it easy to add and remove messages.
 */
 
-enum ParamMgmtAPIMsg {
-    PMMGAPI_INIT,
-    PMMGAPI_NOSUPPORT,
-    PMMGAPI_DUPIDENT,
-    PMMGAPI_UNREG,
-    PMMGAPI_PARMUNREG,
-    PMMGAPI_OPFAIL,
-    PMMGAPI_NOPLUGMGR,
-    PMMGAPI_DUMMY_END
+enum ParamBEAPIMsg {
+    PMBEAPI_INIT,
+    PMBEAPI_DUMMY_END
 };
 
-/*! \brief Osi2::ParamMgmtAPI messages
+/*! \brief Osi2::ParamBEAPI messages
 
   This class holds the array of messages once they are loaded and provides the
   methods to use them. Its only reason for existence is the custom constructor,
@@ -39,12 +33,12 @@ enum ParamMgmtAPIMsg {
 
   See CoinMessageHandler for usage.
 */
-class ParamMgmtAPIMessages : public CoinMessages {
+class ParamBEAPIMessages : public CoinMessages {
 
 public:
 
     /// Custom constructor
-    ParamMgmtAPIMessages(Language language = us_en) ;
+    ParamBEAPIMessages(Language language = us_en) ;
 
 } ;
 

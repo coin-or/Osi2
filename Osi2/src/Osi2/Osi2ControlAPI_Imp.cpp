@@ -37,11 +37,25 @@ ControlAPI_Imp::ControlAPI_Imp ()
     : pluginMgr_(0),
       logLvl_(7)
 {
-    knownLibMap_.clear() ;
-    msgHandler_ = new CoinMessageHandler() ;
-    msgs_ = CtrlAPIMessages() ;
-    msgHandler_->setLogLevel(logLvl_) ;
-    msgHandler_->message(CTRLAPI_INIT, msgs_) << "default" << CoinMessageEol ;
+  knownLibMap_.clear() ;
+
+  typedef ParamBEAPI_Imp<ControlAPI>::ParamEntry_Imp<int> IPE ;
+  typedef ParamBEAPI_Imp<ControlAPI>::ParamEntry_Imp<std::string> SPE ;
+  paramHandler_.addAPIID(ControlAPI::getAPIIDString(),this) ;
+  paramHandler_.addAPIID(ParamBEAPI::getAPIIDString(),&paramHandler_) ;
+  ParamBEAPI_Imp<ControlAPI>::ParamEntry *paramEntry ;
+  paramEntry = new IPE("log level",
+  		       &ControlAPI::getLogLvl,&ControlAPI::setLogLvl) ;
+  paramHandler_.addParamID("log level",paramEntry) ;
+  paramEntry = new SPE("DfltPlugDir",
+		       &ControlAPI::getDfltPluginDir,
+		       &ControlAPI::setDfltPluginDir) ;
+  paramHandler_.addParamID("DfltPlugDir",paramEntry) ;
+
+  msgHandler_ = new CoinMessageHandler() ;
+  msgs_ = CtrlAPIMessages() ;
+  msgHandler_->setLogLevel(logLvl_) ;
+  msgHandler_->message(CTRLAPI_INIT, msgs_) << "default" << CoinMessageEol ;
 }
 
 /*
@@ -50,6 +64,7 @@ ControlAPI_Imp::ControlAPI_Imp ()
 ControlAPI_Imp::ControlAPI_Imp (const ControlAPI_Imp &rhs)
     : pluginMgr_(rhs.pluginMgr_),
       knownLibMap_(rhs.knownLibMap_),
+      paramHandler_(rhs.paramHandler_),
       dfltPluginDir_(rhs.dfltPluginDir_),
       dfltHandler_(rhs.dfltHandler_),
       logLvl_(rhs.logLvl_)
@@ -83,6 +98,7 @@ ControlAPI_Imp &ControlAPI_Imp::operator= (const ControlAPI_Imp &rhs)
     */
     pluginMgr_ = rhs.pluginMgr_ ;
     knownLibMap_ = rhs.knownLibMap_ ;
+    paramHandler_ = rhs.paramHandler_ ;
     dfltPluginDir_ = rhs.dfltPluginDir_ ;
     /*
       If it's our handler, we need to delete the old and replace with the new.

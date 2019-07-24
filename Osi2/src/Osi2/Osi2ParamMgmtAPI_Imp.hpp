@@ -14,6 +14,7 @@
 #ifndef Osi2ParamMgmtAPI_Imp_HPP
 #define Osi2ParamMgmtAPI_Imp_HPP
 
+#include "Osi2API.hpp"
 #include "Osi2PluginManager.hpp"
 
 #include "Osi2ParamMgmtAPI.hpp"
@@ -51,13 +52,23 @@ public:
 
 /*! \brief Parameter handling methods.
 
-  Methods to register / deregister the parameter set for an object, and to set
+  Methods to enroll / remove the parameter set for an object, and to set
   and get the values of parameters.
 */
 //@{
 
-/// Typedef for the parameter registration function (pointer to member)
-  typedef bool (API:: *ParamRegFunc)() ; 
+  /// Enroll an object and its parameters with the manager
+  bool enroll(std::string ident, Osi2::API *object) ;
+
+  /// Remove an object and its parameters from the manager
+  bool remove(std::string ident) ;
+
+  /// Set a parameter
+  bool set(std::string ident, std::string param, const void *blob) ;
+
+  /// Get a parameter
+  bool get(std::string ident, std::string param, void *blob) ;
+
 //@}
 
 
@@ -99,17 +110,40 @@ public:
 
 private:
 
-    /// Cached reference to plugin manager.
-    PluginManager &pluginMgr_ ;
+  /*! \brief Cached reference to plugin manager.
 
-    /// Indicator; false if the message handler belongs to the client
-    bool dfltHandler_ ;
-    /// Message handler
-    CoinMessageHandler *msgHandler_ ;
-    /// Messages
-    CoinMessages msgs_ ;
-    /// Log (verbosity) level
-    int logLvl_ ;
+    \todo It's not clear we need this --- the only use at present is for
+    preregistration via the registration constructor.
+  */
+  PluginManager &pluginMgr_ ;
+
+  /*! \brief Parameter management structures */
+  //@{
+  
+  /// Entry in the #index used to manage enrolled objects
+  struct ObjData {
+    /// Enrolled object
+    Osi2::API *enrolledObject_ ;
+    /// Parameter back-end object to manipulate parameters of #enrolledObject
+    ParamBEAPI *paramHandler_ ;
+    /// Parameter names exported by #enrolledObject_
+    std::vector<const char *> paramNames_ ;
+  } ;
+
+  /// Typedef for the map used to manage enrolled objects
+  typedef std::map<std::string,ObjData> IndexMap ;
+
+  /// Index map to track enrolled objects
+  IndexMap indexMap_ ;
+
+  /// Indicator; false if the message handler belongs to the client
+  bool dfltHandler_ ;
+  /// Message handler
+  CoinMessageHandler *msgHandler_ ;
+  /// Messages
+  CoinMessages msgs_ ;
+  /// Log (verbosity) level
+  int logLvl_ ;
 
 } ;
 

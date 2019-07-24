@@ -30,6 +30,8 @@ class ControlAPI : public API {
 
 public:
 
+    static const char *getAPIIDString () { return ("Osi2ControlAPI") ; }
+
     /// \name Constructors and Destructors
     //@{
     /// Virtual constructor
