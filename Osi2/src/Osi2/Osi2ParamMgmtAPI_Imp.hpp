@@ -30,6 +30,10 @@ class ParamMgmtAPI_Imp : public ParamMgmtAPI {
 
 public:
 
+  /// ParamMgmtAPI_Imp implements ParamMgmtAPI
+  inline static const char *getAPIIDString ()
+  { return (ParamMgmtAPI::getAPIIDString()) ; }
+
 /*! \name Constructors and Destructors */
 //@{
   /// Default constructor
