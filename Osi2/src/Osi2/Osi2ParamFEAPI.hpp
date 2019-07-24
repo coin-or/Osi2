@@ -36,8 +36,8 @@ class ParamFEAPI {
 
 public:
 
-  /// Return the "ident" string for the ParamFEAPI %API.
-  static const char *getAPIIDString () { return ("ParamFEAPI") ; }
+  /// Return the "ident" string for the parameter management front-end %API.
+  inline static const char *getAPIIDString () { return ("ParamFEAPI") ; }
 
 /*! \name Parameter enrollment and manipulation methods
 

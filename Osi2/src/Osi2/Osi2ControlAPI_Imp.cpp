@@ -46,11 +46,11 @@ ControlAPI_Imp::ControlAPI_Imp ()
   ParamBEAPI_Imp<ControlAPI>::ParamEntry *paramEntry ;
   paramEntry = new IPE("log level",
   		       &ControlAPI::getLogLvl,&ControlAPI::setLogLvl) ;
-  paramHandler_.addParamID("log level",paramEntry) ;
+  paramHandler_.addParam("log level",paramEntry) ;
   paramEntry = new SPE("DfltPlugDir",
 		       &ControlAPI::getDfltPluginDir,
 		       &ControlAPI::setDfltPluginDir) ;
-  paramHandler_.addParamID("DfltPlugDir",paramEntry) ;
+  paramHandler_.addParam("DfltPlugDir",paramEntry) ;
 
   msgHandler_ = new CoinMessageHandler() ;
   msgs_ = CtrlAPIMessages() ;

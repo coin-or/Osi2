@@ -31,8 +31,8 @@ void ParamBEAPI_Imp<Managed>::addAPIID (const char *apiID, void *obj)
 
 
 template<class Managed>
-void ParamBEAPI_Imp<Managed>::addParamID (const char *paramID,
-					  ParamEntry *entry)
+void ParamBEAPI_Imp<Managed>::addParam (const char *paramID,
+				        ParamEntry *entry)
 {
   if (paramIDCnt_+1 > paramIDLen_) {
     const char **tmp = new const char*[paramIDLen_+5] ;

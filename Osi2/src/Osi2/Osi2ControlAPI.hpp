@@ -30,7 +30,8 @@ class ControlAPI : public API {
 
 public:
 
-    static const char *getAPIIDString () { return ("Osi2ControlAPI") ; }
+    /// Return the "ident" string for the control %API.
+    inline static const char *getAPIIDString () { return ("ControlAPI") ; }
 
     /// \name Constructors and Destructors
     //@{

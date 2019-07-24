@@ -56,6 +56,9 @@ class Osi1API : public API  {
 
 public:
 
+  /// Return the "ident" string for the OSI1 %API.
+  inline static const char *getAPIIDString () { return ("OSI1API") ; }
+
   /*! \brief Nested class for returning status from the applyCuts method.
 
     Note that it's impossible for an outside entity to change any of the

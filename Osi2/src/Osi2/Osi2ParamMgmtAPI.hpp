@@ -34,6 +34,9 @@ class ParamMgmtAPI : public ParamFEAPI {
 
 public:
 
+  /// Return the "ident" string for the OSI2 parameter management %API.
+  inline static const char *getAPIIDString () { return ("ParamMgmtAPI") ; }
+
   /*! \name Constructors and Destructors */
   //@{
     /// Virtual constructor
@@ -43,8 +46,6 @@ public:
     /// Destructor
     virtual ~ParamMgmtAPI() { }
   //@}
-
-  static const char *getAPIIDString () { return ("Osi2::ParamMgmtAPI") ; }
 
 /*! \name ParamMgmt API control methods
 

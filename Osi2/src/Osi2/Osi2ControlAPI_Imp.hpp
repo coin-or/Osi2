@@ -30,8 +30,9 @@ class ControlAPI_Imp : public ControlAPI {
 
 public:
 
-  static const char *getAPIIDString ()
-  { return (Osi2::ControlAPI::getAPIIDString()) ; }
+  /// ControlAPI_Imp implements ControlAPI.
+  inline static const char *getAPIIDString ()
+  { return (ControlAPI::getAPIIDString()) ; }
 
     /// \name Constructors and Destructor
     //@{
