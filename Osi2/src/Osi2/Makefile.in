@@ -150,7 +150,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libOsi2_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libOsi2_la_OBJECTS = Osi2ControlAPI_Imp.lo Osi2CtrlAPIMessages.lo \
-	Osi2ParamMgmtAPI_Imp.lo Osi2ParamMgmtAPIMessages.lo
+	Osi2ParamMgmtAPI_Imp.lo Osi2ParamMgmtAPIMessages.lo \
+	Osi2ParamBEAPIMessages.lo
 libOsi2_la_OBJECTS = $(am_libOsi2_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -176,6 +177,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/Osi2ControlAPI_Imp.Plo \
 	./$(DEPDIR)/Osi2CtrlAPIMessages.Plo \
+	./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo \
 	./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo \
 	./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
 am__mv = mv -f
@@ -456,7 +458,9 @@ libOsi2_la_SOURCES = \
 	Osi2CtrlAPIMessages.hpp Osi2CtrlAPIMessages.cpp \
 	Osi2ParamMgmtAPI.hpp \
 	Osi2ParamMgmtAPI_Imp.hpp Osi2ParamMgmtAPI_Imp.cpp \
-	Osi2ParamMgmtAPIMessages.hpp Osi2ParamMgmtAPIMessages.cpp
+	Osi2ParamMgmtAPIMessages.hpp Osi2ParamMgmtAPIMessages.cpp \
+	Osi2ParamBEAPI_Imp.hpp \
+	Osi2ParamBEAPIMessages.hpp Osi2ParamBEAPIMessages.cpp
 
 
 # List all additionally required libraries.
@@ -588,6 +592,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ControlAPI_Imp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2CtrlAPIMessages.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo@am__quote@ # am--include-marker
 
@@ -741,6 +746,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/Osi2ControlAPI_Imp.Plo
 	-rm -f ./$(DEPDIR)/Osi2CtrlAPIMessages.Plo
+	-rm -f ./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
 	-rm -f Makefile
@@ -790,6 +796,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/Osi2ControlAPI_Imp.Plo
 	-rm -f ./$(DEPDIR)/Osi2CtrlAPIMessages.Plo
+	-rm -f ./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
 	-rm -f Makefile

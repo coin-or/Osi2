@@ -1,48 +1,50 @@
 /*
-  Copyright 2019 Lou Hafer, Matt Saltzman, Kevin Poton
+  Copyright 2019 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
   $Id$
 */
 /*! \file Osi2ParamMgmtAPI.hpp
 
-  Defines the virtual class Osi2::ParamMgmtAPI, an API to manage the
-  parameters registered by libraries and objects.
-
-  The general notion here is that underlying libraries (e.g., solvers) offer
-  up a host of idiosyncratic parameters and interfaces to manipulate those
-  parameters. The ParamMgmt API offers a layer of syntactic sugar that reduces
-  the effort required to adjust parameters.
+  Defines ParamMgmtAPI, an %API to provide some
+  uniformity and syntactic sugar for setting and getting parameter values.
 */
 
 
 #ifndef Osi2ParamMgmtAPI_HPP
-# define Osi2ParamMgmtAPI_HPP
+#define Osi2ParamMgmtAPI_HPP
 
-#include <string>
-
-#include "Osi2API.hpp"
+#include "Osi2ParamFEAPI.hpp"
+#include "Osi2ParamBEAPI.hpp"
 
 namespace Osi2 {
 
-/*! \brief Osi2 ParamMgmtAPI virtual base class
+/*! \brief OSI2 Parameter Management %API
 
-  This abstract class defines the Osi2 parameter management interface, a
-  convenience API for handling parameters associated with plugin libraries.
+  This class defines the interface for the OSI2 parameter management %API.
+  It's a trivial extension of the basic interface defined in ParamFEAPI,
+  adding virtual constructors, a destructor, and log control.
+
+  \todo
+  This class is really unnecessary. Its main purpose in life is to provide a
+  more user-friendly name than ParamFEAPI. Think about how best to eliminate
+  it.
 */
-class ParamMgmtAPI : public API {
+class ParamMgmtAPI : public ParamFEAPI {
 
 public:
 
-/*! \name Constructors and Destructors */
-//@{
-  /// Virtual constructor
-  virtual ParamMgmtAPI *create() = 0 ;
-  /// Virtual copy constructor
-  virtual ParamMgmtAPI *clone() = 0 ;
-  /// Virtual destructor
-  virtual ~ParamMgmtAPI() {}
-//@}
+  /*! \name Constructors and Destructors */
+  //@{
+    /// Virtual constructor
+    virtual ParamMgmtAPI *create() = 0 ;
+    /// Virtual copy constructor
+    virtual ParamMgmtAPI *clone() = 0 ;
+    /// Destructor
+    virtual ~ParamMgmtAPI() { }
+  //@}
+
+  static const char *getAPIIDString () { return ("Osi2::ParamMgmtAPI") ; }
 
 /*! \name ParamMgmt API control methods
 

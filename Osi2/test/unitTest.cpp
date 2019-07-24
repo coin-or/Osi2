@@ -16,6 +16,7 @@
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
 
+#include "Osi2ParamMgmtAPI_Imp.hpp"
 #include "Osi2ControlAPI_Imp.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 #include "Osi2Osi1API.hpp"
@@ -277,6 +278,107 @@ int testControlAPI (const std::string &shortName,
   return (errcnt) ;
 }
 
+int testParamMgmtAPI ()
+{
+  int errCnt = 0 ;
+
+  ParamMgmtAPI_Imp mgmtAPI ;
+  std::cout
+      << "Instantiated a ParamMgmtAPI_Imp object "
+      << std::hex << &mgmtAPI << std::dec << "." << std::endl ;
+
+  ControlAPI_Imp ctrlAPI1 ;
+  std::cout
+      << "Instantiated a ControlAPI_Imp object "
+      << std::hex << &ctrlAPI1 << std::dec << "." << std::endl ;
+/*
+  Check that the ControlAPI_Imp object thinks that it can implement
+  ControlAPI.
+*/
+  std::vector<const char *>apiStrings ;
+  apiStrings.push_back(Osi2::ControlAPI::getAPIIDString()) ;
+  apiStrings.push_back(Osi2::ParamBEAPI::getAPIIDString()) ;
+  apiStrings.push_back("BogusAPI") ;
+  for (int ndx = 0 ; ndx < apiStrings.size() ; ndx++) {
+    const char *apiStr = apiStrings[ndx] ;
+    void *obj = ctrlAPI1.getAPIPtr(apiStr) ;
+    if (obj == nullptr) {
+      std::cout
+	  << "Control object " << std::hex << &ctrlAPI1 << std::dec
+	  << " believes it does not implement " << apiStr << "."
+	  << std::endl ;
+    } else {
+      std::cout
+	  << "Control object " << std::hex << &ctrlAPI1 << std::dec
+	  << " believes it implements " << apiStr << " with "
+	  << std::hex << obj << std::dec << "."
+	  << std::endl ;
+    }
+  }
+
+  std::string ctrlAPI1ID = "CtrlAPI1" ;
+  std::cout
+      << "Enrolling CtrlAPI1 as \"" << ctrlAPI1ID << "\"" << std::endl ;
+  if (!mgmtAPI.enroll(ctrlAPI1ID,&ctrlAPI1)) {
+    std::cout
+        << "Failed to enroll CtrlAPI1 (" << ctrlAPI1ID << ")" << std::endl ;
+    errCnt++ ;
+  }
+/*
+  Attempt to retrieve a parameter value.
+*/
+  {
+    int blob ;
+    const char *paramID = "log level" ;
+    if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
+    { std::cout
+	<< "The value of " << ctrlAPI1ID << ":" << paramID
+	<< " is " << blob << std::endl ;
+    } else {
+      std::cout
+	<< "Failed to get the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
+  /*
+    Attempt to set the parameter and retrieve it again.
+  */
+    blob = blob-2 ;
+    if (!mgmtAPI.set(ctrlAPI1ID,paramID,&blob)) {
+      std::cout
+	<< "Failed to set the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
+    if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
+    { std::cout
+	<< "The value of " << ctrlAPI1ID << ":" << paramID
+	<< " is " << blob << std::endl ;
+    } else {
+      std::cout
+	<< "Failed to get the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
+  }
+/*
+  Attempt to retrieve a parameter value.
+*/
+  {
+    std::string blob ;
+    const char *paramID = "DfltPlugDir" ;
+    ctrlAPI1.setDfltPluginDir("/home/Coin.Mix/Split-FedGCC/lib") ;
+    if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
+    { std::cout
+	<< "The value of " << ctrlAPI1ID << ":" << paramID
+	<< " is " << blob << std::endl ;
+    } else {
+      std::cout
+	<< "Failed to get the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
+  }
+
+  return (errCnt) ;
+}
+
 } // end unnamed file-local namespace
 
 
@@ -319,10 +421,20 @@ int main(int argC, char* argV[])
       retval = testControlAPI(solverName,dfltSampleDir) ;
       std::cout
           << "End test of ControlAPI (" << solverName << "), "
-	  << retval << " errors, expected " << iter->second
+	  << retval << " errors, expected " << iter->second << "."
 	  << std::endl << std::endl ;
       totalErrs += retval-(iter->second) ;
     }
+    /*
+      Test the parameter management API.
+    */
+    int errCnt = 0 ;
+    const int expectedErrs = 0 ;
+    std::cout << "Testing ParamMgmtAPI." << std::endl ;
+    errCnt = testParamMgmtAPI() ;
+    std::cout
+        << "End test of ParamMgmtAPI, " << errCnt << " errors, expected "
+	<< expectedErrs << "." << std::endl ;
     /*
       Shut down the plugin manager. This will call the plugin library exit
       functions and unload the libraries.

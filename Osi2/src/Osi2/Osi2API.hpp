@@ -19,61 +19,112 @@
 */
 namespace Osi2 {
 
-/*! \brief Osi2 API virtual base class
+/*! \brief OSI2 %API virtual base class
 
-  The general philosophy of the API hierarchy is that the APIs are defined by
+  The general philosophy of the %API hierarchy is that the APIs are defined by
   abstract classes. Concrete implementations derive from the abstract classes.
+  
+  When used within the OSI2 plugin framework, it is expected that
+  instantiations of %API objects will be managed using the ControlAPI
+  interface.
 
-  This class forms the root of the Osi2 API hierarchy. Its raison d'etre is to
-  provide a common pointer for API objects returned from load and unload calls.
-  It also provides a pointer where a control API can record information about
-  the API object.
+  The API class forms the root of the OSI2 %API hierarchy. Its raison d'etre
+  is to provide a common pointer for %API objects handled by the
+  \link ControlAPI::createObject createObject \endlink and
+  \link ControlAPI::destroyObject destroyObject \endlink methods of
+  ControlAPI.  It also defines an interface to inquire about the
+  APIs supported by an object and a hook where a control %API can record
+  information for managing the %API object.
 */
 class API {
 
 public:
 
-    /// Default constructor
-    API ()
-      : ctrlInfo_(0)
-    { } ;
+  /// Default constructor
+  API ()
+    : ctrlInfo_(0)
+  { } ;
 
-    /*! \brief Copy constructor
-    
-      C++ programmers will tend to use clone without thinking about it.
-      Semantically, this is a problem because the clone was not created
-      by Osi2ControlAPI::createObject.  When the user clones, the cloned
-      object becomes their responsibility.  We need this to avoid passing
-      the control information pointer on to the cloned object.
-    */
-    API (const API &orig)
-      : ctrlInfo_(0)
-    { } ;
+  /*! \brief Copy constructor
 
-    /// Virtual destructor.
-    virtual ~API () { }
+    C++ programmers will tend to use clone without thinking about it.
+    Semantically, this is a problem because the clone was not created by
+    ControlAPI::createObject (or some other control %API) and we cannot
+    simply pass on the \link ctrlInfo_ control information \endlink.
+    We need this copy constructor to avoid copying the control information
+    pointer to the cloned object.
+  */
+  API (const API &orig)
+    : ctrlInfo_(0)
+  { } ;
 
-/*! \brief Object control information
+  /// Virtual destructor.
+  virtual ~API () { }
 
-  Set or retrieve object control information. See the comments for
-  #ctrlInfo_.
-*/
-//@{
+  /*! \name Object control support
+
+    Set or retrieve object control information. See the comments for
+    #ctrlInfo_.
+  */
+  //@{
     /// Set the object control information block
-    inline void setCtrlInfo(const void *ctrlInfo)
+    inline void setCtrlInfo (const void *ctrlInfo)
     { ctrlInfo_ = ctrlInfo ; }
 
     /// Retrieve the object control information block
     inline const void *getCtrlInfo () const { return (ctrlInfo_) ; }
-//@}
+  //@}
+
+  /*! \name Object API inquiry support
+
+    The following methods provide a way to interrogate an object to find
+    out what APIs the object implements and how to access those APIs.
+
+    The "ident" string for an %API should be defined by its XxxAPI class.
+    Supporting classes should define a static method
+    \code{.cpp}
+      char *XxxAPI::getAPIIDString()
+    \endcode
+    to return the ident string for the %API.
+  */
+  //@{
+
+  /*! \brief Fetch the capabilities vector.
+
+    The capabilities vector returned in \p idents should be a simple array
+    of "ident" strings, one for each API supported by this object.
+
+    An implementation class can choose to keep a static vector, or construct a
+    reply dynamically. A return value of 0 means no %API support information
+    is available.
+  */
+  virtual int getAPIs(const char** &idents) { return (0) ; }
+
+  /*! \brief Return an object that can be used as type XxxAPI.
+
+    The job of the access function getAPIPtr is to return an object that
+    can be cast to the type XxxAPI corresponding to "ident". A return value
+    of null means no such object exists.
+
+    If the invoking object inherits from XxxAPI, simply return the invoking
+    object; getAPIPtr is simply certifying it can be used as XxxAPI.
+    Otherwise, getAPIPtr should return a pointer to an object that can be
+    used as an object of class XxxAPI.
+
+    To leave all options open, do not assume that the returned object inherits
+    from API.
+  */
+  virtual void *getAPIPtr (const char *ident) { return (nullptr) ; }
+  //@}
 
 private:
 
-    /*! \brief API object control information
+    /*! \brief %API object control information
 
-      This is an opaque pointer for exclusive use of the Osi2::ControlAPI.
-      The exact content depends on the implementation of the control API and
-      the underlying plugin manager.
+      This is an opaque pointer for exclusive use of the control %API
+      (Osi2::ControlAPI or other control %API).  The exact content depends
+      on the implementation of the control %API and the underlying plugin
+      manager.
     */
     const void *ctrlInfo_ ;
 
