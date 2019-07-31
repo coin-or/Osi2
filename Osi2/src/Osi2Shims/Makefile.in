@@ -164,7 +164,9 @@ libOsi2ClpHeavyShim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(libOsi2ClpHeavyShim_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo Osi2ClpShim.lo
+am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo \
+	Osi2ClpLite_Wrap.lo Osi2ClpSimplexAPI_ClpLite.lo \
+	Osi2ClpShim.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
 libOsi2ClpShim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -195,7 +197,9 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src/Osi2
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/Osi2ClpHeavyShim.Plo \
-	./$(DEPDIR)/Osi2ClpShim.Plo ./$(DEPDIR)/Osi2GlpkHeavyShim.Plo \
+	./$(DEPDIR)/Osi2ClpLite_Wrap.Plo ./$(DEPDIR)/Osi2ClpShim.Plo \
+	./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo \
+	./$(DEPDIR)/Osi2GlpkHeavyShim.Plo \
 	./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo \
 	./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo \
 	./$(DEPDIR)/Osi2ProbMgmtAPI_Clp.Plo \
@@ -246,6 +250,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 am__includecoin_HEADERS_DIST = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2ClpLite_Wrap.hpp Osi2ClpSimplexAPI_ClpLite.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
 	Osi2Osi1API_ClpHeavy.hpp Osi2GlpkHeavyShim.hpp \
 	Osi2Osi1API_GlpkHeavy.hpp
@@ -490,6 +495,8 @@ lib_LTLIBRARIES = libOsi2ClpShim.la libOsi2ClpHeavyShim.la \
 # variables are consumed by libtool.
 libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2ClpLite_Wrap.cpp Osi2ClpLite_Wrap.hpp \
+	Osi2ClpSimplexAPI_ClpLite.cpp Osi2ClpSimplexAPI_ClpLite.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -519,10 +526,11 @@ libOsi2GlpkHeavyShim_la_LIBADD = $(OSI2GLPKHEAVYSHIM_LFLAGS)
 
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in pkgincludedir
-includecoindir = $(includedir)/coin
+includecoindir = $(includedir)/coin-or
 
 #if COIN_HAS_OSICLP
 includecoin_HEADERS = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2ClpLite_Wrap.hpp Osi2ClpSimplexAPI_ClpLite.hpp \
 	Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \
 	Osi2Osi1API_ClpHeavy.hpp $(am__append_1)
 all: all-am
@@ -611,7 +619,9 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpHeavyShim.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpLite_Wrap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2GlpkHeavyShim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo@am__quote@ # am--include-marker
@@ -767,7 +777,9 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/Osi2ClpHeavyShim.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpLite_Wrap.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpShim.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo
 	-rm -f ./$(DEPDIR)/Osi2GlpkHeavyShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo
@@ -819,7 +831,9 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/Osi2ClpHeavyShim.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpLite_Wrap.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpShim.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo
 	-rm -f ./$(DEPDIR)/Osi2GlpkHeavyShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo

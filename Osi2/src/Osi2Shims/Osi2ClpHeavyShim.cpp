@@ -37,7 +37,7 @@ ClpHeavyShim::ClpHeavyShim ()
 
 /*! \brief Object factory
 
-  Create clp-specific objects to satisfy the Osi2 API specified as the
+  Create clp-specific objects to satisfy the OSI2 API specified as the
   \p objectType member of of \p params.
 */
 void *ClpHeavyShim::create (const ObjectParams *params)

@@ -233,7 +233,7 @@ private:
     int logLvl_ ;
 
     /// Parameter management object
-    Osi2::ParamBEAPI_Imp<ControlAPI> paramHandler_ ;
+    ParamBEAPI_Imp<ControlAPI> paramHandler_ ;
 
     /*! \brief Control information
 

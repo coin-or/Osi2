@@ -367,9 +367,9 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
         return (retval) ;
     }
     /*
-      Did the client specify a plugin library? If so, validate and obtain the
-      plugin's ID. Failure to find the specified library rates a warning but we'll
-      soldier on.
+      Did the client specify a plugin library? If so, validate and obtain
+      the plugin's ID. Failure to find the specified library rates a warning
+      but we'll soldier on.
     */
     PluginUniqueID libID = 0 ;
     bool restricted = false ;
@@ -419,44 +419,44 @@ int ControlAPI_Imp::createObject (API *&obj, const std::string &apiName,
 */
 int ControlAPI_Imp::destroyObject (API *&obj)
 {
-    int retval = -1 ;
-    /*
-      Make sure we can find the plugin manager.
-    */
-    if (findPluginMgr() == nullptr) {
-        retval = -2 ;
-        return (retval) ;
-    }
-    /*
-      Retrieve the identification information.
-    */
-    const APIObjCtrlInfo *apiCtrl =
-        static_cast<const APIObjCtrlInfo *>(obj->getCtrlInfo()) ;
-    if (apiCtrl == nullptr) {
-      msgHandler_->message(CTRLAPI_NOAPIIDENT,msgs_) << CoinMessageEol ;
-      retval = -3 ;
-      return (retval) ;
-    }
-    const PluginUniqueID &libID = apiCtrl->libID_ ;
-    const std::string &apiName = apiCtrl->apiName_ ;
-    /*
-      Invoke the plugin manager's destroyObject.
-    */
-    retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
-    if (retval != 0) {
-        msgHandler_->message(CTRLAPI_DESTROYFAIL, msgs_) << apiName ;
-        msgHandler_->printing(libID != 0) << getShortName(libID) ;
-        msgHandler_->printing(true) << CoinMessageEol ;
-        retval = -1 ;
-    } else {
-        msgHandler_->message(CTRLAPI_DESTROYOK, msgs_) << apiName ;
-        msgHandler_->printing(libID != 0) << getShortName(libID) ;
-        msgHandler_->printing(true) << CoinMessageEol ;
-        retval = (libID == 0) ? 1 : 0 ;
-    }
-    delete apiCtrl ;
-
+  int retval = -1 ;
+/*
+  Make sure we can find the plugin manager.
+*/
+  if (findPluginMgr() == nullptr) {
+    retval = -2 ;
     return (retval) ;
+  }
+/*
+  Retrieve the identification information.
+*/
+  const APIObjCtrlInfo *apiCtrl =
+      static_cast<const APIObjCtrlInfo *>(obj->getCtrlInfo()) ;
+  if (apiCtrl == nullptr) {
+    msgHandler_->message(CTRLAPI_NOAPIIDENT,msgs_) << CoinMessageEol ;
+    retval = -3 ;
+    return (retval) ;
+  }
+  const PluginUniqueID &libID = apiCtrl->libID_ ;
+  const std::string &apiName = apiCtrl->apiName_ ;
+/*
+  Invoke the plugin manager's destroyObject.
+*/
+  retval = pluginMgr_->destroyObject(apiName,libID,obj) ;
+  if (retval != 0) {
+    msgHandler_->message(CTRLAPI_DESTROYFAIL, msgs_) << apiName ;
+    msgHandler_->printing(libID != 0) << getShortName(libID) ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = -1 ;
+  } else {
+    msgHandler_->message(CTRLAPI_DESTROYOK, msgs_) << apiName ;
+    msgHandler_->printing(libID != 0) << getShortName(libID) ;
+    msgHandler_->printing(true) << CoinMessageEol ;
+    retval = (libID == 0) ? 1 : 0 ;
+  }
+  delete apiCtrl ;
+
+  return (retval) ;
 }
 
 /*
