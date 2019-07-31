@@ -7,9 +7,10 @@
 /*! \file Osi2ClpShim.cpp
     \brief Method definitions for ClpShim.
 
-  This shim is written to dynamically load libClp. As such, it doesn't need to
-  be linked with libClp. The tradeoff is that it must work through clp's C
-  interface and dynamically load the methods it wants to use.
+  This shim is written to dynamically load libClp. As such, it doesn't
+  need to be statically linked with libClp. The tradeoff is that it must
+  work through clp's C interface. The shim, and any objects it constructs,
+  must dynamically load any methods they wish to use.
 */
 
 #include <iostream>
@@ -20,9 +21,11 @@
 
 #include "Osi2Config.h"
 #include "Osi2nullptr.hpp"
-#include "Osi2DynamicLibrary.hpp"
+// #include "Osi2DynamicLibrary.hpp"
 
-#include "Osi2ProbMgmtAPI_Clp.hpp"
+#include "Osi2ClpLite_Wrap.hpp"
+
+typedef Clp_Simplex *(*ClpFactory)() ;
 
 using namespace Osi2 ;
 
@@ -32,72 +35,42 @@ using namespace Osi2 ;
 ClpShim::ClpShim ()
     : services_(0),
       libClp_(0),
+      ourID_(0),
       verbosity_(1)
 { }
 
 /*! \brief Object factory
 
-  Create clp-specific objects to satisfy the Osi2 API specified as the
+  Create clp-specific objects to satisfy the OSI2 API specified as the
   \p objectType member of of \p params.
 
   Object "WildProbMgmt" is used for testing wildcard object creation.
 */
 void *ClpShim::create (const ObjectParams *params)
 {
-    class ClpSimplex ;
-    typedef Clp_Simplex *(*ClpFactory)() ;
-    typedef ClpSimplex *(*ClpSimplexFactory)(Clp_Simplex *clp) ;
 
-    std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
-    void *retval = nullptr ;
+  std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
+  void *retval = nullptr ;
 
-    std::cout << "Clp create: type " << what << "." << std::endl ;
+  std::cout << "Clp create: " << what << "API requested." << std::endl ;
+/*
+  For an object that supports the ClpSimplex API, create a ClpLite_Wrap object
+  and add a ClpSimplexAPI_ClpLite object to it.
+*/
+  if (what == "ClpSimplex") {
+    std::cout
+      << "  " << what << " API is  supported." << std::endl ;
+    ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
+    DynamicLibrary *libClp = shim->libClp_ ;
+    ClpLite_Wrap *clpliteWrapper = new ClpLite_Wrap() ;
+    clpliteWrapper->addClpSimplex(libClp) ;
+    retval = clpliteWrapper ;
+  } else {
+    std::cout
+      << "    " << what << " API is not supported." << std::endl ;
+  }
 
-    if (what == "ClpSimplex" ||
-        // what == "Osi1" ||
-	what == "ProbMgmt" ||
-        what == "WildProbMgmt") {
-        std::cout
-                << "Request to create " << what << " recognised." << std::endl ;
-        ClpShim *shim = static_cast<ClpShim*>(params->ctrlObj_) ;
-        DynamicLibrary *libClp = shim->libClp_ ;
-        std::string errStr ;
-	/*
-	  Use size_t as an intermediary to suppress function to object pointer
-	  conversion error.
-	*/
-	size_t grossHack =
-            reinterpret_cast<size_t>(libClp->getSymbol("Clp_newModel", errStr)) ;
-        ClpFactory factory = reinterpret_cast<ClpFactory>(grossHack) ;
-        if (factory == nullptr) {
-            std::cout << "Apparent failure to find Clp_newModel." << std::endl ;
-            std::cout << errStr << std::endl ;
-            return (nullptr) ;
-        }
-        Clp_Simplex *wrapper = factory() ;
-        grossHack = reinterpret_cast<size_t>(libClp->getSymbol("Clp_model", errStr)) ;
-        ClpSimplexFactory underlyingModel = reinterpret_cast<ClpSimplexFactory>(grossHack) ;
-        if (underlyingModel == 0) {
-            std::cout << "Apparent failure to find Clp_model." << std::endl ;
-            std::cout << errStr << std::endl ;
-            return (nullptr) ;
-        }
-        ClpSimplex *retval = underlyingModel(wrapper) ;
-        if (what == "ProbMgmt" || what == "WildProbMgmt") {
-            ProbMgmtAPI *probMgmt = new ProbMgmtAPI_Clp(libClp, wrapper) ;
-            return (probMgmt) ;
-	} else if (what == "Osi1") {
-	    // Osi1API *osi1 = new Osi1API_Clp(libClp,wrapper) ;
-	    // return (osi1) ;
-        } else {
-            return (retval) ;
-        }
-    } else {
-        std::cout
-                << "Clp create: unrecognised type " << what << "." << std::endl ;
-    }
-
-    return (retval) ;
+  return (retval) ;
 }
 
 /*! \brief Object destructor
@@ -184,7 +157,7 @@ ExitFunc initPlugin (PlatformServices *services)
 	  reinterpret_cast<const CharString*>("ProbMgmt"),&reginfo) ;
   if (retval < 0) {
     std::cout
-	<< "Apparent failure to register ProgMgmt API." << std::endl ;
+	<< "Apparent failure to register ProbMgmt API." << std::endl ;
     return (nullptr) ;
   }
 /*

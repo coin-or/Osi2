@@ -23,6 +23,8 @@ lib_LTLIBRARIES = libOsi2ClpShim.la
 
 libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
+	Osi2ClpLite_Wrap.cpp Osi2ClpLite_Wrap.hpp \
+	Osi2ClpSimplexAPI_ClpLite.cpp Osi2ClpSimplexAPI_ClpLite.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -80,9 +82,10 @@ AM_CPPFLAGS += $(OSI2GLPKHEAVYSHIM_CFLAGS)
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in pkgincludedir
 
-includecoindir = $(includedir)/coin
+includecoindir = $(includedir)/coin-or
 
-includecoin_HEADERS = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp
+includecoin_HEADERS = Osi2ClpShim.hpp Osi2ProbMgmtAPI_Clp.hpp \
+		      Osi2ClpLite_Wrap.hpp Osi2ClpSimplexAPI_ClpLite.hpp
 
 #if COIN_HAS_OSICLP
 includecoin_HEADERS += Osi2ClpHeavyShim.hpp Osi2ProbMgmtAPI_ClpHeavy.hpp \

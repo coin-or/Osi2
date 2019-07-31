@@ -6,7 +6,7 @@
 */
 /*! \file Osi2ParamBEAPI_Imp.hpp
 
-  This file defines a class ParamBEAPI_Imp that implements the ParamBEAPI
+  Defines Osi2::ParamBEAPI_Imp, an implementation of the Osi2::ParamBEAPI
   interface.
 */
 

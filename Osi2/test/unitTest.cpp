@@ -20,6 +20,8 @@
 #include "Osi2ControlAPI_Imp.hpp"
 #include "Osi2ProbMgmtAPI.hpp"
 #include "Osi2Osi1API.hpp"
+#include "Osi2ClpSimplexAPI.hpp"
+#include "Osi2ClpLite_Wrap.hpp"
 
 using namespace Osi2 ;
 
@@ -41,112 +43,116 @@ namespace {
 */
 int testPluginManager (const std::string libName)
 {
-    int errcnt = 0 ;
+  int errcnt = 0 ;
 
-    std::cout << "Instantiating PluginManager." << std::endl ;
+  std::cout << "Instantiating PluginManager." << std::endl ;
 
-    PluginManager &plugMgr = PluginManager::getInstance() ;
-    /*
-      Now let's try to load the shim.
-    */
-    std::string dfltDir = plugMgr.getDfltPluginDir() ;
-    char dirSep = CoinFindDirSeparator() ;
-    std::string shimPath = dfltDir + dirSep + libName ;
+  PluginManager &plugMgr = PluginManager::getInstance() ;
+/*
+  Now let's try to load the shim.
+*/
+  std::string dfltDir = plugMgr.getDfltPluginDir() ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string shimPath = dfltDir + dirSep + libName ;
 
-    int retval = plugMgr.loadOneLib(libName) ;
+  int retval = plugMgr.loadOneLib(libName) ;
 
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-	  << "Apparent failure to load " << shimPath << "." << std::endl ;
-        std::cout
-	  << "Error code is " << retval << "." << std::endl ;
-        return (errcnt) ;
-    }
-    /*
-      Invoke createObject. If it works, try to invoke a nontrivial
-      method. Which will fail, because exmip1 is not available, but that's
-      not the point. Then destroy the object.
-    */
-    DummyAdapter dummy ;
-    PluginUniqueID libID = 0 ;
-    ProbMgmtAPI *clp =
-      static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt",libID,dummy)) ;
-    if (clp == nullptr) {
-        errcnt++ ;
-        std::cout
-	  << "Apparent failure to create a ProbMgmt object." << std::endl ;
-    } else {
-        clp->readMps("exmip1.mps", true) ;
-        int retval = plugMgr.destroyObject("ProbMgmt", 0, clp) ;
-        if (retval < 0) {
-            errcnt++ ;
-            std::cout
-	      << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
-        }
-        clp = nullptr ;
-    }
-    /*
-      Ask for a nonexistent API and check that we (correctly) fail to provide
-      one.
-    */
-    libID = 0 ;
-    ProbMgmtAPI *bogus =
-      static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",libID,dummy)) ;
-    if (bogus == nullptr) {
-        std::cout
-	  << "Apparent failure to create a BogusAPI object (expected)."
-	  << std::endl ;
-    } else {
-        errcnt++ ;
-        std::cout
-	  << "Eh? We shouldn't be able to create a BogusAPI object!"
-	  << std::endl ;
-    }
-    /*
-      Check that we can create an object through the wildcard mechanism.
-    */
-    libID = 0 ;
-    clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",
-                                     libID, dummy)) ;
-    if (clp == nullptr) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure to create a WildProbMgmt object." << std::endl ;
-    } else {
-        clp->readMps("exmip1.mps", true) ;
-        int retval = plugMgr.destroyObject("WildProbMgmt", 0, clp) ;
-        if (retval < 0) {
-            std::cout
-                    << "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
-        }
-        clp = nullptr ;
-    }
-    /*
-      Unload the plugin library.
-    */
-    retval = plugMgr.unloadOneLib(libName) ;
-    if (retval != 0) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure to unload " << shimPath << "." << std::endl ;
-        std::cout
-                << "Error code is " << retval << "." << std::endl ;
-    }
-    /*
-      Shut down the plugin manager. This will call the plugin library exit
-      functions and unload the libraries.
-    */
+  if (retval != 0) {
+    errcnt++ ;
     std::cout
-            << "Shutting down PluginManager (executing exit functions)." << std::endl ;
-    retval = plugMgr.shutdown() ;
-    if (retval < 0) {
-        errcnt++ ;
-        std::cout
-                << "Apparent failure of PluginManager shutdown." << std::endl ;
-    }
-
+      << "Apparent failure to load " << shimPath << "." << std::endl ;
+    std::cout
+      << "Error code is " << retval << "." << std::endl ;
     return (errcnt) ;
+  }
+/*
+  Invoke createObject. If it works, try to invoke a nontrivial
+  method. Which will fail, because exmip1 is not available, but that's
+  not the point. Then destroy the object.
+*/
+  DummyAdapter dummy ;
+  PluginUniqueID libID = 0 ;
+  ClpLite_Wrap *clpWrap =
+    static_cast<ClpLite_Wrap *>(plugMgr.createObject("ClpSimplex",libID,dummy)) ;
+  if (clpWrap == nullptr) {
+      errcnt++ ;
+      std::cout
+	<< "Apparent failure to create a ClpLite_Wrap object." << std::endl ;
+  } else {
+      ClpSimplexAPI *clp =
+          static_cast<ClpSimplexAPI *>(clpWrap->getAPIPtr("ClpSimplex")) ;
+      clp->readMps("exmip1.mps", true) ;
+      int retval = plugMgr.destroyObject("ProbMgmt", 0, clp) ;
+      if (retval < 0) {
+	  errcnt++ ;
+	  std::cout
+	    << "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+      }
+      clp = nullptr ;
+  }
+/*
+  Ask for a nonexistent API and check that we (correctly) fail to provide
+  one.
+*/
+  libID = 0 ;
+  ProbMgmtAPI *bogus =
+    static_cast<ProbMgmtAPI *>(plugMgr.createObject("BogusAPI",libID,dummy)) ;
+  if (bogus == nullptr) {
+      std::cout
+	<< "Apparent failure to create a BogusAPI object (expected)."
+	<< std::endl ;
+  } else {
+      errcnt++ ;
+      std::cout
+	<< "Eh? We shouldn't be able to create a BogusAPI object!"
+	<< std::endl ;
+  }
+#if 0
+  /*
+    Check that we can create an object through the wildcard mechanism.
+  */
+  libID = 0 ;
+  clp = static_cast<ProbMgmtAPI *>(plugMgr.createObject("WildProbMgmt",
+				   libID, dummy)) ;
+  if (clp == nullptr) {
+      errcnt++ ;
+      std::cout
+	      << "Apparent failure to create a WildProbMgmt object." << std::endl ;
+  } else {
+      clp->readMps("exmip1.mps", true) ;
+      int retval = plugMgr.destroyObject("WildProbMgmt", 0, clp) ;
+      if (retval < 0) {
+	  std::cout
+		  << "Apparent failure to destroy a WildProbMgmt object." << std::endl ;
+      }
+      clp = nullptr ;
+  }
+#endif
+  /*
+    Unload the plugin library.
+  */
+  retval = plugMgr.unloadOneLib(libName) ;
+  if (retval != 0) {
+      errcnt++ ;
+      std::cout
+	      << "Apparent failure to unload " << shimPath << "." << std::endl ;
+      std::cout
+	      << "Error code is " << retval << "." << std::endl ;
+  }
+  /*
+    Shut down the plugin manager. This will call the plugin library exit
+    functions and unload the libraries.
+  */
+  std::cout
+	  << "Shutting down PluginManager (executing exit functions)." << std::endl ;
+  retval = plugMgr.shutdown() ;
+  if (retval < 0) {
+      errcnt++ ;
+      std::cout
+	      << "Apparent failure of PluginManager shutdown." << std::endl ;
+  }
+
+  return (errcnt) ;
 }
 
 /*
@@ -194,14 +200,14 @@ int testControlAPI (const std::string &shortName,
     clp->initialSolve() ;
   }
 /*
-  Create an Osi1 object, invoke a nontrivial method, and destroy the
-  object. The clone test here is checking several things: First, that the
-  cloned object is viable (i.e., the original clone method still works)
-  and, second, that the control information block has been stripped. The
-  second destroy should fail because there's no control information block.
-  (The ControlAPI didn't create this object and takes no responsibility
-  for it!)  Later, the destruction of the original object should succeed,
-  because it still possesses the control information block.
+  Create an Osi1 object and invoke a nontrivial method.  The clone test
+  here is checking several things: First, that the cloned object is viable
+  (i.e., the original clone method still works) and, second, that the
+  control information block has been stripped. The second destroy should
+  fail because there's no control information block.  (The ControlAPI
+  didn't create this object and takes no responsibility for it!)  Later,
+  the destruction of the original object should succeed, because it still
+  possesses the control information block.
 */
   apiObj = nullptr ;
   retval = ctrlAPI.createObject(apiObj, "Osi1") ;
@@ -234,8 +240,7 @@ int testControlAPI (const std::string &shortName,
     }
   }
   /*
-    Create a restricted ProbMgmt object, invoke a nontrivial method,
-    and destroy the object.
+    Create a restricted ProbMgmt object and invoke a nontrivial method.
   */
   apiObj = nullptr ;
   retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &shortName) ;
