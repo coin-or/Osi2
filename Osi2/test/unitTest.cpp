@@ -22,6 +22,7 @@
 #include "Osi2Osi1API.hpp"
 #include "Osi2ClpSimplexAPI.hpp"
 #include "Osi2ClpLite_Wrap.hpp"
+#include "Osi2ClpSolveParamsAPI.hpp"
 
 using namespace Osi2 ;
 
@@ -450,7 +451,7 @@ int testParamMgmtAPI ()
       << std::endl ;
     return (errCnt) ;
   }
-  ClpLite_Wrap *wrap = dynamic_cast<ClpLite_Wrap *>(apiObj) ;
+  ClpLite_Wrap *wrap = static_cast<ClpLite_Wrap *>(apiObj) ;
   ClpSimplexAPI *clp =
       static_cast<ClpSimplexAPI *>(wrap->getAPIPtr("ClpSimplex")) ;
   clp->readMps("../../share/coin-or-sample/exmip1.mps") ;
@@ -459,6 +460,23 @@ int testParamMgmtAPI ()
   mgmtAPI.get("ClpLite","primal tolerance",&dblblob) ;
   std::cout
     << "The primal zero tolerance is " << dblblob << "." << std::endl ;
+/*
+  Work with the ClpSolveParams object.
+*/
+  ClpSolveParamsAPI *clpsolve =
+      static_cast<ClpSolveParamsAPI *>(wrap->getAPIPtr("ClpSolveParams")) ;
+  const char **idents = nullptr ;
+  int apiCnt = clpsolve->getAPIs(idents) ;
+  std::cout << "  clpsolve implements " << apiCnt << " APIs:" ;
+  for (int ndx = 0 ; ndx < apiCnt ; ndx++)
+    std::cout << " " << idents[ndx] ;
+  std::cout << std::endl ;
+  mgmtAPI.enroll("ClpP",clpsolve) ;
+  std::string inStrBlob = "Hi, mom!" ;
+  std::string outStrBlob = std::string() ;
+  mgmtAPI.set("ClpP","problem name",&inStrBlob) ;
+  mgmtAPI.get("ClpP","problem name",&outStrBlob) ;
+  std::cout << " and the name is " << outStrBlob << std::endl ;
 
   return (errCnt) ;
 }

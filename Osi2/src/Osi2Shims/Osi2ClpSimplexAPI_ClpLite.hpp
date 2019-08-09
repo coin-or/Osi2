@@ -14,7 +14,6 @@
 #define COIN_EXTERN_C
 #include "Osi2ClpSimplexAPI.hpp"
 
-#include "Osi2APIMgmt_Imp.hpp"
 #include "Osi2ParamBEAPI_Imp.hpp"
 
 namespace Osi2 {

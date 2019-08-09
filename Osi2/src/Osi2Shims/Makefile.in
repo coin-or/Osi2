@@ -166,7 +166,7 @@ libOsi2ClpHeavyShim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 libOsi2ClpShim_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libOsi2ClpShim_la_OBJECTS = Osi2ProbMgmtAPI_Clp.lo \
 	Osi2ClpLite_Wrap.lo Osi2ClpSimplexAPI_ClpLite.lo \
-	Osi2ClpShim.lo
+	Osi2ClpSolveParamsAPI_ClpLite.lo Osi2ClpShim.lo
 libOsi2ClpShim_la_OBJECTS = $(am_libOsi2ClpShim_la_OBJECTS)
 libOsi2ClpShim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -199,6 +199,7 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/Osi2ClpHeavyShim.Plo \
 	./$(DEPDIR)/Osi2ClpLite_Wrap.Plo ./$(DEPDIR)/Osi2ClpShim.Plo \
 	./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo \
+	./$(DEPDIR)/Osi2ClpSolveParamsAPI_ClpLite.Plo \
 	./$(DEPDIR)/Osi2GlpkHeavyShim.Plo \
 	./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo \
 	./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo \
@@ -497,6 +498,7 @@ libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
 	Osi2ClpLite_Wrap.cpp Osi2ClpLite_Wrap.hpp \
 	Osi2ClpSimplexAPI_ClpLite.cpp Osi2ClpSimplexAPI_ClpLite.hpp \
+	Osi2ClpSolveParamsAPI_ClpLite.cpp Osi2ClpSolveParamsAPI_ClpLite.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
@@ -622,6 +624,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpLite_Wrap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpShim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ClpSolveParamsAPI_ClpLite.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2GlpkHeavyShim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo@am__quote@ # am--include-marker
@@ -780,6 +783,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Osi2ClpLite_Wrap.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpSolveParamsAPI_ClpLite.Plo
 	-rm -f ./$(DEPDIR)/Osi2GlpkHeavyShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo
@@ -834,6 +838,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Osi2ClpLite_Wrap.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2ClpSimplexAPI_ClpLite.Plo
+	-rm -f ./$(DEPDIR)/Osi2ClpSolveParamsAPI_ClpLite.Plo
 	-rm -f ./$(DEPDIR)/Osi2GlpkHeavyShim.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_ClpHeavy.Plo
 	-rm -f ./$(DEPDIR)/Osi2Osi1API_GlpkHeavy.Plo

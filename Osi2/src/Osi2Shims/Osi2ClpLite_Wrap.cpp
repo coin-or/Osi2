@@ -12,19 +12,33 @@
 */
 
 #include "Osi2ClpLite_Wrap.hpp"
+#include "Osi2ClpSimplexAPI_ClpLite.hpp"
+#include "Osi2ClpSolveParamsAPI_ClpLite.hpp"
 
 namespace Osi2 {
 
-class ClpSimplexAPI ;
-class ClpSimplexAPI_ClpLite ;
+/// Default constructor
+ClpLite_Wrap::ClpLite_Wrap ()
+  : clp_(nullptr),
+    clpSolve_(nullptr)
+{ }
+/// Destructor
+ClpLite_Wrap::~ClpLite_Wrap ()
+{ 
+  delete clp_  ;
+  delete clpSolve_ ;
+}
 
 void ClpLite_Wrap::addClpSimplex (DynamicLibrary *libClp)
 {
 /*
-  Install a ClpSimplexAPI object and add it to the set of supported APIs.
+  Install a ClpSimplexAPI object and a ClpSolveParams object and add them to
+  the set of supported APIs.
 */
   clp_ = new ClpSimplexAPI_ClpLite(libClp) ;
   apiMgr_.addAPIID(ClpSimplexAPI::getAPIIDString(),clp_) ;
+  clpSolve_ = new ClpSolveParamsAPI_ClpLite(libClp) ;
+  apiMgr_.addAPIID(ClpSolveParamsAPI::getAPIIDString(),clpSolve_) ;
 }
 
 }

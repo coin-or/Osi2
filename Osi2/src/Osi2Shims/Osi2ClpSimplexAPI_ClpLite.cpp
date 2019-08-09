@@ -14,19 +14,12 @@
 
 #include <iostream>
 
-// #include "ClpConfig.h"
-// #include "Clp_C_Interface.h"
-// #include "Osi2ClpShim.hpp"
-
 #include "Osi2Config.h"
 #include "Osi2nullptr.hpp"
 
-
-// #include "Osi2API.hpp"
-// #include "Osi2ClpSimplexAPI.hpp"
-#include "Osi2ClpSimplexAPI_ClpLite.hpp"
-
 #include "Osi2DynamicLibrary.hpp"
+
+#include "Osi2ClpSimplexAPI_ClpLite.hpp"
 
 /*
   Various commonly used function typedefs, to avoid repeating them over and
@@ -93,7 +86,6 @@ ClpSimplexAPI_ClpLite::~ClpSimplexAPI_ClpLite ()
   if (deleteModel != nullptr) {
     deleteModel(clpC_) ;
     clpC_ = nullptr ;
-    std::cout << "ClpSimplexAPI_ClpLite object destroyed." << std::endl ;
   }
 }
 
@@ -125,6 +117,35 @@ int ClpSimplexAPI_ClpLite::readMps (const char *filename, bool keepNames,
   }
   return (retval) ;
 }
+
+
+/*
+  Solve a problem
+*/
+int ClpSimplexAPI_ClpLite::initialSolve ()
+{
+  std::string errStr ;
+
+  typedef int (*ClpInitSolFunc)(Clp_Simplex *) ;
+  static ClpInitSolFunc initialSolve = nullptr ;
+
+  if (initialSolve == nullptr) {
+    initialSolve = libClp_->getFunc<ClpInitSolFunc>("Clp_initialSolve",errStr) ;
+  }
+  int retval = -1 ;
+  if (initialSolve != nullptr) {
+      retval = initialSolve(clpC_) ;
+      if (retval < 0) {
+	  std::cout
+	      << "Solve failed; error " << retval << "." << std::endl ;
+      } else {
+	  std::cout
+	      << "Solved; return status " << retval << "." << std::endl ;
+      }
+  }
+  return (retval) ;
+}
+
 
 /* Get / set primal tolerance */
 
@@ -180,33 +201,6 @@ void ClpSimplexAPI_ClpLite::setDualTolerance (double val)
 	libClp_->getFunc<rpVpD>("Clp_setDualTolerance",errStr) ;
   }
   return (setDualTolerance(clpC_,val)) ;
-}
-
-/*
-  Solve a problem
-*/
-int ClpSimplexAPI_ClpLite::initialSolve ()
-{
-  std::string errStr ;
-
-  typedef int (*ClpInitSolFunc)(Clp_Simplex *) ;
-  static ClpInitSolFunc initialSolve = nullptr ;
-
-  if (initialSolve == nullptr) {
-    initialSolve = libClp_->getFunc<ClpInitSolFunc>("Clp_initialSolve",errStr) ;
-  }
-  int retval = -1 ;
-  if (initialSolve != nullptr) {
-      retval = initialSolve(clpC_) ;
-      if (retval < 0) {
-	  std::cout
-	      << "Solve failed; error " << retval << "." << std::endl ;
-      } else {
-	  std::cout
-	      << "Solved; return status " << retval << "." << std::endl ;
-      }
-  }
-  return (retval) ;
 }
 
 }    // end namespace Osi2

@@ -220,7 +220,10 @@ public:
     virtual bool set (Client *obj, const void *&blob) = 0 ;
   } ;
 
-  /*! \brief Parameter list entry
+  /*! \brief Parameter list entry (specific get/set)
+
+    This class handles parameters with specific get & set methods (i.e., a
+    dedicated pair of methods for each parameter).
 
     An instance of this class is instantiated for a specific parameter data
     type (ValType) and a specific client class (Client). Together, this
@@ -282,6 +285,77 @@ public:
     /// Pointer-to-member set function in the client class
     SetFunc setFunc_ ;
   } ;
+
+  /*! \brief Parameter list entry (generic get/set)
+
+    This class handles parameters that have generic get and set methods (i.e.,
+    a pair of methods that take a parameter name or similar identifier).
+
+    An instance of this class is instantiated for a specific parameter data
+    type (ValType) and a specific client class (Client). Together, this
+    gives enough information to write get and set wrappers that will pack or
+    unpack the data blob and invoke the proper method in the client class
+    by way of pointers-to-member-functions.
+  */
+  template<class ValType>
+  class ParamEntry_Gen : public ParamEntry
+  { 
+    public:
+    typedef ValType (Client::*GetFunc)(std::string) const ;
+    typedef void (Client::*SetFunc)(std::string, ValType val) ;
+
+    /// Initialising constructor
+    ParamEntry_Gen (std::string id,std::string what,
+		    GetFunc getter, SetFunc setter)
+    { ParamEntry::paramID_ = id ;
+      what_ = what ;
+      getFunc_ = getter ;
+      setFunc_ = setter ;
+    } 
+    /// Copy constructor
+    ParamEntry_Gen (const ParamEntry_Gen &rhs)
+    {
+      ParamEntry::paramID_ = rhs.paramID_ ;
+      what_ = rhs.what_ ;
+      getFunc_ = rhs.getFunc_ ;
+      setFunc_ = rhs.setFunc_ ;
+    }
+    /// Virtual copy constructor
+    ParamEntry *clone ()
+    {
+      return (new ParamEntry_Gen(*this)) ;
+    }
+    /// Destructor
+    ~ParamEntry_Gen () { } ;
+
+    /// Wrapper to invoke the get method from the client class
+    bool get (Client *obj, void *&blob)
+    {
+      std::cout << "    invoking derived get." << std::endl ;
+      ValType *val = static_cast<ValType *>(blob) ;
+      *val = (obj->*getFunc_)(what_) ;
+      return (true) ;
+    }
+
+    /// Wrapper to invoke the set method from the client class
+    bool set (Client *obj, const void *&blob)
+    {
+      std::cout << "    invoking derived set." << std::endl ;
+      const ValType *val = static_cast<const ValType *>(blob) ;
+      (obj->*setFunc_)(what_,*val) ;
+      return (true) ;
+    }
+
+    private:
+
+    /// Parameter specifier
+    std::string what_ ;
+    /// Pointer-to-member get function in the client class
+    GetFunc getFunc_ ;
+    /// Pointer-to-member set function in the client class
+    SetFunc setFunc_ ;
+  } ;
+
 //@}
 
 
