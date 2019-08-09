@@ -17,11 +17,13 @@
 
 #include "Osi2API.hpp"
 #include "Osi2APIMgmt_Imp.hpp"
-#include "Osi2ClpSimplexAPI_ClpLite.hpp"
+// #include "Osi2ClpSimplexAPI_ClpLite.hpp"
 
 namespace Osi2 {
 
-class ClpSimplexAPI ;
+class DynamicLibrary ;
+class ClpSimplexAPI_ClpLite ;
+class ClpSolveParamsAPI_ClpLite ;
 
 /*! \brief Clp `lite' wrapper class
 
@@ -36,11 +38,9 @@ public:
 /*! \name Constructors & related */
 //@{
   /// Default constructor
-  ClpLite_Wrap ()
-    : clp_(nullptr)
-  { }
+  ClpLite_Wrap () ;
   /// Destructor
-  ~ClpLite_Wrap () { delete clp_  ; }
+  ~ClpLite_Wrap () ;
 //@}
 
 /*! \name API reporting */
@@ -64,8 +64,11 @@ private:
   /// API managment object
   APIMgmt_Imp apiMgr_ ;
 
-  /// Object to implement the ClpSimplex interface
+  /// Object to implement the ClpSimplex %API.
   ClpSimplexAPI_ClpLite *clp_ ;
+
+  /// Object to implement the ClpSolveParams %API.
+  ClpSolveParamsAPI_ClpLite *clpSolve_ ;
 
 } ;
 

@@ -25,6 +25,7 @@ libOsi2ClpShim_la_SOURCES = \
 	Osi2ProbMgmtAPI_Clp.cpp Osi2ProbMgmtAPI_Clp.hpp \
 	Osi2ClpLite_Wrap.cpp Osi2ClpLite_Wrap.hpp \
 	Osi2ClpSimplexAPI_ClpLite.cpp Osi2ClpSimplexAPI_ClpLite.hpp \
+	Osi2ClpSolveParamsAPI_ClpLite.cpp Osi2ClpSolveParamsAPI_ClpLite.hpp \
 	Osi2ClpShim.cpp Osi2ClpShim.hpp
 
 libOsi2ClpShim_la_LDFLAGS = $(LT_LDFLAGS) -module
