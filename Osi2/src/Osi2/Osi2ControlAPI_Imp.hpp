@@ -199,8 +199,6 @@ public:
 
 private:
 
-    /// Utility method to find the plugin manager and cache a reference.
-    PluginManager *findPluginMgr() ;
     /// Cached reference to plugin manager.
     PluginManager *pluginMgr_ ;
 

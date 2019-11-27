@@ -18,8 +18,10 @@ template<class Client>
 void ParamBEAPI_Imp<Client>::addParam (const char *paramID,
 				        ParamEntry *entry)
 {
-  if (paramIDCnt_+1 > paramIDLen_) {
-    const char **tmp = new const char*[paramIDLen_+5] ;
+  if (paramIDCnt_ >= paramIDLen_) {
+    paramIDLen_ += 10 ;
+    const char **tmp = new const char*[paramIDLen_] ;
+    int bytes = paramIDLen_*sizeof(char *) ;
     for (int ndx = 0 ; ndx < paramIDCnt_ ; ndx++) {
       tmp[ndx] = paramIDs_[ndx] ;
     }
@@ -74,10 +76,11 @@ ParamBEAPI_Imp<Client>::ParamBEAPI_Imp (Client *client)
     paramIDs_(nullptr),
     logLvl_(7)
 {
-    msgHandler_ = new CoinMessageHandler() ;
-    msgs_ = ParamBEAPIMessages() ;
-    msgHandler_->setLogLevel(logLvl_) ;
-    msgHandler_->message(PMBEAPI_INIT, msgs_) << "default" << CoinMessageEol ;
+  msgHandler_ = new CoinMessageHandler() ;
+  msgs_ = ParamBEAPIMessages() ;
+  dfltHandler_ = true ;
+  msgHandler_->setLogLevel(logLvl_) ;
+  msgHandler_->message(PMBEAPI_INIT, msgs_) << "default" << CoinMessageEol ;
 }
 
 /*

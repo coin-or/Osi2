@@ -77,4 +77,14 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
   return (dynLib) ;
 }
 
+std::ostream &operator<< (std::ostream &ostr, const DynamicLibrary *lib)
+{
+  ostr
+    << "  DynamicLibrary (" << (static_cast<const void *>(lib)) << "):"
+    << std::endl ;
+  ostr << "    handle: " << lib->handle_ << std::endl ;
+  ostr << "    path: " << lib->fullPath_ ;
+  return (ostr) ;
+}
+
 }  // end namespace Osi2

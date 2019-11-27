@@ -93,8 +93,9 @@ public:
   inline void addAPIID (const char *apiID, void *obj)
   {
     if (getAPIPtr(apiID) == nullptr) {
-      if (apiIDCnt_+1 > apiIDLen_) {
-	const char **tmp = new const char*[apiIDLen_+5] ;
+      if (apiIDCnt_ >= apiIDLen_) {
+    	apiIDLen_ += 5 ;
+	const char **tmp = new const char*[apiIDLen_] ;
         for (int ndx = 0 ; ndx < apiIDCnt_ ; ndx++)
 	{ tmp[ndx] = apiIDs_[ndx] ; }
 	delete[] apiIDs_ ;
