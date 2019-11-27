@@ -189,10 +189,10 @@ public:
 /*! \name Exported parameter list entries
 
   The class ParamEntry and its templated derived classes ParamEntry_Imp
-  record the information necessary to get and set the values of parameters in
-  the client object.
+  and ParamEntry_Gen record the information necessary to get and set the
+  values of parameters in the client object.
 
-  Each instantiation of a templated class ParamEntry_Imp encodes the data
+  Each instantiation of one of the templated classes encodes the data
   type of its parameter; this makes it possible to write wrapper functions
   for get and set that properly handle the data blob. ParamEntry and its
   derived classes must be member classes of ParamBEAPI_Imp because the type
@@ -288,8 +288,9 @@ public:
 
   /*! \brief Parameter list entry (generic get/set)
 
-    This class handles parameters that have generic get and set methods (i.e.,
-    a pair of methods that take a parameter name or similar identifier).
+    This class handles parameters that have generic get and set methods
+    (i.e., a pair of methods that take an identifier of some sort to
+    specify the parameter).
 
     An instance of this class is instantiated for a specific parameter data
     type (ValType) and a specific client class (Client). Together, this
@@ -350,6 +351,69 @@ public:
 
     /// Parameter specifier
     std::string what_ ;
+    /// Pointer-to-member get function in the client class
+    GetFunc getFunc_ ;
+    /// Pointer-to-member set function in the client class
+    SetFunc setFunc_ ;
+  } ;
+
+  /*! \brief Parameter list entry (pass through)
+
+    This class handles parameters that use complex parameter structures. It
+    assumes that the user will supply a pointer to a blob of space which
+    is passed through to the set / get methods of the client class.
+
+    An instance of this class is instantiated for a specific client class
+    (Client); the data type is handled as void*.  This provides enough
+    information to invoke client methods. It's up to the client's methods
+    to know how to unpack or pack the blob.
+  */
+  class ParamEntry_Void : public ParamEntry
+  { 
+    public:
+    typedef void (Client::*GetFunc)(void *) const ;
+    typedef void (Client::*SetFunc)(const void *) ;
+
+    /// Initialising constructor
+    ParamEntry_Void (std::string id,
+		    GetFunc getter, SetFunc setter)
+    { ParamEntry::paramID_ = id ;
+      getFunc_ = getter ;
+      setFunc_ = setter ;
+    } 
+    /// Copy constructor
+    ParamEntry_Void (const ParamEntry_Void &rhs)
+    {
+      ParamEntry::paramID_ = rhs.paramID_ ;
+      getFunc_ = rhs.getFunc_ ;
+      setFunc_ = rhs.setFunc_ ;
+    }
+    /// Virtual copy constructor
+    ParamEntry *clone ()
+    {
+      return (new ParamEntry_Void(*this)) ;
+    }
+    /// Destructor
+    ~ParamEntry_Void () { } ;
+
+    /// Wrapper to invoke the get method from the client class
+    bool get (Client *obj, void *&blob)
+    {
+      std::cout << "    invoking derived get." << std::endl ;
+      (obj->*getFunc_)(blob) ;
+      return (true) ;
+    }
+
+    /// Wrapper to invoke the set method from the client class
+    bool set (Client *obj, const void *&blob)
+    {
+      std::cout << "    invoking derived set." << std::endl ;
+      (obj->*setFunc_)(blob) ;
+      return (true) ;
+    }
+
+    private:
+
     /// Pointer-to-member get function in the client class
     GetFunc getFunc_ ;
     /// Pointer-to-member set function in the client class

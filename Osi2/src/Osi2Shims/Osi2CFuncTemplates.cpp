@@ -29,23 +29,26 @@
 
   Simple getter, no parameters other than the object to be acted on:
     RetType (*FuncSig)(ObjType*)
-  Simple getter, one additional int parameter to specify what to get:
-    RetType (*FuncSig)(ObjType*,int)
+  Simple getter, up to two additional parameters
+    RetType (*FuncSig)(ObjType*,ValType1)
+    RetType (*FuncSig)(ObjType*,ValType1,Valtype2)
 
-  Simple setter, up to three parameters to pass in a value, all parameters the
-  same type:
-    void (*FuncSig)(ObjType *,ValType)
-    void (*FuncSig)(ObjType *,ValType,ValType)
-    void (*FuncSig)(ObjType *,ValType,ValType,ValType)
+  Simple setter, up to three parameters to pass in a value:
+    void (*FuncSig)(ObjType *)
+    void (*FuncSig)(ObjType *,ValType1)
+    void (*FuncSig)(ObjType *,ValType1,ValType2)
+    void (*FuncSig)(ObjType *,ValType1,ValType2,ValType3)
+  The signature with no ValType is a simple imperative (e.g., doAction). The
+  others allow for parameters (e.g., setValue(parm1))
+
+  Don't get hung up on the simpleGetter / simpleSetter naming convention.
+  Really, the choice comes down to whether or not the underlying C method
+  returns a value.
   
-
-  \todo Think on the question of parameter data types. For clp, the only thing
-  to cope with is multiple parameters of the same data type, hence I can get
-  away with a single ValType template parameter. That's too good to last.
 
   \todo Think of a way to implement a cache for function addresses so we're
   not invoking dlsym every time we use a function. Really, this cache ought to
-  be a service of DynamicLibrary.
+  be a service of DynamicLibrary. Keep a map in the DynamicLibrary object?
 */
 
 using Osi2::DynamicLibrary ;
@@ -59,56 +62,110 @@ RetType simpleGetter (DynamicLibrary *lib, ObjType *obj,
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (getterFunc != nullptr) {
     return (getterFunc(obj)) ;
-  } 
-  return (-1) ;
+  } else {
+    std::cout
+      << "  simpleGetter(0): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
+  }
+  return (RetType()) ;
 }
 
-template <class ObjType, class RetType>
+template <class ObjType, class RetType, class ValType1>
 RetType simpleGetter (DynamicLibrary *lib, ObjType *obj,
-	      std::string funcName, int parm1)
+	      std::string funcName, ValType1 parm1)
 { std::string errStr ;
-  typedef RetType (*FuncSig)(ObjType *,int) ;
+  typedef RetType (*FuncSig)(ObjType *,ValType1) ;
   FuncSig getterFunc =
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (getterFunc != nullptr) {
     return (getterFunc(obj,parm1)) ;
+  } else {
+    std::cout
+      << "  simpleGetter(1): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
-  return (-1) ;
+  return (RetType()) ;
+}
+
+template <class ObjType, class RetType, class ValType1,
+	  class ValType2 = ValType1>
+RetType simpleGetter (DynamicLibrary *lib, ObjType *obj,
+	      std::string funcName, ValType1 parm1, ValType2 parm2)
+{ std::string errStr ;
+  typedef RetType (*FuncSig)(ObjType *,ValType1,ValType2) ;
+  FuncSig getterFunc =
+    lib->getFunc<FuncSig>(funcName,errStr) ;
+  if (getterFunc != nullptr) {
+    return (getterFunc(obj,parm1,parm2)) ;
+  } else {
+    std::cout
+      << "  simpleGetter(2): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
+  }
+  return (RetType()) ;
 }
   
-template <class ObjType, class ValType>
-void simpleSetter (DynamicLibrary *lib, ObjType *obj,
-	      std::string funcName, ValType val1)
+template <class ObjType>
+void simpleSetter (DynamicLibrary *lib, ObjType *obj, std::string funcName)
 { std::string errStr ;
-  typedef void (*FuncSig)(ObjType *,ValType) ;
+  typedef void (*FuncSig)(ObjType *) ;
+  FuncSig setterFunc =
+    lib->getFunc<FuncSig>(funcName,errStr) ;
+  if (setterFunc != nullptr) {
+    setterFunc(obj) ;
+  } else {
+    std::cout
+      << "  simpleSetter(0): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
+  }
+}
+
+template <class ObjType, class ValType1>
+void simpleSetter (DynamicLibrary *lib, ObjType *obj,
+	      std::string funcName, ValType1 val1)
+{ std::string errStr ;
+  typedef void (*FuncSig)(ObjType *,ValType1) ;
   FuncSig setterFunc =
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1) ;
+  } else {
+    std::cout
+      << "  simpleSetter(1): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
-template <class ObjType, class ValType>
+template <class ObjType, class ValType1, class ValType2 = ValType1>
 void simpleSetter (DynamicLibrary *lib, ObjType *obj,
-	      std::string funcName, ValType val1, ValType val2)
+	      std::string funcName, ValType1 val1, ValType2 val2)
 { std::string errStr ;
-  typedef void (*FuncSig)(ObjType *,ValType,ValType) ;
+  typedef void (*FuncSig)(ObjType *,ValType1,ValType2) ;
   FuncSig setterFunc =
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1,val2) ;
+  } else {
+    std::cout
+      << "  simpleSetter(2): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
-template <class ObjType, class ValType>
+template <class ObjType,
+	  class ValType1, class ValType2 = ValType1, class ValType3 = ValType1 >
 void simpleSetter (DynamicLibrary *lib, ObjType *obj,
-	      std::string funcName, ValType val1, ValType val2, ValType val3)
+	    std::string funcName, ValType1 val1, ValType2 val2, ValType3 val3)
 { std::string errStr ;
-  typedef void (*FuncSig)(ObjType *,ValType,ValType,ValType) ;
+  typedef void (*FuncSig)(ObjType *,ValType1,ValType2,ValType3) ;
   FuncSig setterFunc =
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1,val2,val3) ;
+  } else {
+    std::cout
+      << "  simpleSetter(3): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
@@ -129,8 +186,8 @@ void simpleSetter (DynamicLibrary *lib, ObjType *obj,
 #define mapEntry3(zzKey,zzGetName,zzSetName) \
 { std::string(zzKey), {std::string(zzGetName),std::string(zzSetName)} }
 
-typedef std::map<std::string,
-	 	 std::pair<std::string,std::string>> KnownMemberMap ;
+struct KMMFuncs { std::string getter_ ; std::string setter_ ; } ;
+typedef std::map<std::string, KMMFuncs> KnownMemberMap ;
 
 
 template <class ObjType, class ValType>
@@ -144,7 +201,7 @@ void setMember (KnownMemberMap membMap, std::string memb,
       << std::endl ;
     return ;
   }
-  std::string setFuncName = pxmIter->second.first ;
+  std::string setFuncName = pxmIter->second.setter_ ;
   simpleSetter<ObjType,ValType>(lib,obj,setFuncName,val) ;
 }
 
@@ -157,9 +214,9 @@ RetType getMember (KnownMemberMap membMap, std::string memb,
     std::cout
       << " Member " << memb << " is not recognised."
       << std::endl ;
-    return (static_cast<RetType>(0)) ;
+    return (RetType()) ;
   }
-  std::string getFuncName = pxmIter->second.second ;
+  std::string getFuncName = pxmIter->second.getter_ ;
   RetType retval = simpleGetter<ObjType,RetType>(lib,obj,getFuncName) ;
   return (retval) ;
 }

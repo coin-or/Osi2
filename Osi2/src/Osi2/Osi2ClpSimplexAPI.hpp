@@ -7,6 +7,8 @@
 
 namespace Osi2 {
 
+class RunParamsAPI ;
+
 /*! \brief Provide the ClpSimplex `C' interface
 
   This %API exposes the portion of the ClpSimplex class provided by the Clp
@@ -41,7 +43,14 @@ public:
     bothFake = 0x03
   } ;
 
-  /*! \name Constructors, destructor, and copy */
+  /*! \name Constructors, destructor, and copy
+
+    Because construction is handled through ControlAPI, we don't need a
+    constructor. Arguably, we should not need a destructor, either.
+
+    \todo See if it's possible to get rid of the destructor; at least, make it
+    protected.
+  */
   //@{
 
   /// Destructor
@@ -64,122 +73,123 @@ public:
       <li> <code>obj</code>: all variables have 0 objective coefficient
     </ul>
   */
-  void loadProblem(const int numcols, const int numrows,
-    const CoinBigIndex *start, const int *index,
-    const double *value,
+  virtual void loadProblem(const int numcols, const int numrows,
+    const CoinBigIndex *start, const int *index, const double *value,
     const double *collb, const double *colub,
     const double *obj,
-    const double *rowlb, const double *rowub) ;
+    const double *rowlb, const double *rowub) = 0 ;
 
   /// read quadratic part of the objective (the matrix part)
-  void loadQuadraticObjective(const int numberColumns,
-      const CoinBigIndex *start, const int *column, const double *element) ;
+  virtual void loadQuadraticObjective(const int numberColumns,
+    const CoinBigIndex *start, const int *index, const double *value) = 0 ;
 
   /// Get integer information
-  char *integerInformation() const ;
-  /// Add integer information
-  void copyInIntegerInformation(const char *information) ;
+  virtual char *integerInformation() const = 0 ;
+  /// Add integer information: 0 for continuous, 1 for integer
+  virtual void copyInIntegerInformation(const char *information) = 0 ;
   /// Drop integer information
-  void deleteIntegerInformation() ;
+  virtual void deleteIntegerInformation() = 0 ;
 
   /// Resize rim part of model
-  void resize(int newNumberRows, int newNumberColumns) ;
+  virtual void resize(int newNumberRows, int newNumberColumns) = 0 ;
 
   /// Get number of rows
-  int getNumRows() ;
+  virtual int numberRows() = 0 ;
   /// Add rows
-  void addRows(int number, const double *rowLower, const double *rowUpper,
-    const CoinBigIndex *rowStarts, const int *columns,
-    const double *elements) ;
+  virtual void addRows(int number,
+    const double *rowLower, const double *rowUpper,
+    const CoinBigIndex *rowStart, const int *index, const double *value) = 0 ;
   /// Delete rows
-  void deleteRows(int number, const int *which) ;
+  virtual void deleteRows(int number, const int *which) = 0 ;
 
   /// Get number of columns
-  int getNumCols() ;
+  virtual int numberColumns() = 0 ;
   /// Add columns
-  void addColumns(int number,
+  virtual void addColumns(int number,
     const double *columnLower, const double *columnUpper,
     const double *objective,
     const CoinBigIndex *columnStarts, const int *rows,
-    const double *elements) ;
+    const double *elements) = 0 ;
   /// Delete columns
-  void deleteColumns(int number, const int *which) ;
+  virtual void deleteColumns(int number, const int *which) = 0 ;
 
   /// Get row lower bounds
-  double *rowLower() const ;
-  /** Change row lower bounds */
-  void chgRowLower(const double *rowLower);
+  virtual double *rowLower() const = 0 ;
+  /// Change row lower bounds
+  virtual void chgRowLower(const double *rowLower) = 0 ;
 
   /// Get row upper bounds
-  double *rowUpper() const ;
-  /** Change row upper bounds */
-  void chgRowUpper(const double *rowUpper);
+  virtual double *rowUpper() const = 0 ;
+  /// Change row upper bounds
+  virtual void chgRowUpper(const double *rowUpper) = 0 ;
 
   /// Get column lower bounds
-  double *columnLower() const ;
-  /** Change column lower bounds */
-  void chgColumnLower(const double *columnLower);
+  virtual double *columnLower() const = 0 ;
+  /// Change column lower bounds
+  virtual void chgColumnLower(const double *columnLower) = 0 ;
 
   /// Get column upper bounds
-  double *columnUpper() const ;
-  /** Change column upper bounds */
-  void chgColumnUpper(const double *columnUpper);
+  virtual double *columnUpper() const = 0 ;
+  /// Change column upper bounds
+  virtual void chgColumnUpper(const double *columnUpper) = 0 ;
   
   /// Get objective coefficients
-  double *objective() const ;
-  /** Change objective coefficients */
-  void chgObjCoefficients(const double *objIn);
+  virtual double *objective() const = 0 ;
+  /// Change objective coefficients
+  virtual void chgObjCoefficients(const double *objIn) = 0 ;
 
   /// Number of elements in matrix
-  CoinBigIndex getNumElements() const ;
+  virtual CoinBigIndex getNumElements() const = 0 ;
   /// Column starts in matrix
-  const CoinBigIndex *getVectorStarts() const ;
+  virtual const CoinBigIndex *getVectorStarts() const = 0 ;
   /// Column lengths in matrix
-  const int *getVectorLengths() const ;
+  virtual const int *getVectorLengths() const = 0 ;
   /// Row indices in matrix
-  const int *getIndices() const ;
+  virtual const int *getIndices() const = 0 ;
   /// element values in matrix
-  const double *getElements() const ;
+  virtual const double *getElements() const = 0 ;
   /// Modify one element of a matrix
-  void modifyCoefficient(int row, int column, double newElement,
-    bool keepZero = false) ;
+  virtual void modifyCoefficient(int row, int column, double newElement,
+    bool keepZero = false) = 0 ;
 
   /// Check if status array exists
-  bool statusExists() const ;
+  virtual bool statusExists() const = 0 ;
   /// Get address of status array (char[numberRows+numberColumns])
-  unsigned char *statusArray() const ;
+  virtual unsigned char *statusArray() const = 0 ;
   /// Copy in a status vector
-  void copyinStatus(const unsigned char *statusArray) ;
-  /// Get status for a variable
-  ClpSimplexAPI::Status getColumnStatus(int sequence) ;
+  virtual void copyinStatus(const unsigned char *statusArray) = 0 ;
+  /// Get basis info for a variable.
+  virtual ClpSimplexAPI::Status getColumnStatus(int sequence) = 0 ;
   /*! \brief Set status for a variable 
 
     Also force the value if the status is at bound.
   */
-  void setColumnStatus(int sequence, ClpSimplexAPI::Status newStatus) ;
+  virtual void setColumnStatus(int sequence,
+  			       ClpSimplexAPI::Status newStatus) = 0 ;
   /// Get status for a row
-  int getRowStatus(int sequence);
+  virtual ClpSimplexAPI::Status getRowStatus(int sequence) = 0 ;
   /*! \brief Set status for a row 
 
     Also force the value if the status is at bound.
   */
-  void setRowStatus(int sequence, ClpSimplexAPI::Status newStatus) ;
+  virtual void setRowStatus(int sequence,
+  			    ClpSimplexAPI::Status newStatus) = 0 ;
 
-  /// Copy in row & column names
-  void copyNames(const std::vector<std::string> &rowNames,
-    const std::vector<std::string> &columnNames) ;
-  /// Drop names
-  void dropNames() ;
   /// length of names (0 means no names available)
-  int lengthNames() ;
+  virtual int lengthNames() const = 0 ;
   /// Get row name (size of name must be at least #lengthNames()+1)
-  void rowName(int iRow,char *name) ;
+  virtual void rowName(int iRow, char *name) const = 0 ;
   /// Set row name (name should be null-terminated)
-  void setRowName(int iRow,char *name) ;
+  virtual void setRowName(int iRow, const char *name) = 0 ;
   /// Get column name (size of name must be at least #lengthNames()+1)
-  void columnName(int iCol,char *name) ;
+  virtual void columnName(int iCol, char *name) const = 0 ;
   /// Set column name (name should be null-terminated)
-  void setColumnName(int iCol,char *name) ;
+  virtual void setColumnName(int iCol, const char *name) = 0 ;
+  /// Copy in row & column names
+  virtual void copyNames(const char *const *rowNames,
+  			 const char *const *columnNames) = 0 ;
+  /// Drop names
+  virtual void dropNames() = 0 ;
 
   //@}
 
@@ -196,13 +206,13 @@ public:
     Number across is 1 or 2.
     Use objSense = -1D to flip the objective function around.
   */
-  int writeMps(const char *filename, int formatType, int numberAcross,
-    double objSense) ;
+  virtual int writeMps(const char *filename, int formatType,
+  		       int numberAcross, double objSense) = 0 ;
 
   /// Save the model to a file
-  int saveModel(const char *fileName) ;
+  virtual int saveModel(const char *fileName) = 0 ;
   /// Restore model from a file
-  int restoreModel(const char *fileName) ;
+  virtual int restoreModel(const char *fileName) = 0 ;
   //@}
 
   /*! \name Parameter Gets & Sets */
@@ -216,8 +226,12 @@ public:
   virtual void setDualTolerance(double value) = 0 ;
 
   /// Dual objective limit
-  double dualObjectiveLimit() ;
-  void setDualObjectiveLimit(double value) ;
+  virtual double dualObjectiveLimit() const = 0 ;
+  virtual void setDualObjectiveLimit(double value) = 0 ;
+
+  /// Dual bound
+  double dualBound() ;
+  void setDualBound(double value) ;
 
   /*! \brief Select scaling mode
 
@@ -227,45 +241,41 @@ public:
     3 - auto
     4 - dynamic (implemented?)
   */
-  void scaling(int mode) ;
+  virtual void scaling(int mode) = 0 ;
   /// Get scaling mode
-  int scalingFlag() ;
-
-  /// Constant offset for objective
-  double objectiveOffset() ;
-  void setObjectiveOffset(double value) ;
-
-  /// Get problem name (copied to array)
-  int problemName(int maxNumberCharacters, char *array) ;
-  /// Set problem name to array (null-terminated string)
-  int setProblemName(int maxNumberCharacters, char *array) ;
-
-  /// Number of iterations
-  int numberIterations() ;
-  void setNumberIterations(int value) ;
-  /// Maximum number of iterations
-  int maximumIterations() ;
-  void setMaximumIterations(int value) ;
-  /// Maximum time in seconds (timed from call to setMaximumSeconds)
-  int maximumSeconds() ;
-  void setMaximumSeconds(double value) ;
+  virtual int scalingFlag() const = 0 ;
 
   /*! \brief Direction of optimisation
 
-    -1  maximise
-     0  ignore
-     1  minimise
+    -1.0  maximise
+     0.0  ignore
+     1.0  minimise
   */
-  double getObjSense() ;
-  void setObjSense(double value) ;
+  virtual double objSense() const = 0 ;
+  virtual void setObjSense(double value) = 0 ;
 
-  /// Dual bound
-  double dualBound() ;
-  void setDualBound(double value) ;
-  
+  /// Constant offset for objective
+  virtual double objectiveOffset() const = 0 ;
+  virtual void setObjectiveOffset(double value) = 0 ;
+
+  /// Get problem name
+  virtual std::string problemName() const = 0 ;
+  /// Set problem name
+  virtual void setProblemName(std::string probName) = 0 ;
+
+  /// Number of iterations
+  virtual int numberIterations() const = 0 ;
+  virtual void setNumberIterations(int value) = 0 ;
+  /// Maximum number of iterations
+  virtual int maximumIterations() const = 0 ;
+  virtual void setMaximumIterations(int value) = 0 ;
+  /// Maximum time in seconds (timed from call to setMaximumSeconds)
+  virtual double maximumSeconds() const = 0 ;
+  virtual void setMaximumSeconds(double value) = 0 ;
+
   /// Infeasibility cost
-  double infeasibilityCost() ;
-  void setInfeasibilityCost(double value) ;
+  virtual double infeasibilityCost() const = 0 ;
+  virtual void setInfeasibilityCost(double value) = 0 ;
 
   /*! \brief Problem perturbation
 
@@ -276,20 +286,33 @@ public:
 
     Default is 100.
   */
-  int perturbation() ;
-  void setPerturbation(int value) ;
+  virtual int perturbation() const = 0 ;
+  virtual void setPerturbation(int value) = 0 ;
 
-  /// Get algorithm
-  int algorithm() ;
-  /// Set algorithm
-  void setAlgorithm(int value) ;
+  /// Get solve algorithm
+  virtual int algorithm() const = 0 ;
+  /// Set solve algorithm
+  virtual void setAlgorithm(int value) = 0 ;
 
   /*! \brief Get small element value
     Elements less that this are set to zero. Default 1.0e-20.
   */
-  double getSmallElementValue() ;
+  virtual double getSmallElementValue() const = 0 ;
   /// Set small element value
-  void setSmallElementValue(double value) ;
+  virtual void setSmallElementValue(double value) = 0 ;
+  //@}
+
+  /*! \name Bulk parameter manipulation
+
+    These methods work with a RunParamsAPI object to maintain a complete set
+    of parameters that can be applied in one operation.
+  */
+  //@{
+  /// Load a runParams object with parameters.
+  virtual void exposeParams(RunParamsAPI &runParams) const = 0 ;
+
+  /// Set ClpSimplex parameters from a RunParamsAPI object.
+  virtual void loadParams(RunParamsAPI &runParams) = 0 ;
   //@}
 
   /*! \name Information about the solution */
@@ -302,9 +325,10 @@ public:
        3 - stopped on iterations etc
        4 - stopped due to errors
   */
-  int status() ;
+  virtual int status() const = 0 ;
   /** Set problem status */
-  void _setProblemStatus(int problemStatus) ;
+  virtual void setProblemStatus(int problemStatus) = 0 ;
+
   /*! \brief Secondary status of problem - may get extended
 
     0 - none
@@ -313,71 +337,74 @@ public:
     3 - scaled problem optimal - unscaled has dual infeasibilities
     4 - scaled problem optimal - unscaled has dual and primal infeasibilities
   */
-  int secondaryStatus() ;
-  void setSecondaryStatus(int status) ;
+  virtual int secondaryStatus() const = 0 ;
+  virtual void setSecondaryStatus(int status) = 0 ;
+
   /// Problem is primal feasible
-  bool primalFeasible() const ;
+  virtual bool primalFeasible() const = 0 ;
   /// Problem is dual feasible
-  bool dualFeasible() const ;
+  virtual bool dualFeasible() const = 0 ;
   /// Are there numerical difficulties?
-  bool isAbandoned() ;
+  virtual bool isAbandoned() const = 0 ;
   /// Return true if hit maximum iterations or time
-  bool hitMaximumIterations() ;
+  virtual bool hitMaximumIterations() const = 0 ;
   /// Iteration limit reached?
-  bool isIterationLimitReached() ;
+  virtual bool isIterationLimitReached() const = 0 ;
   /// Is optimality proven?
-  bool isProvenOptimal() ;
+  virtual bool isProvenOptimal() const = 0 ;
   /// Is primal infeasibility proven?
-  bool isProvenPrimalInfeasible() ;
+  virtual bool isProvenPrimalInfeasible() const = 0 ;
   /// Is dual infeasibility proven?
-  bool isProvenDualInfeasible() ;
+  virtual bool isProvenDualInfeasible() const = 0 ;
   /// Is the given primal objective limit reached
 
   /// Objective function value
-  double objectiveValue() ;
+  virtual double objectiveValue() const = 0 ;
+
   /// Primal row solution
-  double primalRowSolution() ;
+  virtual const double *getRowActivity() const = 0 ;
   /// Primal column solution
-  double primalColumnSolution() ;
+  virtual const double *getColSolution() const = 0 ;
   /// Set the primal column solution
-  void setPrimalColumnSolution(double *input) ;
+  virtual void setColSolution(const double *input) = 0 ;
+
+  /// Dual row solution
+  virtual const double *getRowPrice() const = 0 ;
+  /// Dual column solution
+  virtual const double *getReducedCost() const = 0 ;
 
   /*! \brief Unbounded ray (null if bounded)
 
     Use #freeRay to free the returned ray.
   */
-  double *unboundedRay() const ;
-  /// Dual row solution
-  double dualRowSolution() ;
-  /// Dual column solution
-  double dualColumnSolution() ;
+  virtual double *unboundedRay() const = 0 ;
   /*! Infeasible ray (null if feasible)
 
     Use #freeRay to free the returned ray.
   */
-  double *infeasibilityRay(bool fullRay = false) const ;
+  virtual double *infeasibilityRay() const = 0 ;
   /*! \brief Free a ray
 
     Use this method to free rays returned by #unboundedRay and
     #infeasibilityRay.
   */
-  void freeRay(double *ray) ;
+  virtual void freeRay(double *ray) const = 0 ;
 
   /// Number of primal infeasibilities
-  int numberPrimalInfeasibilities() const ;
+  virtual int numberPrimalInfeasibilities() const = 0 ;
   /// Sum of primal infeasibilities
-  double sumPrimalInfeasibilities() const ;
+  virtual double sumPrimalInfeasibilities() const = 0 ;
 
   /// Number of dual infeasibilities
-  int numberDualInfeasibilities() const ;
+  virtual int numberDualInfeasibilities() const = 0 ;
   /// Sum of dual infeasibilities
-  double sumDualInfeasibilities() const ;
+  virtual double sumDualInfeasibilities() const = 0 ;
 
   /*! Check the solution
 
     Sets sum of infeasibilities, etc.
   */
-  void checkSolution() ;
+  virtual void checkSolution() = 0 ;
   //@}
   
   /*! \name User pointer
@@ -386,9 +413,9 @@ public:
   */
   //@{
   /// Set the user pointer
-  void setUserPointer(void *pointer) ;
+  virtual void setUserPointer(void *pointer) = 0 ;
   /// Get the user pointer
-  void *getUserPointer() ;
+  virtual void *getUserPointer() const = 0 ;
   //@}
 
   /*! \name Message handling
@@ -396,14 +423,16 @@ public:
     Callbacks are handled by ONE function.
   */
   //@{
+  /// Typedef for callbacks
+  typedef clp_callback CallBack ;
   /// Pass in callback function
-  // void registerCallBack(ClpSimplexAPI::Callback userCallBack) ;
+  virtual void registerCallBack(CallBack userCallBack) = 0 ;
   /// Unset callback function
-  void clearCallBack() ;
+  virtual void clearCallBack() = 0 ;
   /// Set the log level
-  void setLogLevel(int value) ;
+  virtual void setLogLevel(int value) = 0 ;
   /// Get the log level
-  int logLevel() ;
+  virtual int logLevel() const = 0 ;
   //@}
 
 
@@ -417,25 +446,25 @@ public:
   */
   // int initialSolve(ClpSolve &options) ;
   /// Dual initial solve
-  int initialDualSolve() ;
+  virtual int initialDualSolve() = 0 ;
   /// Primal initial solve
-  int initialPrimalSolve() ;
+  virtual int initialPrimalSolve() = 0 ;
   /// Barrier initial solve
-  int initialBarrierSolve() ;
+  virtual int initialBarrierSolve() = 0 ;
   /// Barrier initial solve, not to be followed by crossover
-  int initialBarrierNoCrossSolve() ;
+  virtual int initialBarrierNoCrossSolve() = 0 ;
   /*! \brief Dual algorithm
 
     See ClpSimplexDual.hpp for method.
     ifValuesPass==2 just does values pass and then stops.
   */
-  int dual(int ifValuesPass = 0) ;
+  virtual int dual(int ifValuesPass = 0) = 0 ;
   /*! \brief Primal algorithm
 
    See ClpSimplexPrimal.hpp for method.
    ifValuesPass==2 just does values pass and then stops.
   */
-  int primal(int ifValuesPass = 0) ;
+  virtual int primal(int ifValuesPass = 0) = 0 ;
 
   /*! \brief Crash a basis
 
@@ -453,7 +482,7 @@ public:
      1 - simple pivoting
      2 - mini iterations
   */
-  int crash(double gap,int pivot) ;
+  virtual int crash(double gap,int pivot) = 0 ;
   //@}
 
 } ;

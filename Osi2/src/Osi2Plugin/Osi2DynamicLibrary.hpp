@@ -90,7 +90,8 @@ public:
 
   /*! \brief Load a function symbol
 
-    Converting a void* (object) to a pointer to function requires beating
+    Converting the pointer-to-object (void *) returned by dlsym to a
+    pointer-to-function with arbitrary function signature requires beating
     C++ about the head with a 2x4. This method hides that ugliness. If
     unsuccessful, it will return nullptr and \p errStr will be loaded with
     an error message.
@@ -115,6 +116,9 @@ public:
     inline std::string getLibPath () const {
         return (fullPath_) ;
     }
+    /// Convenient stream i/o operator
+    friend
+    std::ostream &operator<<(std::ostream &ostr, const DynamicLibrary *lib) ;
 //@}
 
     /*! \name Destructor */
@@ -141,7 +145,7 @@ private:
 
     /*! \brief Constructor from dynamic library handle
 
-      The parameter is be the platform-specific dynamic library handle.
+      The parameter is the platform-specific dynamic library handle.
     */
     DynamicLibrary(void *handle) ;
 

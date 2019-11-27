@@ -24,6 +24,8 @@
 #include "Osi2ClpLite_Wrap.hpp"
 #include "Osi2ClpSolveParamsAPI.hpp"
 
+#include "Osi2RunParamsAPI.hpp"
+
 using namespace Osi2 ;
 
 namespace {
@@ -116,21 +118,21 @@ int testPluginManager (const std::string libName)
   ClpLite_Wrap *clpWrap =
     static_cast<ClpLite_Wrap *>(plugMgr.createObject("ClpSimplex",libID,dummy)) ;
   if (clpWrap == nullptr) {
+    errcnt++ ;
+    std::cout
+      << "Apparent failure to create a ClpLite_Wrap object." << std::endl ;
+  } else {
+    ClpSimplexAPI *clp =
+	static_cast<ClpSimplexAPI *>(clpWrap->getAPIPtr("ClpSimplex")) ;
+    clp->readMps("exmip1.mps",true) ;
+    int retval = plugMgr.destroyObject("ClpSimplex",0,clp) ;
+    if (retval < 0) {
       errcnt++ ;
       std::cout
-	<< "Apparent failure to create a ClpLite_Wrap object." << std::endl ;
-  } else {
-      ClpSimplexAPI *clp =
-          static_cast<ClpSimplexAPI *>(clpWrap->getAPIPtr("ClpSimplex")) ;
-      clp->readMps("exmip1.mps", true) ;
-      int retval = plugMgr.destroyObject("ClpSimplex", 0, clp) ;
-      if (retval < 0) {
-	  errcnt++ ;
-	  std::cout
-	    << "Apparent failure to destroy a ClpSimplex object."
-	    << std::endl ;
-      }
-      clp = nullptr ;
+	<< "Apparent failure to destroy a ClpSimplex object."
+	<< std::endl ;
+    }
+    clp = nullptr ;
   }
 /*
   Ask for a nonexistent API and check that we (correctly) fail to provide
@@ -157,8 +159,8 @@ int testPluginManager (const std::string libName)
     placed there for testing).
   */
   libID = 0 ;
-  clpWrap = static_cast<ClpLite_Wrap *>(plugMgr.createObject("WildClpSimplex",
-				   libID, dummy)) ;
+  clpWrap = static_cast<ClpLite_Wrap *>
+      (plugMgr.createObject("WildClpSimplex",libID,dummy)) ;
   if (clpWrap == nullptr) {
       errcnt++ ;
       std::cout
@@ -167,8 +169,8 @@ int testPluginManager (const std::string libName)
   } else {
       ClpSimplexAPI *clp =
           static_cast<ClpSimplexAPI *>(clpWrap->getAPIPtr("ClpSimplex")) ;
-      clp->readMps("exmip1.mps", true) ;
-      int retval = plugMgr.destroyObject("WildClpSimplex", 0, clp) ;
+      clp->readMps("exmip1.mps",true) ;
+      int retval = plugMgr.destroyObject("WildClpSimplex",0,clp) ;
       if (retval < 0) {
 	std::cout
 	  << "Apparent failure to destroy a WildProbMgmt object."
@@ -208,6 +210,14 @@ int testPluginManager (const std::string libName)
   The method creates various objects, works with them, and finally destroys
   all of them. Part of the test is that there are multiple objects in
   existence, and multiple objects of the same API.
+
+  TODO: Extend the test so that the plugin libraries are loaded and tested one
+  at a time but unloaded all together. Because ClpHeavy supports Osi1 and
+  ProbMgmt, but GlpkHeavy supports only Osi1, the test for unrestricted vs.
+  restricted ProbMgmt object creation would be a better test (i.e., the last
+  request for ProbMgmt should succeed unrestricted because ClpHeavy supports
+  it, but fail restricted because GlpkHeavy does not). Essentially this
+  requires sucking the map of libs to test inside the test routine.
 */
 int testControlAPI (const std::string &shortName,
 		    const std::string &dfltSampleDir)
@@ -218,7 +228,7 @@ int testControlAPI (const std::string &shortName,
   char dirSep = CoinFindDirSeparator() ;
 
   std::cout
-      << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
+    << "Attempting to instantiate a ControlAPI_Imp object." << std::endl ;
   ControlAPI_Imp ctrlAPI ;
   std::cout << "Log level is " << ctrlAPI.getLogLvl() << std::endl ;
 /*
@@ -227,15 +237,15 @@ int testControlAPI (const std::string &shortName,
   retval = ctrlAPI.load(shortName) ;
   if (retval != 0) {
     std::cout
-	<< "Apparent failure to load " << shortName << "." << std::endl ;
+      << "Apparent failure to load " << shortName << "." << std::endl ;
     std::cout
-	<< "Error code is " << retval << "." << std::endl ;
+      << "Error code is " << retval << "." << std::endl ;
   }
 /*
   Create a ProbMgmt API object and invoke a nontrivial method.
 */
   API *apiObj = nullptr ;
-  retval = ctrlAPI.createObject(apiObj, "ProbMgmt") ;
+  retval = ctrlAPI.createObject(apiObj,"ProbMgmt") ;
   if (retval != 0) {
     errcnt++ ;
     std::cout
@@ -244,7 +254,7 @@ int testControlAPI (const std::string &shortName,
     apiObjs.push_back(apiObj) ;
     ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
     std::string exmip1Path = dfltSampleDir+dirSep+"brandy.mps" ;
-    clp->readMps(exmip1Path.c_str(), true) ;
+    clp->readMps(exmip1Path.c_str(),true) ;
     clp->initialSolve() ;
   }
 /*
@@ -258,7 +268,7 @@ int testControlAPI (const std::string &shortName,
   possesses the control information block.
 */
   apiObj = nullptr ;
-  retval = ctrlAPI.createObject(apiObj, "Osi1") ;
+  retval = ctrlAPI.createObject(apiObj,"Osi1") ;
   if (retval != 0) {
     errcnt++ ;
     std::cout
@@ -276,10 +286,10 @@ int testControlAPI (const std::string &shortName,
     apiObj = o2 ;
     retval = ctrlAPI.destroyObject(apiObj) ;
     if (retval < 0) {
-	std::cout
-	    << "Apparent failure to destroy a cloned Osi1 object"
-	    << " (expected)." << std::endl ;
-	delete o2 ;
+      std::cout
+	<< "Apparent failure to destroy a cloned Osi1 object"
+	<< " (expected)." << std::endl ;
+      delete o2 ;
     } else {
       errcnt++ ;
       std::cout
@@ -291,16 +301,16 @@ int testControlAPI (const std::string &shortName,
     Create a restricted ProbMgmt object and invoke a nontrivial method.
   */
   apiObj = nullptr ;
-  retval = ctrlAPI.createObject(apiObj, "ProbMgmt", &shortName) ;
+  retval = ctrlAPI.createObject(apiObj,"ProbMgmt",&shortName) ;
   if (retval != 0) {
     errcnt++ ;
     std::cout
-	<< "Apparent failure to create a restricted ProbMgmt object."
-	<< std::endl ;
+      << "Apparent failure to create a restricted ProbMgmt object."
+      << std::endl ;
   } else {
     apiObjs.push_back(apiObj) ;
     ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-    clp->readMps("exmip1.mps", true) ;
+    clp->readMps("exmip1.mps",true) ;
   }
 /*
   Now destroy all the objects.
@@ -324,14 +334,14 @@ int testControlAPI (const std::string &shortName,
   if (retval != 0) {
     errcnt++ ;
     std::cout
-	<< "Apparent failure to unload " << shortName << "." << std::endl ;
+      << "Apparent failure to unload " << shortName << "." << std::endl ;
     std::cout
-	<< "Error code is " << retval << "." << std::endl ;
+      << "Error code is " << retval << "." << std::endl ;
   }
   return (errcnt) ;
 }
 
-int testParamMgmtAPI ()
+int testParamMgmtAPI (std::string sampleDir)
 {
   int errCnt = 0 ;
 
@@ -346,7 +356,7 @@ int testParamMgmtAPI ()
       << std::hex << &ctrlAPI1 << std::dec << "." << std::endl ;
 /*
   Check that the ControlAPI_Imp object thinks that it can implement
-  ControlAPI.
+  ControlAPI, ParamBEAPI, and not BogusAPI.
 */
   std::vector<const char *>apiStrings ;
   apiStrings.push_back(Osi2::ControlAPI::getAPIIDString()) ;
@@ -357,15 +367,15 @@ int testParamMgmtAPI ()
     void *obj = ctrlAPI1.getAPIPtr(apiStr) ;
     if (obj == nullptr) {
       std::cout
-	  << "Control object " << std::hex << &ctrlAPI1 << std::dec
-	  << " believes it does not implement " << apiStr << "."
-	  << std::endl ;
+	<< "Control object " << std::hex << &ctrlAPI1 << std::dec
+	<< " believes it does not implement " << apiStr << "."
+	<< std::endl ;
     } else {
       std::cout
-	  << "Control object " << std::hex << &ctrlAPI1 << std::dec
-	  << " believes it implements " << apiStr << " with "
-	  << std::hex << obj << std::dec << "."
-	  << std::endl ;
+	<< "Control object " << std::hex << &ctrlAPI1 << std::dec
+	<< " believes it implements " << apiStr << " with "
+	<< std::hex << obj << std::dec << "."
+	<< std::endl ;
     }
   }
 
@@ -378,7 +388,7 @@ int testParamMgmtAPI ()
     errCnt++ ;
   }
 /*
-  Attempt to retrieve a parameter value.
+  Attempt to work with an int parameter value.
 */
   {
     int blob ;
@@ -396,6 +406,9 @@ int testParamMgmtAPI ()
     Attempt to set the parameter and retrieve it again.
   */
     blob = blob-2 ;
+    std::cout
+      << "Attempting to set " << paramID << " to " << blob << "."
+      << std::endl ;
     if (!mgmtAPI.set(ctrlAPI1ID,paramID,&blob)) {
       std::cout
 	<< "Failed to set the value of " << ctrlAPI1ID << ":" << paramID
@@ -412,12 +425,11 @@ int testParamMgmtAPI ()
     }
   }
 /*
-  Attempt to retrieve a parameter value.
+  Attempt to retrieve a string parameter value.
 */
   {
     std::string blob ;
     const char *paramID = "DfltPlugDir" ;
-    ctrlAPI1.setDfltPluginDir("/home/Coin.Mix/Split-FedGCC/lib") ;
     if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
     { std::cout
 	<< "The value of " << ctrlAPI1ID << ":" << paramID
@@ -429,8 +441,7 @@ int testParamMgmtAPI ()
     }
   }
 /*
-  Use the ControlAPI object to load ClpLite. Find the ClpSimplex object and
-  register it with parameter management.
+  Use the ControlAPI object to load the Clp(Lite) plugin.
 */
   std::string shortName = "ClpLite" ;
   int retval = ctrlAPI1.load(shortName,"libOsi2ClpShim.so") ;
@@ -451,15 +462,29 @@ int testParamMgmtAPI ()
       << std::endl ;
     return (errCnt) ;
   }
+/*
+  Grab the ClpSimplex object and load in exmip1. Then enroll the ClpLite
+  object with the parameter management object and exercise it by retrieving
+  the primal zero tolerance and the problem name. ClpLite uses the `void blob'
+  approach for problem name, matching the underlying Clp_C interface.
+*/
   ClpLite_Wrap *wrap = static_cast<ClpLite_Wrap *>(apiObj) ;
   ClpSimplexAPI *clp =
       static_cast<ClpSimplexAPI *>(wrap->getAPIPtr("ClpSimplex")) ;
-  clp->readMps("../../share/coin-or-sample/exmip1.mps") ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string exmipPath = sampleDir+dirSep+"exmip1.mps" ;
+  clp->readMps(exmipPath.c_str()) ;
   mgmtAPI.enroll("ClpLite",clp) ;
   double dblblob = 0.0 ;
   mgmtAPI.get("ClpLite","primal tolerance",&dblblob) ;
   std::cout
-    << "The primal zero tolerance is " << dblblob << "." << std::endl ;
+    << "    the primal zero tolerance is " << dblblob << "." << std::endl ;
+  const int buflen = 256 ;
+  char buffer[buflen] ;
+  struct { int buflen_ ; char *buffer_ ; } nameBlob = { buflen, buffer } ;
+  mgmtAPI.get("ClpLite","problem name",&nameBlob) ;
+  std::cout
+    << "    the problem name is " << nameBlob.buffer_ << "." << std::endl ;
 /*
   Work with the ClpSolveParams object.
 */
@@ -481,77 +506,223 @@ int testParamMgmtAPI ()
   return (errCnt) ;
 }
 
+int testRunParamsAPI (std::string netlibDir)
+
+{ int errCnt = 0 ;
+  int retval = 0 ;
+  std::map<std::string,API *> extantObjs ;
+
+  ControlAPI_Imp ctrlAPI ;
+  std::cout
+      << "Instantiated a ControlAPI_Imp object "
+      << std::hex << &ctrlAPI << std::dec << "." << std::endl ;
+/*
+  Reload the RunParams plugin (unloaded as part of the plugin manager test).
+*/
+  std::string rpDir = "" ;
+  std::string rpShortName = "RunParams" ;
+  retval = ctrlAPI.load(rpShortName,rpShortName,&rpDir) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " loading RunParams plugin."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout << "Loaded RunParams plugin." << std::endl ;
+  }
+/*
+  Instantiate a RunParams API object.
+*/
+  API *apiObj = nullptr ;
+  std::string rp1Name = "RunParams #1" ;
+  retval = ctrlAPI.createObject(apiObj,RunParamsAPI::getAPIIDString()) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " creating RunParamsAPI object."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout
+      << "Created RunParamsAPI object " << std::hex << apiObj << std::dec
+      << "." << std::endl ;
+    extantObjs[rp1Name] = apiObj ;
+  }
+  RunParamsAPI *rpObj = dynamic_cast<RunParamsAPI *>(apiObj) ;
+/*
+  Instantiate a ClpSimplex API object.
+*/
+  apiObj = nullptr ;
+  std::string clpName = "ClpC" ;
+  retval = ctrlAPI.createObject(apiObj,ClpSimplexAPI::getAPIIDString()) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " creating ClpSimplexAPI object."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout
+      << "Created ClpSimplexAPI object " << std::hex << apiObj << std::dec
+      << "." << std::endl ;
+    extantObjs[clpName] = apiObj ;
+  }
+  ClpLite_Wrap *wrap = static_cast<ClpLite_Wrap *>(apiObj) ;
+  ClpSimplexAPI *clpObj =
+    static_cast<ClpSimplexAPI *>(wrap->getAPIPtr("ClpSimplex")) ;
+/*
+  Try to load a RunParams object. See what it holds.
+*/
+  clpObj->exposeParams(*rpObj) ;
+  rpObj->setStrParam("problem name","pilot") ;
+  rpObj->setDblParam("obj sense",1.0) ;
+  std::vector<std::string> paramNames = rpObj->getDblParamIds() ;
+  for (std::vector<std::string>::const_iterator iter = paramNames.begin() ;
+       iter != paramNames.end() ;
+       iter++) {
+    std::cout
+      << "  parameter " << *iter << " has value "
+      << rpObj->getDblParam(*iter) << "." << std::endl ;
+  }
+  std::cout
+    << "The problem name is " << rpObj->getStrParam("problem name")
+    << "." << std::endl ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string probPath = netlibDir+dirSep+"pilot.mps" ;
+  clpObj->readMps(probPath.c_str()) ;
+  clpObj->loadParams(*rpObj) ;
+  clpObj->initialSolve() ;
+  std::cout
+    << "Solve took " << clpObj->numberIterations() << " iterations."
+    << std::endl ;
+  std::cout << "Flipping objective sense to maximisation." << std::endl ;
+  rpObj->setDblParam("obj sense",-1.0) ;
+  clpObj->readMps(probPath.c_str()) ;
+  clpObj->loadParams(*rpObj) ;
+  clpObj->initialSolve() ;
+  std::cout
+    << "Solve took " << clpObj->numberIterations() << " iterations."
+    << std::endl ;
+/*
+  Destroy the objects we've created.
+*/
+  for (std::map<std::string,API *>::iterator iter = extantObjs.begin() ;
+       iter != extantObjs.end() ;
+       iter++) {
+    std::cout
+      << "Attempting to destroy " << iter->first << "." << std::endl ;
+    API *tmp = iter->second ;
+    retval = ctrlAPI.destroyObject(iter->second) ;
+    if (retval != 0) {
+      std::cout
+	<< "Error " << retval << " destroying RunParamsAPI object "
+	<< std::hex << tmp << std::dec << "."
+	<< std::endl ;
+      errCnt++ ;
+      return (errCnt) ;
+    } else {
+      std::cout
+	<< "Destroyed RunParamsAPI object " << std::hex << tmp << std::dec
+	<< "." << std::endl ;
+    }
+  }
+
+  return errCnt ;
+}
+
 } // end unnamed file-local namespace
 
 
-int main(int argC, char* argV[])
+int main(int argC,char* argV[])
 {
 
-    std::cout << "START UNIT TEST" << std::endl ;
+  std::cout << "START UNIT TEST" << std::endl ;
 
-    std::string dfltSampleDir = "../../Data/Sample" ;
-    /*
-      Test the bare PluginManager. There's no sense proceeding to the API
-      tests if the PluginManager isn't working.
-    */
-    std::cout << "Testing bare PluginManager." << std::endl ;
-    int retval = testPluginManager("libOsi2ClpShim.so") ;
+/*
+  Test the bare PluginManager. There's no sense proceeding to the API
+  tests if the PluginManager isn't working.
+*/
+  std::cout << "Testing bare PluginManager." << std::endl ;
+  int retval = testPluginManager("libOsi2ClpShim.so") ;
+  std::cout
+    << "End test of bare PluginManager, " << retval << " errors."
+    << std::endl << std::endl ;
+  if (retval != 0) {
+      std::cout
+	<< "Aborting unitTest; errors in PluginManager." << std::endl ;
+      return (retval) ;
+  }
+/*
+  Construct the location of installed data files.
+*/
+  PluginManager &plugMgr = PluginManager::getInstance() ;
+  std::string dataDir = plugMgr.getDfltPluginDir() ;
+  char dirSep = CoinFindDirSeparator() ;
+  std::string::size_type lastSep = dataDir.rfind(dirSep) ;
+  dataDir = dataDir.substr(0,lastSep) ;
+  dataDir = dataDir+dirSep+"share" ;
+  std::cout << "dataDir is " << dataDir << std::endl << std::endl ;
+  std::string sampleDir = dataDir+dirSep+"coin-or-sample" ;
+  std::string netlibDir = dataDir+dirSep+"coin-or-netlib" ;
+/*
+  Now let's try the Osi2 control API. This test will try to create
+  ProbMgmt and Osi1 API objects in unrestricted mode (i.e., without
+  restriction to a particular library), followed by a ProbMgmt object in
+  restricted mode. Clp(Lite) doesn't support either one. ClpHeavy supports
+  both. GlpkHeavy supports only Osi1.
+*/
+  int totalErrs = 0 ;
+  typedef std::pair<std::string,int> TestVec ;
+  std::vector<TestVec> solvers ;
+  solvers.push_back(TestVec("clp",3)) ;
+  solvers.push_back(TestVec("clpHeavy",0)) ;
+# ifdef COIN_HAS_OSIGLPK
+  solvers.push_back(TestVec("glpkHeavy",2)) ;
+# endif
+  std::vector<TestVec>::const_iterator iter ;
+  for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
+    std::string solverName = iter->first ;
     std::cout
-      << "End test of bare PluginManager, " << retval << " errors."
+      << "Testing ControlAPI (" << solverName << ")." << std::endl ;
+    retval = testControlAPI(solverName,sampleDir) ;
+    std::cout
+      << "End test of ControlAPI (" << solverName << "), "
+      << retval << " errors, expected " << iter->second << "."
       << std::endl << std::endl ;
-    if (retval != 0) {
-        std::cout
-	  << "Aborting unitTest; errors in PluginManager." << std::endl ;
-        return (retval) ;
-    }
-    /*
-      Now let's try the Osi2 control API.
-    */
-    typedef std::pair<std::string,int> TestVec ;
-    std::vector<TestVec> solvers ;
-#if 0
-    Temporarily disable while ClpLite is under renovation -- lh, 190802 --
-    solvers.push_back(TestVec("clp",1)) ;
-#endif
-    solvers.push_back(TestVec("clpHeavy",0)) ;
-#   ifdef COIN_HAS_OSIGLPK
-    solvers.push_back(TestVec("glpkHeavy",2)) ;
-#   endif
-    std::vector<TestVec>::const_iterator iter ;
-    int totalErrs = 0 ;
-    for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
-      std::string solverName = iter->first ;
-      std::cout
-        << "Testing ControlAPI (" << solverName << ")." << std::endl ;
-      retval = testControlAPI(solverName,dfltSampleDir) ;
-      std::cout
-          << "End test of ControlAPI (" << solverName << "), "
-	  << retval << " errors, expected " << iter->second << "."
-	  << std::endl << std::endl ;
-      totalErrs += retval-(iter->second) ;
-    }
-    /*
-      Test the parameter management API.
-    */
-    int errCnt = 0 ;
-    const int expectedErrs = 0 ;
-    std::cout << "Testing ParamMgmtAPI." << std::endl ;
-    errCnt = testParamMgmtAPI() ;
-    std::cout
-        << "End test of ParamMgmtAPI, " << errCnt << " errors, expected "
-	<< expectedErrs << "." << std::endl ;
-    /*
-      Shut down the plugin manager. This will call the plugin library exit
-      functions and unload the libraries.
-    */
-    PluginManager &plugMgr = PluginManager::getInstance() ;
-    std::cout
-      << "Shutting down plugins (executing exit functions)." << std::endl ;
-    plugMgr.shutdown() ;
+    totalErrs += retval-(iter->second) ;
+  }
+/*
+  Test the parameter management API.
+*/
+  int errCnt = 0 ;
+  int expectedErrs = 0 ;
+  std::cout << "Testing ParamMgmtAPI." << std::endl ;
+  errCnt = testParamMgmtAPI(sampleDir) ;
+  std::cout
+    << "End test of ParamMgmtAPI, " << errCnt << " errors, expected "
+    << expectedErrs << "." << std::endl ;
+/*
+  Test the RunParams API.
+*/
+  std::cout << std::endl << std::endl ;
+  std::cout << "Testing RunParamsAPI." << std::endl ;
+  errCnt = testRunParamsAPI(netlibDir) ;
+  expectedErrs = 0 ;
+  std::cout
+    << "End test of RunParamsAPI, " << errCnt << " errors, expected "
+    << expectedErrs << "." << std::endl ;
+/*
+  Shut down the plugin manager. This will call the plugin library exit
+  functions and unload the libraries.
+*/
+  std::cout
+    << "Shutting down plugins (executing exit functions)." << std::endl ;
+  plugMgr.shutdown() ;
 
-    std::cout << "END UNIT TEST" << std::endl ;
+  std::cout << "END UNIT TEST" << std::endl ;
 
-    return (totalErrs) ;
+  return (totalErrs) ;
 
 }
 
