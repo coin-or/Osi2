@@ -282,7 +282,6 @@ OSI2_EXAMPLES_SOLVER_CFLAGS = @OSI2_EXAMPLES_SOLVER_CFLAGS@
 OSI2_EXAMPLES_SOLVER_LIBS = @OSI2_EXAMPLES_SOLVER_LIBS@
 OSI2_EXAMPLES_SOLVER_NAME = @OSI2_EXAMPLES_SOLVER_NAME@
 OSI2_EXAMPLES_SOLVER_PCNAME = @OSI2_EXAMPLES_SOLVER_PCNAME@
-OSI2_SVN_REV = @OSI2_SVN_REV@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -338,7 +337,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -401,7 +399,10 @@ unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
 AM_CPPFLAGS = -DOSI2_BUILD \
 	      -I$(srcdir)/../src/Osi2 \
 	      -I$(srcdir)/../src/Osi2Plugin \
-	      $(UNITTESTDEPS_CFLAGS)
+	      -I$(srcdir)/../src/Osi2Shims \
+	      $(UNITTESTDEPS_CFLAGS) \
+	      -DOSI2UTSAMPLEDIR=\"@SAMPLE_DATA@\" \
+	      -DOSI2UTNETLIBDIR=\"@NETLIB_DATA@\"
 
 all: all-am
 
@@ -728,13 +729,12 @@ uninstall-doxygen-docs:
 	fi
 	rmdir $(DESTDIR)$(pkgdocdir) || true
 
-install-doc: $(DocFiles)
+install-doc:
 	$(mkdir_p) "$(DESTDIR)$(pkgdocdir)"
 	for file in $(DocFiles); do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  if test -f "$$dir$$file"; then \
-	    $(INSTALL_DATA) "$$dir$$file" \
-	        "$(DESTDIR)$(pkgdocdir)/$$file"; \
+	    $(INSTALL_DATA) "$$dir$$file" "$(DESTDIR)$(pkgdocdir)/$$file"; \
 	  fi; \
 	done
 

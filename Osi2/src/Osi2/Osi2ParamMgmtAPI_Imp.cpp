@@ -244,8 +244,7 @@ bool ParamMgmtAPI_Imp::set (std::string objIdent, std::string param,
   Default constructor
 */
 ParamMgmtAPI_Imp::ParamMgmtAPI_Imp ()
-  : pluginMgr_(PluginManager::getInstance()),
-    logLvl_(7)
+  : logLvl_(7)
 {
   indexMap_.clear() ;
   msgHandler_ = new CoinMessageHandler() ;
@@ -264,8 +263,7 @@ ParamMgmtAPI_Imp::ParamMgmtAPI_Imp ()
   to construct a static, file local instance that has absolutely no other use.
 */
 ParamMgmtAPI_Imp::ParamMgmtAPI_Imp (std::string name)
-  : pluginMgr_(PluginManager::getInstance()),
-    dfltHandler_(true),
+  : dfltHandler_(true),
     msgHandler_(0),
     msgs_(0),
     logLvl_(0)
@@ -281,15 +279,15 @@ ParamMgmtAPI_Imp::ParamMgmtAPI_Imp (std::string name)
       << "registration" << CoinMessageEol ;
 #endif
 
-  pluginMgr_.addPreloadLib(name,initPlugin) ;
+  PluginManager &pmgr = PluginManager::getInstance() ;
+  pmgr.addPreloadLib(name,initPlugin) ;
 }
 
 /*
   Copy constructor
 */
 ParamMgmtAPI_Imp::ParamMgmtAPI_Imp (const ParamMgmtAPI_Imp &rhs)
-    : pluginMgr_(rhs.pluginMgr_),
-      dfltHandler_(rhs.dfltHandler_),
+    : dfltHandler_(rhs.dfltHandler_),
       logLvl_(rhs.logLvl_)
 {
   indexMap_ = rhs.indexMap_ ;
@@ -321,7 +319,6 @@ ParamMgmtAPI_Imp &ParamMgmtAPI_Imp::operator= (const ParamMgmtAPI_Imp &rhs)
 /*
   Otherwise, get to it.
 */
-  pluginMgr_ = rhs.pluginMgr_ ;
   indexMap_ = rhs.indexMap_ ;
 /*
   If it's our handler, we need to delete the old and replace with the new.

@@ -34,7 +34,10 @@ unitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
 AM_CPPFLAGS = -DOSI2_BUILD \
 	      -I$(srcdir)/../src/Osi2 \
 	      -I$(srcdir)/../src/Osi2Plugin \
-	      $(UNITTESTDEPS_CFLAGS)
+	      -I$(srcdir)/../src/Osi2Shims \
+	      $(UNITTESTDEPS_CFLAGS) \
+	      -DOSI2UTSAMPLEDIR=\"@SAMPLE_DATA@\" \
+	      -DOSI2UTNETLIBDIR=\"@NETLIB_DATA@\"
 
 test: unitTest$(EXEEXT)
 	./unitTest$(EXEEXT)

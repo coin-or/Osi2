@@ -104,14 +104,6 @@ public:
     /*! \name Miscellaneous
     */
 //@{
-    /// Get the default plugin directory
-    inline std::string getDfltPluginDir() const {
-        return (dfltPluginDir_) ;
-    }
-    /// Set the default plugin directory
-    inline void setDfltPluginDir(std::string dfltDir) {
-        dfltPluginDir_ = dfltDir ;
-    }
     /// Get the full path for the library
     inline std::string getLibPath () const {
         return (fullPath_) ;

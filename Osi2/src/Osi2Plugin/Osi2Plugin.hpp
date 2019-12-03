@@ -304,8 +304,11 @@ struct ObjectParams {
 struct PlatformServices {
     /// Plugin manager version
     PluginAPIVersion version_ ;
-    /// Default directory to search for plugins
-    const CharString *dfltPluginDir_ ;
+    /*! \brief Default directories to search for plugins
+
+      A list of directories, separated by ':' characters.
+    */
+    const CharString *plugSrchPath_ ;
     /// Unique ID assigned to this plugin library
     PluginUniqueID pluginID_ ;
     /// Control object for this plugin library

@@ -26,6 +26,17 @@
 
 #include "Osi2RunParamsAPI.hpp"
 
+#ifndef OSI2UTSAMPLEDIR
+# define SAMPLEDATADIR "/usr/local/share/coin-or-sample"
+#else
+# define SAMPLEDATADIR OSI2UTSAMPLEDIR
+#endif
+#ifndef OSI2UTNETLIBDIR
+# define NETLIBDATADIR "/usr/local/share/coin-or-sample"
+#else
+# define NETLIBDATADIR OSI2UTNETLIBDIR
+#endif
+
 using namespace Osi2 ;
 
 namespace {
@@ -48,9 +59,10 @@ namespace {
   Over time, this test should be expanded and broken out into a separate file.
   Arguably, it should be a separate executable.
 */
-int testPluginManager (const std::string libName)
+int testPluginManager ()
 {
   int errcnt = 0 ;
+  const std::string libName = "libOsi2ClpShim.so" ;
 
   std::cout << "Instantiating PluginManager." << std::endl ;
 
@@ -92,18 +104,22 @@ int testPluginManager (const std::string libName)
     return (errcnt) ;
   }
 /*
-  Now let's try to load the shim.
+  Now let's try to load the shim. This incidentally tests the ability of the
+  plugin manager to maintain a set of plugin search directories and pass that
+  set to a plugin that in turn will load other dynamic libraries.
 */
-  std::string dfltDir = plugMgr.getDfltPluginDir() ;
-  char dirSep = CoinFindDirSeparator() ;
-  std::string shimPath = dfltDir + dirSep + libName ;
+  std::string badDir = "aint/gonna/happen" ;
+  std::string uninstDir = "../src/Osi2Shims/.libs" ;
+  std::string dfltDirs = plugMgr.getPluginDirsStr() ;
+  dfltDirs = badDir+':'+uninstDir+':'+dfltDirs ;
 
+  plugMgr.setPluginDirsStr(dfltDirs) ;
   retval = plugMgr.loadOneLib(libName) ;
 
   if (retval != 0) {
     errcnt++ ;
     std::cout
-      << "Apparent failure to load " << shimPath << "." << std::endl ;
+      << "Apparent failure to load " << libName << "." << std::endl ;
     std::cout
       << "Error code is " << retval << "." << std::endl ;
     return (errcnt) ;
@@ -173,7 +189,7 @@ int testPluginManager (const std::string libName)
       int retval = plugMgr.destroyObject("WildClpSimplex",0,clp) ;
       if (retval < 0) {
 	std::cout
-	  << "Apparent failure to destroy a WildProbMgmt object."
+	  << "Apparent failure to destroy a WildClpSimplex object."
 	  << std::endl ;
       }
       clp = nullptr ;
@@ -181,11 +197,11 @@ int testPluginManager (const std::string libName)
   /*
     Unload the plugin library.
   */
-  retval = plugMgr.unloadOneLib(libName) ;
+  retval = plugMgr.unloadOneLib(libName,&uninstDir) ;
   if (retval != 0) {
       errcnt++ ;
       std::cout
-	      << "Apparent failure to unload " << shimPath << "." << std::endl ;
+	      << "Apparent failure to unload " << libName << "." << std::endl ;
       std::cout
 	      << "Error code is " << retval << "." << std::endl ;
   }
@@ -638,13 +654,12 @@ int main(int argC,char* argV[])
 {
 
   std::cout << "START UNIT TEST" << std::endl ;
-
 /*
   Test the bare PluginManager. There's no sense proceeding to the API
   tests if the PluginManager isn't working.
 */
   std::cout << "Testing bare PluginManager." << std::endl ;
-  int retval = testPluginManager("libOsi2ClpShim.so") ;
+  int retval = testPluginManager() ;
   std::cout
     << "End test of bare PluginManager, " << retval << " errors."
     << std::endl << std::endl ;
@@ -657,6 +672,7 @@ int main(int argC,char* argV[])
   Construct the location of installed data files.
 */
   PluginManager &plugMgr = PluginManager::getInstance() ;
+#if 0
   std::string dataDir = plugMgr.getDfltPluginDir() ;
   char dirSep = CoinFindDirSeparator() ;
   std::string::size_type lastSep = dataDir.rfind(dirSep) ;
@@ -665,6 +681,9 @@ int main(int argC,char* argV[])
   std::cout << "dataDir is " << dataDir << std::endl << std::endl ;
   std::string sampleDir = dataDir+dirSep+"coin-or-sample" ;
   std::string netlibDir = dataDir+dirSep+"coin-or-netlib" ;
+#endif
+  std::string sampleDir = SAMPLEDATADIR ;
+  std::string netlibDir = NETLIBDATADIR ;
 /*
   Now let's try the Osi2 control API. This test will try to create
   ProbMgmt and Osi1 API objects in unrestricted mode (i.e., without

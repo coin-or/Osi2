@@ -114,13 +114,6 @@ public:
 
 private:
 
-  /*! \brief Cached reference to plugin manager.
-
-    \todo It's not clear we need this --- the only use at present is for
-    preregistration via the registration constructor.
-  */
-  PluginManager &pluginMgr_ ;
-
   /*! \brief Parameter management structures */
   //@{
   

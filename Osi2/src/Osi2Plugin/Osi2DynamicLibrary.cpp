@@ -35,9 +35,7 @@ namespace Osi2 {
 
 DynamicLibrary::DynamicLibrary (void *handle)
     : handle_(handle)
-{
-    dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
-}
+{  }
 
 DynamicLibrary::~DynamicLibrary ()
 {

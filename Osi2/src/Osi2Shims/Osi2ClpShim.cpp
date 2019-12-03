@@ -14,6 +14,7 @@
 */
 
 #include <iostream>
+#include <vector>
 
 #include "ClpConfig.h"
 #include "Osi2ClpShim.hpp"
@@ -100,10 +101,9 @@ extern "C" int32_t cleanupPlugin (const PlatformServices *services)
 }
 
 /*
-  Plugin initialisation method. The job here is to construct a parameter
-  structure which can be passed to the plugin manager's registration method
-  (supplied in the services parameter). The return value is the exit method to
-  be called before the plugin is unloaded.
+  Plugin initialisation method. The first task is to find and load libClp.
+  Once that's done, register the APIs we provide.  The return value is the
+  exit method to be called before the plugin is unloaded.
 */
 extern "C"
 ExitFunc initPlugin (PlatformServices *services)
@@ -113,19 +113,39 @@ ExitFunc initPlugin (PlatformServices *services)
       << "Executing ClpShim::initPlugin, clp version "
       << version << "." << std::endl ;
 /*
-  Attempt to load clp.
+  Attempt to load clp. The plugin search path is composed of directories
+  separated by ':' characters. Stop with the first successful load.
 */
   std::string libClpName = "libClp.so.0" ;
-  const char *tmp = reinterpret_cast<const char*>(services->dfltPluginDir_) ;
-  std::string libPath(tmp) ;
-  std::string errMsg ;
-  std::string fullPath = libPath + "/" + libClpName ;
-  DynamicLibrary *libClp = DynamicLibrary::load(fullPath, errMsg) ;
+  const char *tmp = reinterpret_cast<const char*>(services->plugSrchPath_) ;
+  std::string searchDirs(tmp) ;
+  std::string libPath ;
+  std::string::size_type sepPos = 0 ;
+  std::string::size_type startPos = 0 ;
+  std::vector<std::pair<std::string,std::string>> errMsgs ;
+  DynamicLibrary *libClp = nullptr ;
+  while (sepPos < std::string::npos && libClp == nullptr) {
+    sepPos = searchDirs.find_first_of(':',startPos) ;
+    libPath = searchDirs.substr(startPos,sepPos-startPos) ;
+
+    std::string errMsg ;
+    std::string fullPath = libPath + "/" + libClpName ;
+    libClp = DynamicLibrary::load(fullPath, errMsg) ;
+    if (libClp != nullptr) break ;
+    errMsgs.push_back(std::pair<std::string,std::string>(fullPath,errMsg)) ;
+    startPos = sepPos+1 ;
+  }
   if (libClp == nullptr) {
     std::cout
-	<< "Apparent failure opening " << fullPath << "." << std::endl ;
-    std::cout
-	<< "Error is " << errMsg << "." << std::endl ;
+	<< "Apparent failure opening " << libClpName << "." << std::endl ;
+    std::cout << "Error(s):" << std::endl ;
+    std::vector<std::pair<std::string,std::string>>::const_iterator iter ;
+    for (iter = errMsgs.begin() ; iter != errMsgs.end() ; iter++) {
+      std::pair<std::string,std::string> errPair = *iter ;
+      std::cout
+        << "  Path '" << errPair.first << "', error '" << errPair.second
+	<< "." << std::endl ;
+    }
     return (nullptr) ;
   }
 /*

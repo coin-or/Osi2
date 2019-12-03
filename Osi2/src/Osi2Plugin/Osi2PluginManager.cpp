@@ -34,6 +34,80 @@
 
 using namespace Osi2 ;
 
+namespace {
+/*
+  Utilities for the PlatformServices struct. This can't be an honest class
+  if we want to support C language plugins because a pointer to the struct is
+  passed to the plugin for its use.
+*/
+
+/*
+  A utility method to convert the std::vector<std::string> form for plugin
+  search directories to a persistent char string allocated on the heap. This
+  can be safely passed to plugin libraries.
+*/
+
+char *safePlugSrchPath (const std::vector<std::string> &plugSrchDirs)
+{ std::string plugSrchPath ;
+  plugSrchPath.clear() ;
+  std::vector<std::string>::const_iterator iter ;
+  for (iter = plugSrchDirs.cbegin() ; iter != plugSrchDirs.cend() ; iter++) {
+    if (!plugSrchPath.empty()) plugSrchPath += ':' ;
+    plugSrchPath += *iter ;
+  }
+  std::string::size_type pathLen = plugSrchPath.length()+1 ;
+  char *tmp = new char[pathLen] ;
+  std::strncpy(tmp,plugSrchPath.c_str(),pathLen) ;
+  return (tmp) ;
+}
+
+/*
+  PlatformServices `constructor'
+
+  Initialises the PlatformServices struct. The one thing that takes work is
+  creating a null-terminated character string that's persistent, hence safe to
+  pass a pointer to a plugin library.
+*/
+void initPlatformServices (PlatformServices &platServ,
+			   const std::vector<std::string> &plugSrchDirs,
+			   APIRegFunc regFunc)
+{ platServ.version_ = { 1, 0 } ;
+  platServ.plugSrchPath_ =
+    reinterpret_cast<const CharString*>(safePlugSrchPath(plugSrchDirs)) ;
+  platServ.pluginID_ = 0 ;
+  platServ.ctrlObj_ = nullptr ;
+  platServ.registerAPI_ = regFunc ;
+  platServ.invokeService_ = nullptr ;
+}
+
+/*
+  PlatformServices `destructor'
+
+  We own the string in plugSrchPath_, but that's all. In particular, we're not
+  responsible for the control object ctrlObj_.
+*/
+void clearPlatformServices (PlatformServices &platServ)
+{ platServ.version_ = { 0, 0 } ;
+  delete[] platServ.plugSrchPath_ ;
+  platServ.plugSrchPath_ = nullptr ;
+  platServ.pluginID_ = 0 ;
+  platServ.ctrlObj_ = nullptr ;
+  platServ.registerAPI_ = nullptr ;
+  platServ.invokeService_ = nullptr ;
+}
+
+/*
+  PlatformServices update plugSrchPath_
+*/
+void updatePlatSrvSrchPath (PlatformServices &platServ,
+			    const std::vector<std::string> &plugSrchDirs)
+{ delete[] platServ.plugSrchPath_ ;
+  platServ.plugSrchPath_ =
+    reinterpret_cast<const CharString*>(safePlugSrchPath(plugSrchDirs)) ;
+}
+
+}  // end anonymous namespace
+
 /*
   Given an initialisation function, do the necessary bookkeeping to register
   the library and its APIs with the plugin manager.
@@ -114,7 +188,6 @@ PluginUniqueID PluginManager::initOneLib (std::string fullPath,
   return (info.id_) ;
 }
 
-
 /*
   Plugin manager constructor.
 
@@ -133,13 +206,9 @@ PluginManager::PluginManager()
   msgs_ = PlugMgrMessages() ;
   msgHandler_->setLogLevel(logLvl_) ;
   msgHandler_->message(PLUGMGR_INIT, msgs_) << CoinMessageEol ;
-  dfltPluginDir_ = std::string(OSI2DFLTPLUGINDIR) ;
-  platformServices_.version_.major_ = 1 ;
-  platformServices_.version_.minor_ = 0 ;
-  platformServices_.dfltPluginDir_ =
-      reinterpret_cast<const CharString*>(dfltPluginDir_.c_str()) ;
-  platformServices_.invokeService_ = nullptr ;
-  platformServices_.registerAPI_ = registerAPI ;
+  plugSrchDirs_ = std::vector<std::string>() ;
+  plugSrchDirs_.push_back(std::string(OSI2DFLTPLUGINDIR)) ;
+  initPlatformServices(platformServices_,plugSrchDirs_,registerAPI) ;
 }
 
 /*
@@ -149,17 +218,62 @@ PluginManager::PluginManager()
 */
 PluginManager::~PluginManager ()
 {
-    // Just in case it wasn't called earlier
-    shutdown() ;
-    /*
-      If this is our handler, delete it. Otherwise it's the client's
-      responsibility.
-    */
-    if (dfltHandler_) {
-        delete msgHandler_ ;
-        msgHandler_ = nullptr ;
-    }
+/*
+  Just in case it wasn't called earlier.
+*/
+  shutdown() ;
+/*
+  Clean out the PlatformServices struct.
+*/
+  clearPlatformServices(platformServices_) ;
+/*
+  If this is our message handler, delete it. Otherwise it's the client's
+  responsibility.
+*/
+  if (dfltHandler_) {
+      delete msgHandler_ ;
+      msgHandler_ = nullptr ;
+  }
 }
+
+/*
+  Set the plugin search directories using a vector of strings.
+*/
+void PluginManager::setPluginDirs(const std::vector<std::string> searchDirs)
+{
+  plugSrchDirs_ = searchDirs ;
+  updatePlatSrvSrchPath(platformServices_,plugSrchDirs_) ;
+}
+/*
+  Methods to set and get the plugin search path using a single string.
+*/
+void PluginManager::setPluginDirsStr (const std::string searchDirs)
+{
+  std::string::size_type sepPos = 0 ;
+  std::string::size_type startPos = 0 ;
+
+  plugSrchDirs_.clear() ;
+  while (sepPos < std::string::npos) {
+    sepPos = searchDirs.find_first_of(':',startPos) ;
+    plugSrchDirs_.push_back(searchDirs.substr(startPos,sepPos-startPos)) ;
+    startPos = sepPos+1 ;
+  }
+  updatePlatSrvSrchPath(platformServices_,plugSrchDirs_) ;
+}
+
+std::string PluginManager::getPluginDirsStr () const
+{
+  std::string dirs ;
+  dirs.clear() ;
+  for (std::vector<std::string>::const_iterator iter = plugSrchDirs_.cbegin() ;
+       iter != plugSrchDirs_.cend() ;
+       iter++)
+  { if (!dirs.empty()) dirs += ':' ;
+    dirs += *iter ; }
+
+  return (dirs) ;
+}
+     
 
 /*
   There's no particular reason to trust a plugin, so we need to do some
@@ -369,7 +483,7 @@ PluginManager &PluginManager::getInstance()
 
 
 /*
-  Load a plugin given a full path to the plugin.
+  Load a plugin.
 
   If uniqueID is supplied, it will be loaded with the PluginUniqueID assigned
   to the library.
@@ -396,30 +510,34 @@ int PluginManager::loadOneLib (const std::string &libName,
 {
   if (uniqueID != 0) (*uniqueID) = 0 ;
 /*
-  If no directory is specified, consider both the default plugin directory and
+  If no directory is specified, consider both the plugin search path and
   the innate `directory'. If a directory is specified, use that exclusively.
 */
+  std::vector<std::string> plugDirs ;
   std::string pluginPath ;
   std::string innatePath ;
   std::string fullPath ;
-  std::string libDir ;
   char dirSep = CoinFindDirSeparator() ;
 
   if (dir == nullptr || (dir->compare("") == 0)) {
-    libDir = getDfltPluginDir() ;
-    pluginPath = libDir + dirSep + libName ;
-    innatePath = dfltInnateDir_ + dirSep + libName ;
+    plugDirs = getPluginDirs() ;
+    innatePath = getInnateDir() + dirSep + libName ;
   } else {
-    libDir = *dir ;
-    pluginPath = libDir + dirSep + libName ;
-    innatePath = "" ; }
+    plugDirs.push_back(*dir) ;
+    innatePath = "" ;
+  }
 /*
   Is this library already loaded? If so, don't do it again.
 */
   bool foundIt = false ;
-  if (libPathToIDMap_.find(pluginPath) != libPathToIDMap_.end()) {
-    foundIt = true ;
-    fullPath = pluginPath ;
+  for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
+       iter != plugDirs.cend() && !foundIt ;
+       iter++) {
+    pluginPath = *iter+dirSep+libName ;
+    if (libPathToIDMap_.find(pluginPath) != libPathToIDMap_.end()) {
+      foundIt = true ;
+      fullPath = pluginPath ;
+    }
   }
   if (!foundIt && innatePath != "") {
     if (libPathToIDMap_.find(innatePath) != libPathToIDMap_.end()) {
@@ -449,7 +567,12 @@ int PluginManager::loadOneLib (const std::string &libName,
   plugin. Attempt to load the library, then the initFunc.
 */
   if (initFunc == nullptr) {
-    dynLib = DynamicLibrary::load(pluginPath, errStr) ;
+    for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
+	 iter != plugDirs.cend() && dynLib == nullptr ;
+	 iter++) { 
+      pluginPath = *iter+dirSep+libName ;
+      dynLib = DynamicLibrary::load(pluginPath, errStr) ;
+    }
     if (dynLib == nullptr) {
       msgHandler_->message(PLUGMGR_LIBLDFAIL, msgs_)
 	  << pluginPath << errStr << CoinMessageEol ;
@@ -560,19 +683,17 @@ int PluginManager::unloadOneLib (const std::string &libName,
   If no directory is specified, consider both the default plugin directory and
   the innate `directory'. If a directory is specified, use that exclusively.
 */
-  std::string libDir ;
+  std::vector<std::string> plugDirs ;
   std::string pluginPath ;
   std::string innatePath ;
   std::string fullPath ;
   char dirSep = CoinFindDirSeparator() ;
 
   if (dir == nullptr || (dir->compare("") == 0)) {
-    libDir = getDfltPluginDir() ;
-    pluginPath = libDir + dirSep + libName ;
-    innatePath = dfltInnateDir_ + dirSep + libName ;
+    plugDirs = getPluginDirs() ;
+    innatePath = getInnateDir() + dirSep + libName ;
   } else {
-    libDir = *dir ;
-    pluginPath = libDir + dirSep + libName ;
+    plugDirs.push_back(*dir) ;
     innatePath = "" ;
   }
 /*
@@ -581,10 +702,16 @@ int PluginManager::unloadOneLib (const std::string &libName,
   complain and return.
 */
   bool foundIt = false ;
-  LibPathToIDMap::iterator lpiIter = libPathToIDMap_.find(pluginPath) ;
-  if (lpiIter != libPathToIDMap_.end()) {
-    foundIt = true ;
-    fullPath = pluginPath ;
+  LibPathToIDMap::iterator lpiIter ;
+  for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
+       iter != plugDirs.cend() && !foundIt ;
+       iter++) {
+    pluginPath = *iter+dirSep+libName ;
+    lpiIter = libPathToIDMap_.find(pluginPath) ;
+    if (lpiIter != libPathToIDMap_.end()) {
+      foundIt = true ;
+      fullPath = pluginPath ;
+    }
   }
   if (!foundIt && innatePath != "") {
     lpiIter = libPathToIDMap_.find(innatePath) ;
