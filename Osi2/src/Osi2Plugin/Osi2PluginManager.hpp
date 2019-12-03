@@ -88,28 +88,43 @@ public:
     */
     static PluginManager &getInstance() ;
 
-    /*! \brief Add a library to the set of preloaded libraries
+    /*! \name Plugin library management methods
 
-      A hook for compiled-in libraries to register the APIs that they
-      implement.
-    */
-    void addPreloadLib(std::string libName, InitFunc initFunc) ;
-
-    /*! \name Public plugin library management methods
-
-      Methods to load and unload plugin libraries.
+      Methods to load and unload plugin libraries and control the plugin
+      library search path.
     */
     //@{
 
-    /// Get the default plugin directory
-    inline std::string getDfltPluginDir() const {
-        return (dfltPluginDir_) ;
-    }
+    /*! \brief Get the plugin search directories
 
-    /// Set the default plugin directory
-    inline void setDfltPluginDir(std::string dfltDir) {
-        dfltPluginDir_ = dfltDir ;
+      A vector of strings, each specifying a directory.
+    */
+    inline const std::vector<std::string> &getPluginDirs() const {
+        return (plugSrchDirs_) ;
     }
+    /*! \brief Get the plugin search directories
+
+      As a single string, with directories separated by `:' characters.
+    */
+    std::string getPluginDirsStr() const ;
+
+    /*! \brief Set the plugin search directories
+
+      A vector of strings, each specifying a directory.
+    */
+    void setPluginDirs(const std::vector<std::string> searchDirs) ;
+
+    /*! \brief Set the plugin search directories
+
+      A single string in the usual path format, directory names separated by a
+      ':' character.
+    */
+    void setPluginDirsStr(const std::string searchDirs) ;
+
+    /// Get the `directory' string used for an innate library
+
+    inline const std::string &getInnateDir() const
+    { return (dfltInnateDir_) ; }
 
     /// Return full path for a library
     std::string getLibPath(PluginUniqueID libID) ;
@@ -161,6 +176,13 @@ public:
       unload the library. Then erase the manager's bookkeeping information.
     */
     int shutdown() ;
+
+    /*! \brief Add a library to the set of preloaded libraries
+
+      A hook for compiled-in libraries to register the APIs that they
+      implement.
+    */
+    void addPreloadLib(std::string libName, InitFunc initFunc) ;
 
     //@}
 
@@ -424,11 +446,11 @@ private:
     /// Temporary wildcard vector used during plugin library initialisation
     APIRegVec tmpWildCardVec_ ;     // wild card ('*') object types
 
-    /// Default plugin directory
-    std::string dfltPluginDir_ ;
+    /// Plugin library search path
+    std::vector<std::string> plugSrchDirs_ ;
 
     /// Default innate plugin directory
-    std::string dfltInnateDir_ ;
+    const std::string dfltInnateDir_ ;
     /*! \brief Innate plugin initFunc map
     
       We need to remember these in case the user decides to `unload' an innate

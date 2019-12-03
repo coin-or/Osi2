@@ -35,6 +35,7 @@ namespace Osi2 {
 */
 ControlAPI_Imp::ControlAPI_Imp ()
     : pluginMgr_(0),
+      dfltPluginDir_(),
       logLvl_(7),
       paramHandler_(ParamBEAPI_Imp<ControlAPI>(this))
 {
@@ -60,9 +61,7 @@ ControlAPI_Imp::ControlAPI_Imp ()
   msgHandler_->message(CTRLAPI_INIT, msgs_) << "default" << CoinMessageEol ;
 
   pluginMgr_ = &PluginManager::getInstance() ;
-  if (pluginMgr_ != nullptr) {
-    dfltPluginDir_ = pluginMgr_->getDfltPluginDir() ;
-  } else {
+  if (pluginMgr_ == nullptr) {
     msgHandler_->message(CTRLAPI_NOPLUGMGR, msgs_) << CoinMessageEol ;
   }
 }
@@ -242,11 +241,8 @@ int ControlAPI_Imp::load (const std::string &shortName,
 }
 
 /*
-  Determine the default directory and call the base load method.
-
-  Check first to see if we know a default. As a last resort, check the
-  PluginManager. (Remember, there's only one PluginManager, whereas there can
-  be multiple ControlAPI objects.)
+  Call the base load method using the local default plugin directory (which
+  may be unset).
 */
 int ControlAPI_Imp::load (const std::string &shortName,
                           const std::string &libName)
@@ -256,11 +252,8 @@ int ControlAPI_Imp::load (const std::string &shortName,
   Try to find a default plugin directory. First our own, then consult the
   plugin manager. Both can come up empty.
 */
-  std::string dirName = getDfltPluginDir() ;
-  if (dirName == "") {
-    dirName = pluginMgr_->getDfltPluginDir() ;
-  }
-  retval = load(shortName, libName, &dirName) ;
+  std::string dir = getDfltPluginDir() ;
+  retval = load(shortName,libName,&dir) ;
 
   return (retval) ;
 }
