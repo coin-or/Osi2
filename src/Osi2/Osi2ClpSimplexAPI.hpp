@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Coin_C_defines.h"
+#include "Clp_C_Interface.h"
 
 namespace Osi2 {
 
