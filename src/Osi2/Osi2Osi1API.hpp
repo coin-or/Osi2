@@ -20,7 +20,7 @@
 
 #include "CoinMessageHandler.hpp"
 #include "CoinPackedVectorBase.hpp"
-#include "CoinTypes.hpp"
+#include "CoinTypes.h"
 
 #include "OsiCollections.hpp"
 #include "OsiSolverParameters.hpp"

@@ -15,6 +15,7 @@
 #define Osi2APIMgmt_Imp_HPP
 
 #include <map>
+#include <string>
 #include <cstring>
 
 namespace Osi2 {
