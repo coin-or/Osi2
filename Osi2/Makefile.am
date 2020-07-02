@@ -8,19 +8,23 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+include BuildTools/Makemain.inc
+
 ########################################################################
 #            Subdirectories and installation of .pc files              #
 ########################################################################
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 
-# Order is important! osi2plugin.pc is referenced by .pc files later in the
-# list.
+pkgconfiglib_DATA = osi2.pc \
+		    osi2plugin.pc \
+		    osi2-unittests.pc \
+		    osi2clpshim.pc \
+		    osi2clpheavyshim.pc
 
-pkgconfiglib_DATA = osi2plugin.pc osi2.pc osi2-unittests.pc \
-		    osi2clpshim.pc osi2clpheavyshim.pc
-
-SUBDIRS = src/Osi2Plugin src/Osi2 src/Osi2Shims
+SUBDIRS = src/Osi2Plugin \
+	  src/Osi2 \
+	  src/Osi2Shims
 
 # We don't want to compile the test subdirectory, unless the test target is
 # specified.  But we need to list it as subdirectory to make sure that it is
@@ -45,7 +49,7 @@ EXTRA_DIST =
 test: all
 	cd test; $(MAKE) test
 
-if COIN_HAS_CXXUNITTESTDEPS
+if COIN_HAS_CXXTEST
 cxxtest: all
 	cd cxxtest ; $(MAKE) test
 else
@@ -55,16 +59,7 @@ endif
 
 unitTest: test
 
-# Doxygen documentation
-
-doxydoc:
-	doxygen doxydoc/doxygen.conf
-
-clean-doxydoc:
-	( cd doxydoc ; rm -rf html *.log *.tag )
-
-
-clean-local: clean-doxydoc
+clean-local: clean-doxygen-docs
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
 	if test -r cxxtest/Makefile; then cd cxxtest; $(MAKE) clean; fi
 
@@ -74,31 +69,9 @@ distclean-local:
 
 install-exec-local: install-doc
 
-uninstall-local: uninstall-doc
+uninstall-local: uninstall-doc uninstall-doxygen-docs
 
-.PHONY: test unitTest doxydoc
-
-########################################################################
-#                  Installation of the addlibs file                    #
-########################################################################
-
-addlibsdir = $(DESTDIR)$(datadir)/coin/doc/Osi2
-	
-install-data-hook:
-	@$(mkdir_p) "$(addlibsdir)"
-if COIN_HAS_PKGCONFIG
-	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
-	$(PKG_CONFIG) --libs osi2 > $(addlibsdir)/osi2_addlibs.txt
-else
-if COIN_CXX_IS_CL
-	echo "/libpath:`$(CYGPATH_W) @abs_lib_dir@` libOsi2.lib @OSI2LIB_LIBS_INSTALLED@" > $(addlibsdir)/osi2_addlibs_cpp.txt
-else
-	echo -L@abs_lib_dir@ -lOsi2 @OSI2LIB_LIBS_INSTALLED@ > $(addlibsdir)/osi2_addlibs.txt
-endif
-endif
-
-uninstall-hook:
-	rm -f $(addlibsdir)/osi2_addlibs.txt
+.PHONY: test unitTest cxxtest
 
 ########################################################################
 #                         Maintainer Stuff                             #
@@ -107,6 +80,6 @@ uninstall-hook:
 CLEANFILES =
 
 # Files that are generated and should be cleaned with make distclean
+
 DISTCLEANFILES =
 
-include BuildTools/Makemain.inc

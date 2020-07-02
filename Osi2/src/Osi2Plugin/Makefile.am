@@ -8,19 +8,17 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+include $(top_srcdir)/BuildTools/Makemain.inc
+
 ########################################################################
 #                               libOsi2                                 #
 ########################################################################
 
-# Name of the library compiled in this directory.  We don't want it
-# installed since it will be collected into libOsi2.
+# Name of the library compiled in this directory.
+
 lib_LTLIBRARIES = libOsi2Plugin.la
 
-# List all source files for this library, including headers
-# As a first cut, to avoid having to translate directory traversal and file
-# stat from APR to native, try cutting out this code:
-# Osi2Directory.cpp Osi2Directory.hpp
-# Osi2Path.cpp Osi2Path.hpp
+# List all source files for this library, including headers.
 
 libOsi2Plugin_la_SOURCES = \
 	Osi2DynamicLibrary.hpp Osi2DynamicLibrary.cpp \
@@ -28,29 +26,28 @@ libOsi2Plugin_la_SOURCES = \
 	Osi2PluginManager.cpp Osi2PluginManager.hpp \
 	Osi2PlugMgrMessages.cpp Osi2PlugMgrMessages.hpp
 
-# This is for libtool
+# This is for libtool.
+
 libOsi2Plugin_la_LDFLAGS = $(LT_LDFLAGS)
 
-# And we need the dynamic link library.
+# We need the dynamic link library.
+
 libOsi2Plugin_la_LIBADD = -ldl
 
 # Here list all include flags.
-AM_CPPFLAGS = $(COINUTILS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
-# This line is necessary to allow VPATH compilation.
-# This "cygpath" stuff is necessary to compile with native compilers on Windows.
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
-	-I`$(CYGPATH_W) $(srcdir)/../Osi2` \
-	-I`$(CYGPATH_W) ../Osi2`
+AM_CPPFLAGS = -DOSI2_BUILD \
+	      -I$(srcdir)/../Osi2 \
+	      $(OSI2PLUGIN_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'includedir/coin'
+# and that therefore should be installed in pkgincludedir.
 
-includecoindir = $(includedir)/coin
+includecoindir = $(pkgincludedir)
 includecoin_HEADERS = \
 	Osi2Plugin.hpp \
 	Osi2PluginManager.hpp

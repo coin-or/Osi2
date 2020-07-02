@@ -48,11 +48,11 @@ static OneCtrlAPIMessage us_english[] = {
 
     // Information: 0 -- 2999
 
-    { CTRLAPI_INIT, 0000, 7, "Control API constructor (%s)." },
-    { CTRLAPI_LIBLDOK, 0001, 7, "Plugin library \"%s\" (\"%s\") loaded." },
-    { CTRLAPI_LIBCLOSEOK, 0002, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
-    { CTRLAPI_CREATEOK, 0003, 7, "API \"%s\"%?, library \"%s\"%? created." },
-    { CTRLAPI_DESTROYOK, 0004, 7, "API \"%s\"%?, library \"%s\"%? destroyed." },
+    { CTRLAPI_INIT, 0, 7, "Control API constructor (%s)." },
+    { CTRLAPI_LIBLDOK, 1, 7, "Plugin library \"%s\" (\"%s\") loaded." },
+    { CTRLAPI_LIBCLOSEOK, 2, 7, "Plugin library \"%s\" (\"%s\") unloaded." },
+    { CTRLAPI_CREATEOK, 3, 7, "API \"%s\"%?, library \"%s\"%? created." },
+    { CTRLAPI_DESTROYOK, 4, 7, "API \"%s\"%?, library \"%s\"%? destroyed." },
 
     // Warning: 3000 -- 5999
 

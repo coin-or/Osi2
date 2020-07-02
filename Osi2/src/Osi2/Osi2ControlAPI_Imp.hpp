@@ -12,10 +12,11 @@
 
 
 #ifndef Osi2ControlAPI_Imp_HPP
-# define Osi2ControlAPI_Imp_HPP
+#define Osi2ControlAPI_Imp_HPP
 
 #include "Osi2PluginManager.hpp"
 
+#include "Osi2ParamBEAPI_Imp.hpp"
 #include "Osi2ControlAPI.hpp"
 #include "Osi2CtrlAPIMessages.hpp"
 
@@ -29,14 +30,18 @@ class ControlAPI_Imp : public ControlAPI {
 
 public:
 
-    /// \name Constructors and Destructors
+  /// ControlAPI_Imp implements ControlAPI.
+  inline static const char *getAPIIDString ()
+  { return (ControlAPI::getAPIIDString()) ; }
+
+    /// \name Constructors and Destructor
     //@{
     /// Virtual constructor
     ControlAPI *create() ;
     /// Virtual copy constructor
     ControlAPI *clone() ;
     /// Destructor
-    virtual ~ControlAPI_Imp() ;
+    ~ControlAPI_Imp() ;
     /// Default constructor; \sa #create
     ControlAPI_Imp() ;
     /// Default copy constructor; \sa #clone
@@ -184,12 +189,16 @@ public:
         return (dfltHandler_) ;
     }
 
+    /// Parameter management forwarding functions
+    inline int getAPIs(const char **&idents)
+    { return (paramHandler_.getAPIs(idents)) ; }
+    inline void *getAPIPtr (const char *ident)
+    { return (paramHandler_.getAPIPtr(ident)) ; }
+
     //@}
 
 private:
 
-    /// Utility method to find the plugin manager and cache a reference.
-    PluginManager *findPluginMgr() ;
     /// Cached reference to plugin manager.
     PluginManager *pluginMgr_ ;
 
@@ -221,14 +230,17 @@ private:
     /// Log (verbosity) level
     int logLvl_ ;
 
-    /*! \brief Identity information
+    /// Parameter management object
+    ParamBEAPI_Imp<ControlAPI> paramHandler_ ;
 
-      This class defines how API object identity information is structured for
+    /*! \brief Control information
+
+      This class defines how API object control information is structured for
       this implementation of the control API.
     */
-    struct APIObjIdentInfo {
+    struct APIObjCtrlInfo {
       /// Initialising constructor
-      APIObjIdentInfo(std::string apiName, PluginUniqueID libID)
+      APIObjCtrlInfo(std::string apiName, PluginUniqueID libID)
         : apiName_(apiName),
 	  libID_(libID)
       {}

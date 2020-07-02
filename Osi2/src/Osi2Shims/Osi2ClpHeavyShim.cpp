@@ -37,7 +37,7 @@ ClpHeavyShim::ClpHeavyShim ()
 
 /*! \brief Object factory
 
-  Create clp-specific objects to satisfy the Osi2 API specified as the
+  Create clp-specific objects to satisfy the OSI2 API specified as the
   \p objectType member of of \p params.
 */
 void *ClpHeavyShim::create (const ObjectParams *params)
@@ -84,60 +84,58 @@ int32_t ClpHeavyShim::destroy (void *victim, const ObjectParams *objParms)
 /*
   Plugin initialisation method. The job here is to construct a parameter
   structure which can be passed to the plugin manager's registration method
-  (supplied in the services parameter). The return value is the exit method to
-  be called before the plugin is unloaded.
+  (supplied in the services parameter). The return value is the exit method
+  to be called before the plugin is unloaded.
 */
 extern "C"
 ExitFunc initPlugin (PlatformServices *services)
 {
-    std::string version = CLP_VERSION ;
-    std::cout
-            << "Executing ClpHeavyShim::initPlugin, clp version "
-            << version << "." << std::endl ;
-    /*
-      Create the plugin library state object, ClpHeavyShim.  Arrange to
-      remember our unique ID from the plugin manager.  Then stash a pointer
-      to the shim in PlatformServices to return it to the plugin manager.
-      This allows the plugin manager to hand back the shim object with each
-      call, which in turn allows us to remember what we're doing.
-    */
-    ClpHeavyShim *shim = new ClpHeavyShim() ;
-    shim->setPluginID(services->pluginID_) ;
-    services->ctrlObj_ = static_cast<PluginState *>(shim) ;
-    /*
-      RegisterParams.
-    */
-    /*
-      Fill in the rest of the registration parameters and invoke the
-      registration method. We could specify a separate state object for each
-      API, but so far that doesn't seem necessary --- just use the library's
-      state object.
-    */
-    RegisterParams reginfo ;
-    reginfo.ctrlObj_ = static_cast<PluginState *>(shim) ;
-    reginfo.version_.major_ = 1 ;
-    reginfo.version_.minor_ = CLP_VERSION_MINOR ;
-    reginfo.lang_ = Plugin_CPP ;
-    reginfo.pluginID_ = shim->getPluginID() ;
-    reginfo.createFunc_ = ClpHeavyShim::create ;
-    reginfo.destroyFunc_ = ClpHeavyShim::destroy ;
-    int retval =
-	services->registerObject_(
-	    reinterpret_cast<const unsigned char*>("ProbMgmt"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register ProbMgmt plugin." << std::endl ;
-        return (nullptr) ;
-    }
-    retval = services->registerObject_(
-		reinterpret_cast<const unsigned char*>("Osi1"), &reginfo) ;
-    if (retval < 0) {
-        std::cout
-                << "Apparent failure to register Osi1 plugin." << std::endl ;
-        return (nullptr) ;
-    }
+  std::string version = CLP_VERSION ;
+  std::cout
+      << "Executing ClpHeavyShim::initPlugin, clp version "
+      << version << "." << std::endl ;
+/*
+  Create the plugin library state object, ClpHeavyShim.  Arrange to remember
+  our unique ID from the plugin manager.  Then stash a pointer to the shim
+  in PlatformServices to return it to the plugin manager.  This allows the
+  plugin manager to hand back the shim object with each call, which in turn
+  allows us to remember what we're doing.
+*/
+  ClpHeavyShim *shim = new ClpHeavyShim() ;
+  shim->setPluginID(services->pluginID_) ;
+  services->ctrlObj_ = static_cast<PluginState *>(shim) ;
+/*
+  Register our APIs.
 
-    return (cleanupPlugin) ;
+  For each API, fill in the the registration parameters and invoke the
+  registration function. We could specify a separate state object for each
+  API, but so far that doesn't seem necessary --- just use the library's
+  state object.
+*/
+  APIRegInfo reginfo ;
+  reginfo.version_.major_ = 1 ;
+  reginfo.version_.minor_ = CLP_VERSION_MINOR ;
+  reginfo.pluginID_ = shim->getPluginID() ;
+  reginfo.lang_ = Plugin_CPP ;
+  reginfo.ctrlObj_ = static_cast<APIState *>(shim) ;
+  reginfo.createFunc_ = ClpHeavyShim::create ;
+  reginfo.destroyFunc_ = ClpHeavyShim::destroy ;
+  int retval = services->registerAPI_(
+	  reinterpret_cast<const CharString*>("ProbMgmt"), &reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register ProbMgmt plugin." << std::endl ;
+    return (nullptr) ;
+  }
+  retval = services->registerAPI_(
+	  reinterpret_cast<const CharString*>("Osi1"), &reginfo) ;
+  if (retval < 0) {
+    std::cout
+	<< "Apparent failure to register Osi1 plugin." << std::endl ;
+    return (nullptr) ;
+  }
+
+  return (cleanupPlugin) ;
 }
 
 /*

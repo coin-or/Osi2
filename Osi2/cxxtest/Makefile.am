@@ -8,48 +8,55 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+include $(top_srcdir)/BuildTools/Makemain.inc
 
 ########################################################################
-#                          unitTest  program                               #
+#                          unitTest  program                           #
 ########################################################################
 
-# Name of the executable compiled in this directory.  We want it to be
-# installed in the 'bin' directory
+# Name of the executable compiled in this directory. Test programs are
+# not installed.
+
 noinst_PROGRAMS = cxxUnitTest
 
-# List all source files for this executable, including headers
-cxxUnitTest_SOURCES = \
-  $(srcdir)/Osi2PluginTest.cpp $(srcdir)/Osi2PluginTest.hpp
+# List all source files for this executable, including headers.
+
+cxxUnitTest_SOURCES = Osi2PluginTest.cpp \
+		      Osi2PluginTest.hpp
+
 nodist_cxxUnitTest_SOURCES = cxxUnitTest.cpp 
 
-# The driver will be built by running cxxtestgen
+# The driver will be built by running cxxtestgen. For a VPATH build, cxxtestgen
+# isn't running in the cxxtest source directory, hence needs some help to
+# find the source header files.  The trickery with set -x allows the user
+# to see the cxxtestgen command without being bothered by the source file
+# prep that precedes it.
+
 BUILT_SOURCES = cxxUnitTest.cpp
 CLEANFILES = cxxUnitTest.cpp
-cxxUnitTest.cpp: $(cxxUnitTest_SOURCES) 
+cxxUnitTest.cpp: $(cxxUnitTest_SOURCES)
+	@for file in $(cxxUnitTest_SOURCES) ; do \
+	  if expr "$$file" : '^.*\.h.*$$' &>/dev/null ; then \
+	    tmp="$$tmp $(srcdir)/$$file" ; \
+	  fi ; \
+	done ; \
+	set -x ; \
 	$(CXXTESTGEN) --fog-parser --error-printer \
-	    -o cxxUnitTest.cpp $(cxxUnitTest_SOURCES)
+	    -o cxxUnitTest.cpp $$tmp
 
 # Add the necessary libraries
 
-cxxUnitTest_LDADD = $(CXXUNITTESTDEPS_LIBS)
+cxxUnitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
+		    ../src/Osi2/libOsi2.la \
+		    $(CXXUNITTESTDEPS_LFLAGS)
 
 # Now add the include paths for compilation
 
-AM_CPPFLAGS = $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
-
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` \
-	-I`$(CYGPATH_W) $(srcdir)/../src/Osi2` \
-	-I`$(CYGPATH_W) ../src/Osi2`
+AM_CPPFLAGS = -I$(srcdir)/../src/Osi2Plugin \
+	      $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 test: cxxUnitTest$(EXEEXT)
 	./cxxUnitTest$(EXEEXT)
 
 .PHONY: test
-
-
-
-
-
 

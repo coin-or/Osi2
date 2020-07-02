@@ -30,6 +30,9 @@ class ControlAPI : public API {
 
 public:
 
+    /// Return the "ident" string for the control %API.
+    inline static const char *getAPIIDString () { return ("ControlAPI") ; }
+
     /// \name Constructors and Destructors
     //@{
     /// Virtual constructor
