@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi2],[trunk],[osi2@list.coin-or.org],[coin-or-osi2],
+AC_INIT([Osi2],[devel],[osi2@list.coin-or.org],[coin-or-osi2],
 	[https://projects.coin-or.org/Osi2])
 
 AC_COPYRIGHT([
@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR(src/Osi2Plugin/Osi2Plugin.hpp)
 
 # Do some initialization work (version numbers, change prefix default, ...)
 
-AC_COIN_INITIALIZE(Osi2)
+AC_COIN_INITIALIZE
 
 #############################################################################
 #                         Standard build tool stuff                         #
