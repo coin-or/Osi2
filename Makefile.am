@@ -14,8 +14,6 @@ include BuildTools/Makemain.inc
 #            Subdirectories and installation of .pc files              #
 ########################################################################
 
-pkgconfiglibdir = $(libdir)/pkgconfig
-
 pkgconfiglib_DATA = osi2.pc \
 		    osi2plugin.pc \
 		    osi2-unittests.pc \
@@ -25,22 +23,6 @@ pkgconfiglib_DATA = osi2.pc \
 SUBDIRS = src/Osi2Plugin \
 	  src/Osi2 \
 	  src/Osi2Shims
-
-# We don't want to compile the test subdirectory, unless the test target is
-# specified.  But we need to list it as subdirectory to make sure that it is
-# included in the tarball. Similarly for cxxtest.
-
-if ALWAYS_FALSE
-  SUBDIRS += test cxxtest
-endif
-
-########################################################################
-#             Additional files to be included in tarball               #
-########################################################################
-
-# Here we need include all files that are not mentioned in other Makefiles
-
-EXTRA_DIST =
 
 ########################################################################
 #                           Extra Targets                              #

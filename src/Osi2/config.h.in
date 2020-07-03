@@ -1,28 +1,7 @@
 /* src/Osi2/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if CoinUtils is available. */
-#undef COIN_HAS_COINUTILS
-
-/* Define to 1 if CxxTest is available. */
-#undef COIN_HAS_CXXTEST
-
-/* Define to 1 if Netlib is available. */
-#undef COIN_HAS_NETLIB
-
 /* Define to 1 if the C++ compiler supports nullptr */
 #undef COIN_HAS_NULLPTR
-
-/* Define to 1 if Osi is available. */
-#undef COIN_HAS_OSI
-
-/* Define to 1 if OsiClp is available. */
-#undef COIN_HAS_OSICLP
-
-/* Define to 1 if OsiGlpk is available. */
-#undef COIN_HAS_OSIGLPK
-
-/* Define to 1 if Sample is available. */
-#undef COIN_HAS_SAMPLE
 
 /* Library Visibility Attribute */
 #undef CXXUNITTESTDEPS_EXPORT
@@ -80,6 +59,27 @@
 
 /* Library Visibility Attribute */
 #undef OSI2PLUGIN_EXPORT
+
+/* Define to 1 if CoinUtils is available. */
+#undef OSI2_HAS_COINUTILS
+
+/* Define to 1 if CxxTest is available. */
+#undef OSI2_HAS_CXXTEST
+
+/* Define to 1 if Netlib is available. */
+#undef OSI2_HAS_NETLIB
+
+/* Define to 1 if Osi is available. */
+#undef OSI2_HAS_OSI
+
+/* Define to 1 if OsiClp is available. */
+#undef OSI2_HAS_OSICLP
+
+/* Define to 1 if OsiGlpk is available. */
+#undef OSI2_HAS_OSIGLPK
+
+/* Define to 1 if Sample is available. */
+#undef OSI2_HAS_SAMPLE
 
 /* Version number of project */
 #undef OSI2_VERSION
