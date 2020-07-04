@@ -53,6 +53,8 @@ cxxUnitTest_LDADD = ../src/Osi2Plugin/libOsi2Plugin.la \
 # Now add the include paths for compilation
 
 AM_CPPFLAGS = -I$(srcdir)/../src/Osi2Plugin \
+	      -I$(srcdir)/../src/Osi2 \
+	      -I$(srcdir)/../src/Osi2Shims \
 	      $(CXXUNITTESTDEPS_CFLAGS) -DOSI2PLUGINDIR=\"$(libdir)\"
 
 test: cxxUnitTest$(EXEEXT)

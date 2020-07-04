@@ -8,44 +8,55 @@
 #include "CoinHelperFunctions.hpp"
 #include "Osi2PluginTest.hpp"
 #include "Osi2ObjectAdapter.hpp"
-#include "Osi2ProbMgmtAPI.hpp"
+#include "Osi2API.hpp"
+#include "Osi2ClpLite_Wrap.hpp"
+#include "Osi2ClpSimplexAPI.hpp"
 
 static PluginManager &plugMgr = PluginManager::getInstance();
 
-//void setUp(void)
-//{
-//	// TODO: Implement setUp() function.
-//}
-
-void Osi2PluginTest::test_loadOneLib(void)
+void Osi2PluginTest::setUp()
 {
-	std::cout << std::endl << "Plugin directory: " << OSI2PLUGINDIR << std::endl;
-	TS_TRACE("Test loadOneLib()");
-	std::string libName = "libOsi2ClpShim.so";
-	std::string dfltDir = plugMgr.getDfltPluginDir();
-	TS_ASSERT(strcmp(dfltDir.c_str(), OSI2PLUGINDIR) == 0);
-
-	char dirSep = CoinFindDirSeparator();
-	std::string shimPath = dfltDir + dirSep + libName;
-
-	int retval = plugMgr.loadOneLib(libName);
-	TS_ASSERT(!retval);
+/*
+  Add the pre-installation location for plugin libraries so that the tests
+  will work before Osi2 is installed. Only add it once.
+*/
+  std::string uninstDir = "../src/Osi2Shims/.libs" ;
+  std::string dfltDirs = plugMgr.getPluginDirsStr() ;
+  if (dfltDirs.find(uninstDir) == std::string::npos) {
+    dfltDirs = dfltDirs+':'+uninstDir ;
+    plugMgr.setPluginDirsStr(dfltDirs) ;
+  }
 }
 
-void Osi2PluginTest::test_createObject(void)
+void Osi2PluginTest::test_loadOneLib()
 {
-	TS_TRACE("Test createObject()");
-	DummyAdapter dummy;
-	PluginUniqueID libID = 0;
-	ProbMgmtAPI *clp =
-			static_cast<ProbMgmtAPI *>(plugMgr.createObject("ProbMgmt", libID, dummy));
-	TS_ASSERT_DIFFERS(clp, nullptr);
-    clp->readMps("exmip1.mps", true);
-    int retval = plugMgr.destroyObject("ProbMgmt", 0, clp);
-    TS_ASSERT_LESS_THAN_EQUALS(0, retval);
+  TS_TRACE("Test loadOneLib()") ;
+
+  std::vector<std::string> dfltDirArray = plugMgr.getPluginDirs() ;
+  std::string dfltDir = dfltDirArray[0] ;
+  TS_ASSERT(strcmp(dfltDir.c_str(), OSI2PLUGINDIR) == 0) ;
+
+  std::string libName = "libOsi2ClpShim.so" ;
+  int retval = plugMgr.loadOneLib(libName);
+  TS_ASSERT(!retval);
 }
 
-//void tearDown(void)
-//{
-//	// TODO: Implement tearDown() function.
-//}
+void Osi2PluginTest::test_createObject()
+{
+  TS_TRACE("Test createObject()");
+
+  DummyAdapter dummy;
+  PluginUniqueID libID = 0;
+  ClpLite_Wrap *clpWrap = static_cast<ClpLite_Wrap *>
+      (plugMgr.createObject("ClpSimplex", libID, dummy));
+  TS_ASSERT_DIFFERS(clpWrap, nullptr);
+  ClpSimplexAPI *clp = static_cast<ClpSimplexAPI *>
+    (clpWrap->getAPIPtr("ClpSimplex")) ;
+  TS_ASSERT_DIFFERS(clp, nullptr) ;
+  int retval = clp->readMps("exmip1.mps", true) ;
+  // Expecting failure here, exmip1 not found, retval = -1
+  TS_ASSERT_LESS_THAN(retval,0) ;
+  retval = plugMgr.destroyObject("ClpSimplex", 0, clpWrap);
+  TS_ASSERT_EQUALS(0, retval);
+}
+
