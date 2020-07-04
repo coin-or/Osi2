@@ -11,15 +11,17 @@ namespace Osi2
 
 class Osi2PluginTest : public CxxTest::TestSuite
 {
-public:
-//	void setUp(void);
+  public:
 
-	void test_loadOneLib(void);
+  void setUp();
 
-	void test_createObject();
+  void test_loadOneLib();
 
-//	void tearDown(void);
-};
+  void test_createObject();
+
+  // void tearDown();
+} ;
+
 }
 
 /*
