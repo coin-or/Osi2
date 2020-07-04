@@ -363,16 +363,20 @@ PluginManager::apiEntryExists (const APIRegMap &regMap,
 {
     typedef APIRegMap::const_iterator RMCI ;
     /*
-      See if we find anything. For the case where there's no entry at all
-      for this API, iterPair.first will be regMap.end(). For the case where
-      the libID is a wildCard (0), we're perfectly happy to use the first
-      entry found. In either case, we can simply return iterPair.first.
+      See if we find anything. If we have a hit, iterPair.first->first will be
+      the key we're looking for; otherwise, we've struck out.
     */
+    std::cout << "apiEntryExists: checking for " << key << std::endl ;
     std::pair<RMCI, RMCI> iterPair = regMap.equal_range(key) ;
-    if (libID == 0 || iterPair.first == regMap.end()) return (iterPair.first) ;
+    if (iterPair.first->first != key) return (regMap.end()) ;
+    /*
+      For the case where the libID is a wildCard (0), we're perfectly happy
+      to use the first entry found.
+    */
+    if (libID == 0) return (iterPair.first) ;
     /*
       There's at least one entry matching the API (key). Check to see if any of
-      them are from the same plugin library.
+      them are from the same plugin library. If not, return failure.
     */
     for (RMCI iter = iterPair.first ; iter != iterPair.second ; iter++) {
         PluginUniqueID id = iter->second.id_ ;
